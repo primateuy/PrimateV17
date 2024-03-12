@@ -1,6 +1,6 @@
 {
     'name' : 'Cuentas Analíticas Automatizadas',
-    'version': '2024.03.10.20.00',
+    'version': '1.0.0',
     'author': 'PrimateUY',
     'website': 'https://primate.com.uy/',
     'category': 'Accounting/Accounting',
