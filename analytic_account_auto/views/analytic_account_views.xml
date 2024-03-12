@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_analytic_account_form_inherited" model="ir.ui.view">
+        <field name="name">analytic_account_auto.analytic_analytic_account_form_inherited</field>
+        <field name="model">account.analytic.account</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='main']" position="inside">
+                <group>
+                    <field name="can_edit" invisible="1"/>
+                    <field name="create_distribution"
+                           readonly="not can_edit"/>
+<!--                           groups='analytic_account_auto.analytic_account_auto_group'/>-->
+
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

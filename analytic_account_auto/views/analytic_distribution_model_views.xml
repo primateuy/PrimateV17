@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_analytic_distribution_model_form_view_inherited" model="ir.ui.view">
+        <field name="name">analytic_account_auto.account_analytic_distribution_model_form_view_inherited</field>
+        <field name="model">account.analytic.distribution.model</field>
+        <field name="inherit_id" ref="analytic.account_analytic_distribution_model_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/group/group" position="inside">
+                <group>
+                    <field name="auto_account_id"/>
+
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

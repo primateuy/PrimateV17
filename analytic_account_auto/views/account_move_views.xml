@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="view_move_line_tree_inherited" model="ir.ui.view">
+            <field name="name">analytic_account_auto.view_move_line_tree_inherited</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_move_line_tree"/>
+            <field name="arch" type="xml">
+
+                <!--linea 193-->
+                <xpath expr="//tree/field[@name='analytic_distribution']" position="after">
+                    <field name="analytic_auto_account_id"/>
+                </xpath>
+                <xpath expr="//tree/field[@name='analytic_distribution']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+
+            </field>
+        </record>
+
+        <record id="view_move_form_inherited" model="ir.ui.view">
+            <field name="name">analytic_account_auto.view_move_form_inherited</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+
+                <!--linea 1026-->
+                <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/tree/field[@name='analytic_distribution']" position="after">
+                    <field name="analytic_auto_account_id"/>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/tree/field[@name='analytic_distribution']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+                <!--linea 1139-->
+                <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/form/sheet/group/field[@name='analytic_distribution']" position="after">
+                    <field name="analytic_auto_account_id"/>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/form/sheet/group/field[@name='analytic_distribution']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+                <!--linea 1202-->
+                <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/tree/field[@name='analytic_distribution']" position="after">
+                    <field name="analytic_auto_account_id"/>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/tree/field[@name='analytic_distribution']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+                <!--linea 1282-->
+                <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/form/group/field[@name='analytic_distribution']" position="after">
+                    <field name="analytic_auto_account_id"/>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/form/group/field[@name='analytic_distribution']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>
