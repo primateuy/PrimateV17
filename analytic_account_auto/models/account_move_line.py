@@ -7,6 +7,7 @@ class AccountMoveLine(models.Model):
 
     @api.onchange('analytic_auto_account_id')
     def _onchange_analytic_auto_account_id(self):
+        self = self.sudo()
         analytic_auto_account_id = self.analytic_auto_account_id.id
         self.analytic_distribution = self._get_analytic_distribution(analytic_auto_account_id)
 
