@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_analytic_account_auto_user,analytic_account_auto_model_user,model_analytic_account_auto,base.group_user,True,False,True,False
+access_analytic_account_auto_admin,analytic_account_auto_model_admin,model_analytic_account_auto,base.group_system,True,True,True,True

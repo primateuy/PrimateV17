@@ -19,6 +19,7 @@ class AnalyticAccountAuto(models.Model):
     #         record.display_name = account_analytic_account.name
 
     def _compute_name(self):
+        self = self.sudo()
         for record in self:
             account_analytic_account = self.env['account.analytic.account'].search(
                 [('auto_account_id', '=', record.id)])

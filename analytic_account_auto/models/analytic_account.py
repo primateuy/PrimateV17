@@ -9,6 +9,7 @@ class AccountAnalyticAccount(models.Model):
 
     @api.depends('name')
     def _compute_can_edit(self):
+        self = self.sudo()
         can_edit = self.env.user.has_group('analytic_account_auto.analytic_account_auto_group')
         for record in self:
             record.can_edit = can_edit
