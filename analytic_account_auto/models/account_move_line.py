@@ -24,12 +24,14 @@ class AccountMoveLine(models.Model):
         return res
 
     def _get_analytic_distribution(self, analytic_auto_account_id=False):
+        self = self.sudo()
         if analytic_auto_account_id:
             analytic_auto_account = self._get_analytic_auto_account(analytic_auto_account_id)
             return analytic_auto_account.distribution_model_id.analytic_distribution
         return False
 
     def _get_analytic_auto_account(self, analytic_auto_account_id=False):
+        self = self.sudo()
         if analytic_auto_account_id:
             analytic_auto_account = self.env['analytic.account.auto'].browse(analytic_auto_account_id)
             return analytic_auto_account
