@@ -5,10 +5,9 @@ class AnalyticAccountAuto(models.Model):
     _name = 'analytic.account.auto'
     _description = 'Analytic Account Auto'
 
-    analytic_account_id = fields.One2many('account.analytic.account', 'auto_account_id', string="Cuenta Analítica",
-                                          limit=1)
+    analytic_account_id = fields.One2many('account.analytic.account', 'auto_account_id', string="Cuenta Analítica")
     distribution_model_id = fields.One2many('account.analytic.distribution.model', 'auto_account_id',
-                                            string="Modelo de distribución", limit=1)
+                                            string="Modelo de distribución")
 
     display_name = fields.Char(string='Nombre', compute='_compute_display_name')
     name = fields.Char(string='Nombre', compute='_compute_name')
