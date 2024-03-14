@@ -12,6 +12,7 @@ class AccountMoveLine(models.Model):
 
     @api.model
     def create(self, vals):
+        self = self.sudo()
         if 'analytic_auto_account_id' in vals and 'analytic_line_ids' is not False:
             analytic_auto_account_id = vals.get('analytic_auto_account_id')
             analytic_auto_account = self._get_analytic_auto_account(analytic_auto_account_id)
