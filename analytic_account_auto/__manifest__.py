@@ -15,7 +15,7 @@ asociado a esta.
     'data': [
         'views/analytic_account_views.xml',
         'security/analytic_account_auto_group.xml',
-        'security/ir.model.access.csv'
+        'security/ir.model.access.csv',
         'views/analytic_distribution_model_views.xml',
         'views/account_move_views.xml',
     ],
