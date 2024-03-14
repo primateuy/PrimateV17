@@ -7,13 +7,11 @@ class AccountMoveLine(models.Model):
 
     @api.onchange('analytic_auto_account_id')
     def _onchange_analytic_auto_account_id(self):
-        self = self.sudo()
         analytic_auto_account_id = self.analytic_auto_account_id.id
         self.analytic_distribution = self._get_analytic_distribution(analytic_auto_account_id)
 
     @api.model
     def create(self, vals):
-        self = self.sudo()
         if 'analytic_auto_account_id' in vals and 'analytic_line_ids' is not False:
             analytic_auto_account_id = vals.get('analytic_auto_account_id')
             analytic_auto_account = self._get_analytic_auto_account(analytic_auto_account_id)
@@ -24,14 +22,12 @@ class AccountMoveLine(models.Model):
         return res
 
     def _get_analytic_distribution(self, analytic_auto_account_id=False):
-        self = self.sudo()
         if analytic_auto_account_id:
             analytic_auto_account = self._get_analytic_auto_account(analytic_auto_account_id)
             return analytic_auto_account.distribution_model_id.analytic_distribution
         return False
 
     def _get_analytic_auto_account(self, analytic_auto_account_id=False):
-        self = self.sudo()
         if analytic_auto_account_id:
             analytic_auto_account = self.env['analytic.account.auto'].browse(analytic_auto_account_id)
             return analytic_auto_account

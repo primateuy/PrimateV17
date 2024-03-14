@@ -9,7 +9,6 @@ class AccountAnalyticAccount(models.Model):
 
     @api.depends('name')
     def _compute_can_edit(self):
-        self = self.sudo()
         can_edit = self.env.user.has_group('analytic_account_auto.analytic_account_auto_group')
         for record in self:
             record.can_edit = can_edit
@@ -17,7 +16,6 @@ class AccountAnalyticAccount(models.Model):
     can_edit = fields.Boolean(compute=_compute_can_edit)
 
     def create(self, vals_list):
-        self = self.sudo()
         account_analytic_account = super(AccountAnalyticAccount, self).create(vals_list)
         if account_analytic_account and account_analytic_account.create_distribution:
             # TODO: Acá tengo que estblecer los valores con los que voy a crear estos registros.
