@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record id="odoo_migrator_sequence" model="ir.sequence">
+            <field name="name">Odoo migrator sequence</field>
+            <field name="code">odoo.migrator.sequence</field>
+            <field name="prefix">OM-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id"></field>
+
+        </record>
+
+        <record id="odoo_migrator_log_sequence" model="ir.sequence">
+            <field name="name">Odoo migrator log sequence</field>
+            <field name="code">odoo.migrator.log.sequence</field>
+            <field name="prefix">OM-LOG-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id"></field>
+
+        </record>
+    </data>
+</odoo>

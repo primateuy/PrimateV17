@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_odoo_migrator_odoo_migrator,access_odoo_migrator_odoo_migrator,odoo_migrator.model_odoo_migrator,base.group_user,1,1,1,1
+access_odoo_migrator_log_line,access_odoo_migrator_log_line,odoo_migrator.model_odoo_migrator_log_line,base.group_user,1,1,1,1
+access_odoo_migrator_company,access_odoo_migrator_company,odoo_migrator.model_odoo_migrator_company,base.group_user,1,1,1,1
