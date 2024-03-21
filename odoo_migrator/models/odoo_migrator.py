@@ -2,9 +2,6 @@
 from email.utils import parseaddr
 from typing import Any, Dict, List, Tuple
 from functools import partial
-
-import ipdb
-
 from odoo import models, fields, api, release, _
 from odoo.exceptions import UserError
 import xmlrpc.client
