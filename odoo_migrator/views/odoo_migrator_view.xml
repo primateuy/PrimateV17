@@ -26,6 +26,7 @@
                             class="btn-primary"
                         />
                         <button string="Cancelar" class="btn-secondary" special="cancel" />
+                        <button string="Borrador" class="btn-secondary" type="object" name="action_draft"/>
                         <field name="state" widget="statusbar" />
                     </header>
                     <sheet>

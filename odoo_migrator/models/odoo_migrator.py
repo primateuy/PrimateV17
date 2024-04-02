@@ -340,6 +340,9 @@ class OdooMigrator(models.Model):
         string="Número de Contactos", compute="_get_contact_count"
     )
 
+    def action_draft(self):
+        self.write({"state": "draft"})
+
     @api.depends("contact_ids")
     def _get_contact_count(self):
         for rec in self:
@@ -352,13 +355,10 @@ class OdooMigrator(models.Model):
 
     def connect_with_source(self):
         self.ensure_one()
-        source_models, source_uid, source_database, source_password = (
-            self._get_source_odoo_connection()
-        )
-        odoo_migrator_obj = self.env["odoo.migrator.company"]
+        source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
+        odoo_migrator_company_obj = self.env["odoo.migrator.company"]
         # Consulta los contactos en el Odoo de origen
         try:
-            # company_data = source_models.execute_kw(source_database, source_uid, source_password, 'res.company','search_read', [[]], {'fields': COMPANY_FIELDS, 'context':{'lang': "es_ES"}})
             company_data = source_models.execute_kw(
                 source_database,
                 source_uid,
@@ -376,41 +376,39 @@ class OdooMigrator(models.Model):
             self.is_multicompany = True
             self.company_count = len(company_data)
             self.company_data = company_data
+            lang_obj = self.env['res.lang']
             for company in company_data:
-                # company = self.remove_unused_fields(contact_data=company)
+                company_partner_id = company["partner_id"][0]
                 company_context = source_models.execute_kw(
                     source_database,
                     source_uid,
                     source_password,
                     "res.partner",
                     "search_read",
-                    [[("id", "=", company["partner_id"][0])]],
+                    [[("id", "=", company_partner_id)]],
                     {"fields": ["name", "lang"]},
                 )
                 company_lang = company_context[0]["lang"]
-                for field in company:
-                    if field not in odoo_migrator_obj._fields:
+                if not lang_obj._read_group([('code','=', company_lang)], ['id']):
+                    raise UserError(f"Debe activar el idioma {company_lang} en Odoo")
+
+                for company_field in company:
+                    if company_field not in odoo_migrator_company_obj._fields:
                         continue
-                    if odoo_migrator_obj._fields[
-                        field
-                    ].type == "many2one" and company.get(field, False):
-                        company = self.resolve_m2o_fields(
+                    if odoo_migrator_company_obj._fields[company_field].type == "many2one" and company.get(company_field, False):
+                        company = self.with_context(dont_search_for_no_actives=True).resolve_m2o_fields(
                             value=company,
-                            m2o=field,
-                            odoo_object=odoo_migrator_obj,
+                            m2o=company_field,
+                            odoo_object=odoo_migrator_company_obj,
                             lang=company_lang,
                         )
 
-                    elif odoo_migrator_obj._fields[field].type in [
-                        "many2many",
-                        "one2many",
-                    ] and company.get(field, False):
+                    elif odoo_migrator_company_obj._fields[company_field].type in ["many2many","one2many"] and company.get(company_field, False):
                         company = self.resolve_m2m_o2m_fields(
-                            value=contact_data,
-                            field_type=contact_obj._fields[field].type,
-                            field=field,
+                            value=company_data,
+                            field_type=odoo_migrator_company_obj._fields[company_field].type,
+                            field=company_field,
                         )
-
                 company_values = {
                     "name": company.get("name", False),
                     "logo": company.get("logo", False),
@@ -432,14 +430,12 @@ class OdooMigrator(models.Model):
                     "partner_id": company.get("partner_id", False),
                     "migrator_id": self.id,
                 }
-                new_company = odoo_migrator_obj.create(company_values)
+                new_company = odoo_migrator_company_obj.create(company_values)
 
         return self.write({"state": "company_ok"})
 
     def copy_company_data(self):
-        migrator_company = self.odoo_company_ids.filtered(
-            lambda x: x.migrate_this_company
-        )
+        migrator_company = self.odoo_company_ids.filtered(lambda x: x.migrate_this_company)
         migrator_partner = migrator_company.partner_id
         if not migrator_company:
             raise UserError("No se encontraron compañías a migrar")
@@ -454,7 +450,6 @@ class OdooMigrator(models.Model):
                 continue
 
             value = getattr(migrator_company, field)
-
             try:
                 setattr(company, field, value)
             except Exception as error:
@@ -469,7 +464,9 @@ class OdooMigrator(models.Model):
                 setattr(partner, partner_field, value)
             except Exception as error:
                 raise UserError(error)
-        migrator_partner.unlink()
+        # migrator_partner.unlink()
+        # migrator_partner.active = False
+
         return self.write({"state": "company_done"})
 
     @api.depends("source_version")
@@ -616,6 +613,9 @@ class OdooMigrator(models.Model):
         source_models, source_uid, source_database, source_password = (
             self._get_source_odoo_connection()
         )
+        domain = [("name", "ilike", value)]
+
+
         if odoo_object._name == "res.partner":
             odoo_object_required_fields = CONTACT_FIELDS
         else:
@@ -638,6 +638,7 @@ class OdooMigrator(models.Model):
                 "context": {"lang": lang},
             },
         )
+
         for value in record_data:
             for field_record in value:
                 if odoo_object._fields[field_record].type == "many2one":
@@ -647,7 +648,10 @@ class OdooMigrator(models.Model):
                         m2o=field_record,
                         lang=lang,
                     )
-        record = odoo_object.search([("name", "ilike", value["name"])], limit=1)
+        if odoo_object._name == "res.country":
+            domain.insert(0, "|")
+            domain.append(("code", "=", value["code"]))
+        record = odoo_object.with_context(default_lang=lang, lang=lang).search(domain, limit=1)
         if not record:
             try:
                 value["old_id"] = value.pop("id")
@@ -656,7 +660,7 @@ class OdooMigrator(models.Model):
                 self.create_log_line(error=error, log_type="error", values=value)
                 raise UserError(error)
         else:
-            record.old_id = value.get("id", False)
+            record.old_id = m2oid
         return record
 
     def resolve_m2o_fields(self, value=None, odoo_object=None, m2o=None, lang=None):
@@ -665,6 +669,8 @@ class OdooMigrator(models.Model):
         {'field_name': [id, name_get]} donde el primer elemento es el id del registro en la base de datos de origen
         y el segundo el nombre del registro
         """
+        ctx = self.env.context.copy()
+        dont_search_for_no_actives = ctx.get("dont_search_for_no_actives", False)
         if lang is None:
             lang = self.env.lang
         m2ovalue = value.get(m2o, False)
@@ -683,12 +689,12 @@ class OdooMigrator(models.Model):
                 ],
                 limit=1,
             )
-            if not record and odoo_object._fields.get("active", False):
+            if not record and odoo_object._fields.get("active", False) and not dont_search_for_no_actives:
                 record = odoo_object.search(
                     ["|", ("active", "=", False), ("name", "ilike", record_name)],
                     limit=1,
                 )
-            record.old_id = value[m2o][0]
+                record.old_id = value[m2o][0]
         except Exception as error:
             raise UserError(error)
         if not record:
@@ -698,10 +704,8 @@ class OdooMigrator(models.Model):
             re-formatear la llamada y hacer el create de los odoo_object
             """
             m2oid = value[m2o][0]
-            record = self.create_odoo_record(
-                m2oid=m2oid, value=value, odoo_object=odoo_object, lang=lang
-            )
-        # print(f'transformamos el campo {m2o} de {value[m2o]} a {record.id}')
+            record = self.create_odoo_record(m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang)
+            record.old_id = value[m2o][0]
         value[m2o] = record.id
         return value
 
@@ -925,7 +929,7 @@ class OdooMigrator(models.Model):
         """
         print("\nMigrando los Contactos")
 
-        limit = 10
+        limit = 1000
         model_name: str = "res.partner"
         contact_obj = self.env[model_name]
         for migrator in self:
@@ -943,9 +947,7 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(contact_datas)
-            contact_data_list = []
             for contador, contact_data in enumerate(contact_datas, start=1):
-                old_contact_datas = contact_datas
                 print(f"vamos {contador} / {total}")
                 contact_id = contact_obj.search(
                     [
@@ -961,13 +963,9 @@ class OdooMigrator(models.Model):
                     migrator.contact_ids += contact_id
                     continue
                 contact_data = migrator.remove_unused_fields(record_data=contact_data)
-                migrator._remove_m2o_o2m_and_m2m_data_from(
-                    data=contact_data, model_obj=contact_obj, lang=lang
-                )
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=contact_data, model_obj=contact_obj, lang=lang)
 
-                is_success, result = migrator.try_to_create_record(
-                    odoo_object=contact_obj, value=contact_data
-                )
+                is_success, result = migrator.try_to_create_record(odoo_object=contact_obj, value=contact_data)
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=contact_data)
                     continue
