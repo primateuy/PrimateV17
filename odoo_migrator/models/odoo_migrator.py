@@ -2,9 +2,14 @@
 from email.utils import parseaddr
 from typing import Any, Dict, List, Tuple
 from functools import partial
+
+# import ipdb
+
 from odoo import models, fields, api, release, _
 from odoo.exceptions import UserError
 import xmlrpc.client
+import logging
+_logger = logging.getLogger('MIGRATION SERVICES LOGGER')
 
 odoo_versions: List[Tuple[str, str]] = [
     ("10.0", "10.0"),
@@ -231,6 +236,8 @@ class OdooMigrator(models.Model):
     migration_model = fields.Selection(
         [
             # Contacts
+            ("countries", "Paises"),
+            ("states", "Estados"),
             ("contacts", "Contactos"),
             #
             # Currencies
@@ -302,9 +309,9 @@ class OdooMigrator(models.Model):
     # products_ids = fields.Many2many(comodel_name="product.product", string="Productos")
     products_ids = fields.Many2many(comodel_name="product.product", string="Productos")
     account_moves_ids = fields.Many2many(comodel_name="account.move", string="Facturas")
-    account_move_line_ids = fields.Many2many(
-        comodel_name="account.move.line", string="Lineas de Facturas"
-    )
+    account_move_line_ids = fields.Many2many(comodel_name="account.move.line", string="Lineas de Facturas")
+    country_ids = fields.Many2many(comodel_name="res.country", string="Países")
+    state_ids = fields.Many2many(comodel_name="res.country.state", string="Estados")
     account_move_types_ids = fields.Many2many(
         comodel_name="account.move",
         relation="odoo_migrator_account_move_type_rel",
@@ -339,6 +346,9 @@ class OdooMigrator(models.Model):
     contact_count = fields.Integer(
         string="Número de Contactos", compute="_get_contact_count"
     )
+
+    def clear_logs(self):
+        self.log_ids.unlink()
 
     def action_draft(self):
         self.write({"state": "draft"})
@@ -561,8 +571,8 @@ class OdooMigrator(models.Model):
 
             return source_models, source_uid, source_database, source_password
 
-    def remove_unused_fields(self, record_data=None):
-        allowed_fields = [x for x in self.env["res.partner"]._fields]
+    def remove_unused_fields(self, record_data=None, odoo_model='res.partner'):
+        allowed_fields = [x for x in self.env[odoo_model]._fields]
         unwanted_fields = [
             "message_follower_ids",
             "activity_date_deadline",
@@ -602,7 +612,7 @@ class OdooMigrator(models.Model):
         ]
         for field in list(record_data):
             if field not in allowed_fields or field in unwanted_fields:
-                del record_data[field]
+                    del record_data[field]
         return record_data
 
     def create_odoo_record(self, m2oid=None, value=None, odoo_object=None, lang=None):
@@ -685,7 +695,7 @@ class OdooMigrator(models.Model):
                 [
                     "|",
                     ("name", "ilike", record_name),
-                    ("old_id", "ilike", value[m2o][0]),
+                    ("old_id", "=", value[m2o][0]),
                 ],
                 limit=1,
             )
@@ -785,7 +795,7 @@ class OdooMigrator(models.Model):
 
     def create_log_line(self, error="", log_type=None, values=None, record=False):
         error_log_line_obj = self.env["odoo.migrator.log.line"]
-        error_log_line_obj.create(
+        log_line = error_log_line_obj.create(
             {
                 "migrator_id": self.id,
                 "error": error,
@@ -793,6 +803,8 @@ class OdooMigrator(models.Model):
                 "values": values,
             }
         )
+        # print(f"Se ha creado la linea de log {log_line.name}")
+        # _logger.info(f"Se ha creado la linea de log {log_line.name}")
         return True
 
     def create_error_log(self, values=None, msg: str = "") -> bool:
@@ -931,16 +943,25 @@ class OdooMigrator(models.Model):
 
         limit = 1000
         model_name: str = "res.partner"
+        migrated_ids = []
         contact_obj = self.env[model_name]
+        migrated_contacts = contact_obj.search([('old_id','!=', False)])
+        if migrated_contacts:
+            migrated_ids = migrated_contacts.mapped('old_id')
+
         for migrator in self:
             lang = self.company_id.partner_id.lang
             contact_datas = migrator._run_remote_command_for(
                 model_name=model_name,
                 command_params_dict={
                     "fields": CONTACT_FIELDS,
-                    "limit": limit,
+                    # "limit": limit,
                     "context": {"lang": lang},
+
+                    # "offset": migrator.pagination_offset,
+                    # "limit": migrator.pagination_limit,
                 },
+                operation_params_list=[("id", "not in", migrated_ids)],
             )
 
             if not bool(contact_datas):
@@ -949,20 +970,14 @@ class OdooMigrator(models.Model):
             total = len(contact_datas)
             for contador, contact_data in enumerate(contact_datas, start=1):
                 print(f"vamos {contador} / {total}")
-                contact_id = contact_obj.search(
-                    [
-                        "|",
-                        ("old_id", "=", contact_data["id"]),
-                        ("name", "ilike", contact_data["name"]),
-                    ],
-                    limit=1,
-                )
+                search_conditions = [("old_id", "=", contact_data["id"])]
+                contact_id = contact_obj.search(search_conditions, limit=1)
                 if contact_id:
                     print(f'el contacto {contact_data["name"]} ya existe')
                     contact_id.old_id = contact_data["id"]
                     migrator.contact_ids += contact_id
                     continue
-                contact_data = migrator.remove_unused_fields(record_data=contact_data)
+                    contact_data = migrator.remove_unused_fields(record_data=contact_data, odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=contact_data, model_obj=contact_obj, lang=lang)
 
                 is_success, result = migrator.try_to_create_record(odoo_object=contact_obj, value=contact_data)
@@ -974,6 +989,116 @@ class OdooMigrator(models.Model):
                 migrator.contact_ids += result
 
             print(f"se crearon {len(self.contact_ids)} contactos")
+            self.env.cr.commit()
+
+        return True
+
+    def migrate_countries(self) -> bool:
+        """
+        Método para migrar paises desde el Odoo de origen al Odoo de destino.
+        """
+        print("\nMigrando los paises")
+        limit = 100000
+        model_name: str = "res.country"
+        country_obj = self.env[model_name]
+        for migrator in self:
+            lang = self.company_id.partner_id.lang
+            country_datas = migrator._run_remote_command_for(
+                model_name=model_name,
+                command_params_dict={
+                    "fields": ['name', 'code'],
+                    "limit": limit,
+                    "context": {"lang": lang},
+                },
+                # operation_params_list=[("code", "=", False)],
+            )
+
+            if not bool(country_datas):
+                continue
+
+            total = len(country_datas)
+            countries_without_code = []
+            for contador, country_data in enumerate(country_datas, start=1):
+                print(f"vamos {contador} / {total}")
+                country_code = country_data.get("code", False)
+                if not country_code:
+                    countries_without_code.append(country_data)
+                    continue
+                search_conditions = ["|","|", ("old_id", "=", country_data["id"]), ("name", "ilike", country_data["name"]), ("code", "=", country_data["code"])]
+                country_id = country_obj.search(search_conditions,limit=1,)
+                if country_id:
+                    print(f'el país {country_data["name"]} ya existe')
+                    country_id.old_id = country_data["id"]
+                    migrator.country_ids += country_id
+                    continue
+                is_success, result = migrator.try_to_create_record(odoo_object=country_obj, value=country_data)
+                if not is_success:
+                    migrator.create_error_log(msg=str(result), values=country_data)
+                    continue
+                migrator.create_success_log(values=country_data)
+                print(f"se creo el contacto {result.name}")
+                migrator.country_ids += result
+            if countries_without_code:
+                message = f'Los siguienes países no tienen código: {[(x["name"], x["id"]) for x in countries_without_code]}'
+                print(message)
+                _logger.info(message)
+                migrator.create_error_log(msg=str(message), values=countries_without_code)
+            print(f"se crearon {len(self.country_ids)} paises")
+
+        return True
+
+    def migrate_states(self) -> bool:
+        """
+        Método para migrar paises desde el Odoo de origen al Odoo de destino.
+        """
+        print("\nMigrando los paises")
+        limit = 100000
+        model_name: str = "res.country.state"
+        state_obj = self.env[model_name]
+        for migrator in self:
+            lang = self.company_id.partner_id.lang
+            state_datas = migrator._run_remote_command_for(
+                model_name=model_name,
+                command_params_dict={
+                    "fields": ['name', 'code', 'country_id'],
+                    "limit": limit,
+                    "context": {"lang": lang},
+                },
+                # operation_params_list=[("code", "=", False)],
+            )
+
+            if not bool(state_datas):
+                continue
+
+            total = len(state_datas)
+            states_without_code = []
+            for contador, state_data in enumerate(state_datas, start=1):
+                print(f"vamos {contador} / {total}")
+                state_code = state_data.get("code", False)
+                if not state_code:
+                    states_without_code.append(state_data)
+                    continue
+                search_conditions = ["|","|", ("old_id", "=", state_data["id"]), ("name", "ilike", state_data["name"]), ("code", "=", state_data["code"])]
+                state_id = state_obj.search(search_conditions,limit=1,)
+                if state_id:
+                    print(f'el estado {state_data["name"]} ya existe')
+                    state_id.old_id = state_data["id"]
+                    migrator.state_ids += state_id
+                    continue
+                state_data = self.resolve_m2o_fields(value=state_data, odoo_object=state_obj, m2o='country_id', lang=lang)
+                is_success, result = migrator.try_to_create_record(odoo_object=state_obj, value=state_data)
+                if not is_success:
+                    migrator.create_error_log(msg=str(result), values=state_data)
+                    continue
+                migrator.create_success_log(values=state_data)
+                print(f"se creo el contacto {result.name}")
+                migrator.state_ids += result
+            if states_without_code:
+                message = f'Los siguienes estados no tienen código: {[(x["name"], x["id"]) for x in states_without_code]}'
+                print(message)
+                _logger.info(message)
+                migrator.create_error_log(msg=str(message), values=states_without_code)
+            print(f"se crearon {len(self.state_ids)} estados")
 
         return True
 
@@ -1021,7 +1146,7 @@ class OdooMigrator(models.Model):
                     migrator.currency_ids += currency_id
                     continue
 
-                currency_data = migrator.remove_unused_fields(record_data=currency_data)
+                currency_data = migrator.remove_unused_fields(record_data=currency_data, odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(
                     data=currency_data, model_obj=currency_obj, lang=lang
                 )
@@ -1048,14 +1173,14 @@ class OdooMigrator(models.Model):
 
         if not bool(self.currency_ids):
             raise UserError("No hay Monedas migradas")
-
         model_name: str = "res.currency.rate"
         currency_rate_obj = self.env[model_name]
         for migrator in self:
-            for currency in migrator.currency_ids:
+            for currency in migrator.currency_ids.filtered(lambda x: not x.is_current_company_currency):
+                search_conditions = [('currency_id', '=', currency.old_id), '|', ('company_id', '=', migrator.company_id.old_id), ('company_id', '=', False)]
                 currency_rate_datas = migrator._run_remote_command_for(
                     model_name=model_name,
-                    operation_params_list=[("currency_id", "=", currency.old_id)],
+                    operation_params_list=search_conditions,
                     command_params_dict={
                         "offset": migrator.pagination_offset,
                         "limit": migrator.pagination_limit,
@@ -1066,18 +1191,20 @@ class OdooMigrator(models.Model):
                     continue
 
                 total = len(currency_rate_datas)
-                for contador, currency_rate_data in enumerate(
-                    currency_rate_datas, start=1
-                ):
+                for contador, currency_rate_data in enumerate(currency_rate_datas, start=1):
                     print(f"vamos {contador} / {total}")
-                    currency_rate_id = currency_rate_obj.search(
-                        [
-                            "|",
-                            ("old_id", "=", currency_rate_data["id"]),
-                            ("name", "ilike", currency_rate_data["name"]),
-                        ],
-                        limit=1,
-                    )
+                    rate_search_conditions = ["|", ("old_id", "=", currency_rate_data["id"]), ("name", "=", currency_rate_data["name"])]
+                    currency_rate_id = currency_rate_obj.search(rate_search_conditions, limit=1)
+                    if not currency_rate_id:
+                        currency_rate_id = currency_rate_obj.search(
+                            [
+                                ("name", "=", currency_rate_data["name"]),
+                                ("currency_id", "=", currency.old_id),
+                                ("company_id", "=", migrator.company_id.id),
+                            ],
+                            limit=1,
+                        )
+
 
                     if currency_rate_id:
                         print(f'la cotización {currency_rate_data["name"]} ya existe')
@@ -1085,12 +1212,10 @@ class OdooMigrator(models.Model):
                         migrator.currency_rate_ids += currency_rate_id
                         continue
 
-                    currency_rate_data = migrator.remove_unused_fields(
-                        record_data=currency_rate_data
-                    )
-                    migrator._remove_m2o_o2m_and_m2m_data_from(
-                        data=currency_rate_data, model_obj=currency_rate_obj
-                    )
+                    currency_rate_data = migrator.remove_unused_fields(record_data=currency_rate_data, odoo_model=model_name)
+                    currency_rate_data['company_id'] = migrator.company_id.id
+                    currency_rate_data['currency_id'] = currency.id
+                    # migrator._remove_m2o_o2m_and_m2m_data_from(data=currency_rate_data, model_obj=currency_rate_obj)
 
                     is_success, result = migrator.try_to_create_record(
                         odoo_object=currency_rate_obj, value=currency_rate_data
@@ -1298,7 +1423,7 @@ class OdooMigrator(models.Model):
                     continue
 
                 product_category_data = migrator.remove_unused_fields(
-                    record_data=product_category_data
+                    record_data=product_category_data, odoo_model=model_name
                 )
                 migrator._remove_m2o_o2m_and_m2m_data_from(
                     data=product_category_data, model_obj=product_category_obj
@@ -1972,6 +2097,8 @@ class OdooMigrator(models.Model):
 
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
+            "countries": self.migrate_countries,
+            "states": self.migrate_states,
             "contacts": self.migrate_contacts,
             "currencies": self.migrate_currencies,
             "currency_rates": self.migrate_currency_rates,

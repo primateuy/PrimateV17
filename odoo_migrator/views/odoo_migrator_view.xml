@@ -99,14 +99,25 @@
                                     type="object" class="btn-primary"
                                     icon="fa-check" icon_color="white" widget="action" />
                             </page>
+                            <page name="page_countries" string="Paises Creados"
+                                invisible="migration_model != 'countries'">
+                                <group>
+                                    <field name="country_ids"/>
+                                </group>
+                            </page>
+                            <page name="page_states" string="Estados Creados"
+                                invisible="migration_model != 'states'">
+                                <group>
+                                    <field name="state_ids"/>
+                                </group>
+                            </page>
                             <page name="page_contacts" string="Contactos Creados"
                                 invisible="migration_model != 'contacts'">
                                 <group>
                                     <field name="contact_ids" />
                                 </group>
                             </page>
-                            <page name="page_currencies" string="Monedas Creadas"
-                                invisible="migration_model != 'currencies'">
+                            <page name="page_currencies" string="Monedas Creadas">
 
                                 <group>
                                     <field name="currency_ids" />
@@ -192,6 +203,9 @@
                                 </group>
                             </page>
                             <page name="page_log" string="Logs">
+                                <button name="clear_logs" string="Limpiar Logs"
+                                    type="object" class="btn-secondary"
+                                    icon="fa-trash" icon_color="white" widget="action" />
                                 <group>
                                     <field name="log_ids" mode="tree">
                                         <tree edit="0" create="0" delete="0"
