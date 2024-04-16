@@ -8,16 +8,11 @@ from email.utils import parseaddr
 from typing import Any, Dict, List, Tuple
 from functools import partial
 
-<<<<<<< HEAD
-# import ipdb
-
 from odoo import models, fields, api, release, _
 from odoo.exceptions import UserError
 import xmlrpc.client
 import logging
 _logger = logging.getLogger('MIGRATION SERVICES LOGGER')
-=======
->>>>>>> f000dce46c3b24283388bc0f08db9a3ca3dcbd8a
 
 odoo_versions: List[Tuple[str, str]] = [
     ("10.0", "10.0"),
