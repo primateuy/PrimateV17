@@ -831,7 +831,7 @@ class OdooMigrator(models.Model):
         return True
 
     def create_error_log(self, values=None, msg: str = "") -> bool:
-        msg = f"ERROR => Values: {values}; Message: {msg}"
+        msg = f"ERROR => Message: {msg}\nValues: {values}"
         print(msg)
         _logger.error(msg)
         self.create_log_line(error=msg, log_type="error", values=values)
@@ -843,24 +843,49 @@ class OdooMigrator(models.Model):
         self.create_log_line(log_type="success", values=values)
 
     def try_to_create_record(self, odoo_object=None, value=None, old_odoo_obj=None):
-        if odoo_object._name == "res.currency.rate":
-            record = odoo_object.search(
-                [
-                    ("name", "=", value["name"]),
-                    ("currency_id", "=", value["currency_id"]),
-                ],
-                limit=1,
+
+        ########################################################################
+        # id_validate = 11431
+        # if (
+        #     "old_id" in value
+        #     and value["old_id"] == id_validate
+        #     or "id" in value
+        #     and value["id"] == id_validate
+        # ):
+        #     import ipdb
+
+        #     ipdb.set_trace()
+        #     print("IPDB")
+
+        ########################################################################
+        currency_rate_model = "res.currency.rate"
+        if odoo_object._name == currency_rate_model:
+            right_name = value["name"][:10]
+            self._cr.execute(
+                """
+                SELECT cr.id
+                FROM res_currency_rate cr 
+                WHERE cr.name = %s AND cr.currency_id = %s AND cr.company_id = %s
+                """,
+                (
+                    right_name,
+                    value["currency_id"],
+                    value["company_id"],
+                ),
             )
-            if record:
+            record_id = self._cr.fetchone()
+            if bool(record_id):
+                record = odoo_object.sudo().browse(record_id)
                 record.old_id = value["id"]
-                if record._name == "product.template":
-                    return True, record
+                return True, record
+                # if record._name == "product.template":
+                #     return True, record
         try:
             if old_odoo_obj and old_odoo_obj == "account.invoice.line":
                 value["invoice_old_id"] = value.pop("id")
             else:
                 value["old_id"] = value.pop("id")
-            record = odoo_object.create(value)
+            record = odoo_object.sudo().create(value)
             return True, record
         except Exception as error:
             return False, error
@@ -1292,14 +1317,24 @@ class OdooMigrator(models.Model):
                     currency_rate_data["currency_id"] = currency.id
                     # migrator._remove_m2o_o2m_and_m2m_data_from(data=currency_rate_data, model_obj=currency_rate_obj)
 
+                    # value = currency_rate_data
+                    # if "old_id" in value and (
+                    #     value["old_id"] == 7680 or value["old_id"] == 11431
+                    # ):
+                    #     import ipdb
+
+                    #     ipdb.set_trace()
+                    #     print("IPDB")
+
                     is_success, result = migrator.try_to_create_record(
                         odoo_object=currency_rate_obj, value=currency_rate_data
                     )
                     if not is_success:
-                        import ipdb
+                        # import ipdb
 
-                        ipdb.set_trace()
-                        print("IPDB")
+                        # ipdb.set_trace()
+                        # print("IPDB")
+
                         migrator.create_error_log(
                             msg=str(result), values=currency_rate_data
                         )
