@@ -686,7 +686,7 @@ class OdooMigrator(models.Model):
 
                 record = odoo_object.create(value)
             except Exception as error:
-                self.create_log_line(error=error, log_type="error", values=value)
+                self.create_error_log(msg=str(error), values=value)
                 raise UserError(error)
         else:
             record.old_id = m2oid
@@ -828,14 +828,18 @@ class OdooMigrator(models.Model):
                 "values": values,
             }
         )
-        # print(f"Se ha creado la linea de log {log_line.name}")
-        # _logger.info(f"Se ha creado la linea de log {log_line.name}")
         return True
 
     def create_error_log(self, values=None, msg: str = "") -> bool:
+        msg = f"ERROR => Values: {values}; Message: {msg}"
+        print(msg)
+        _logger.error(msg)
         self.create_log_line(error=msg, log_type="error", values=values)
 
     def create_success_log(self, values=None) -> bool:
+        msg = f"SUCCESS => Values: {values}"
+        print(msg)
+        _logger.info(msg)
         self.create_log_line(log_type="success", values=values)
 
     def try_to_create_record(self, odoo_object=None, value=None, old_odoo_obj=None):
@@ -1081,8 +1085,6 @@ class OdooMigrator(models.Model):
                 migrator.country_ids += result
             if countries_without_code:
                 message = f'Los siguienes países no tienen código: {[(x["name"], x["id"]) for x in countries_without_code]}'
-                print(message)
-                _logger.info(message)
                 migrator.create_error_log(
                     msg=str(message), values=countries_without_code
                 )
@@ -1151,8 +1153,6 @@ class OdooMigrator(models.Model):
                 migrator.state_ids += result
             if states_without_code:
                 message = f'Los siguienes estados no tienen código: {[(x["name"], x["id"]) for x in states_without_code]}'
-                print(message)
-                _logger.info(message)
                 migrator.create_error_log(msg=str(message), values=states_without_code)
             print(f"se crearon {len(self.state_ids)} estados")
 
@@ -1296,6 +1296,10 @@ class OdooMigrator(models.Model):
                         odoo_object=currency_rate_obj, value=currency_rate_data
                     )
                     if not is_success:
+                        import ipdb
+
+                        ipdb.set_trace()
+                        print("IPDB")
                         migrator.create_error_log(
                             msg=str(result), values=currency_rate_data
                         )
@@ -1355,7 +1359,6 @@ class OdooMigrator(models.Model):
 
                 if not bool(chart_of_accounts_id):
                     message = f"¡El Plan de cuentas con Codigo {chart_of_account_code} no existe!"
-                    print(message)
                     migrator.create_error_log(
                         msg=message, values=chart_of_accounts_data
                     )
@@ -1423,7 +1426,6 @@ class OdooMigrator(models.Model):
 
                 if not bool(account_journal_id):
                     message = f"¡El Diario con Codigo {account_journal_code} no existe!"
-                    print(message)
                     migrator.create_error_log(msg=message, values=account_journal_data)
                     is_success, result = migrator._try_to_create_model(
                         model_name=model_name, values=account_journal_data
