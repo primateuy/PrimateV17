@@ -3,6 +3,7 @@ from email.utils import parseaddr
 from typing import Any, Dict, List, Tuple
 from functools import partial
 
+
 from odoo import models, fields, api, release, _
 from odoo.exceptions import UserError
 import xmlrpc.client
@@ -202,6 +203,7 @@ class OdooMigrator(models.Model):
         ),
         required=True,
         index="trigram",
+        copy=False
     )
 
     source_version = fields.Selection(
@@ -366,10 +368,9 @@ class OdooMigrator(models.Model):
 
     def connect_with_source(self):
         self.ensure_one()
-        source_models, source_uid, source_database, source_password = (
-            self._get_source_odoo_connection()
-        )
+        source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
         odoo_migrator_company_obj = self.env["odoo.migrator.company"]
+        company_obj = self.env["res.company"].sudo()
         # Consulta los contactos en el Odoo de origen
         try:
             company_data = source_models.execute_kw(
@@ -391,6 +392,10 @@ class OdooMigrator(models.Model):
             self.company_data = company_data
             lang_obj = self.env["res.lang"]
             for company in company_data:
+                odoo_migrator_company_exists = odoo_migrator_company_obj.search([('old_id', '=', company['id'])],limit=1)
+                if odoo_migrator_company_exists:
+                    odoo_migrator_company_exists.migrator_id = self.id
+                    continue
                 company_partner_id = company["partner_id"][0]
                 company_context = source_models.execute_kw(
                     source_database,
@@ -451,15 +456,14 @@ class OdooMigrator(models.Model):
                     "lang": company.get("lang", False),
                     "partner_id": company.get("partner_id", False),
                     "migrator_id": self.id,
+                    "old_id": company.get("id", False),
                 }
                 new_company = odoo_migrator_company_obj.create(company_values)
 
         return self.write({"state": "company_ok"})
 
     def copy_company_data(self):
-        migrator_company = self.odoo_company_ids.filtered(
-            lambda x: x.migrate_this_company
-        )
+        migrator_company = self.odoo_company_ids.filtered(lambda x: x.migrate_this_company)
         migrator_partner = migrator_company.partner_id
         if not migrator_company:
             raise UserError("No se encontraron compañías a migrar")
@@ -490,7 +494,7 @@ class OdooMigrator(models.Model):
                 raise UserError(error)
         # migrator_partner.unlink()
         # migrator_partner.active = False
-
+        self.company_id.old_id = migrator_company.old_id
         return self.write({"state": "company_done"})
 
     @api.depends("source_version")
@@ -1268,10 +1272,6 @@ class OdooMigrator(models.Model):
                     rate_company_id = migrator.company_id.id
 
                     ################################################
-                    import ipdb
-
-                    ipdb.set_trace()
-                    print("IPDB")
                     ################################################
 
                     rate_id = migrator._find_a_currency_rate_for(

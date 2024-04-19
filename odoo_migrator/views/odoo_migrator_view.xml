@@ -70,6 +70,7 @@
                             <field name="company_id" options="{'no_create': True}"
                                 invisible="state in ('draft')" requrired="state in ('company_ok')" />
                             <field name="partner_id" invisible="state in ('draft')" />
+                            <field name="migration_model" />
                         </group>
                         <notebook>
                             <!-- Página actual con los campos originales -->
@@ -78,7 +79,6 @@
                                     <group string="Migración">
                                         <field name="source_version" />
                                         <field name="target_version" />
-                                        <field name="migration_model" />
                                     </group>
                                     <group string="Paginación"
                                         invisible="migration_model in ('contacts', 'currencies')">

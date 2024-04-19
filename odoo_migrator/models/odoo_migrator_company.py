@@ -43,6 +43,7 @@ class OdooMigratorCompany(models.Model):
     migrator_id = fields.Many2one(comodel_name="odoo.migrator", string="Migrator")
     partner_id = fields.Many2one(comodel_name="res.partner", string="Related Partner")
     migrate_this_company = fields.Boolean(string="Migrate this company", default=False)
+    old_id = fields.Integer(string="Old ID", readonly=True)
 
     _sql_constraints = [
         ("name_uniq", "unique (name)", "The company name must be unique!")
