@@ -843,37 +843,13 @@ class OdooMigrator(models.Model):
         self.create_log_line(log_type="success", values=values)
 
     def try_to_create_record(self, odoo_object=None, value=None, old_odoo_obj=None):
-
-        ########################################################################
-        # id_validate = 11431
-        # if (
-        #     "old_id" in value
-        #     and value["old_id"] == id_validate
-        #     or "id" in value
-        #     and value["id"] == id_validate
-        # ):
-        #     import ipdb
-
-        #     ipdb.set_trace()
-        #     print("IPDB")
-
-        ########################################################################
         currency_rate_model = "res.currency.rate"
         if odoo_object._name == currency_rate_model:
-            right_name = value["name"][:10]
-            self._cr.execute(
-                """
-                SELECT cr.id
-                FROM res_currency_rate cr 
-                WHERE cr.name = %s AND cr.currency_id = %s AND cr.company_id = %s
-                """,
-                (
-                    right_name,
-                    value["currency_id"],
-                    value["company_id"],
-                ),
+            record_id = self._find_a_currency_rate_for(
+                rate_name=value["name"][:10],
+                rate_company_id=value["company_id"],
+                rate_currency_id=value["currency_id"],
             )
-            record_id = self._cr.fetchone()
             if bool(record_id):
                 record = odoo_object.sudo().browse(record_id)
                 record.old_id = value["id"]
@@ -1286,25 +1262,26 @@ class OdooMigrator(models.Model):
                     currency_rate_datas, start=1
                 ):
                     print(f"vamos {contador} / {total}")
-                    rate_search_conditions = [
-                        "|",
-                        ("old_id", "=", currency_rate_data["id"]),
-                        ("name", "=", currency_rate_data["name"]),
-                    ]
-                    currency_rate_id = currency_rate_obj.search(
-                        rate_search_conditions, limit=1
-                    )
-                    if not currency_rate_id:
-                        currency_rate_id = currency_rate_obj.search(
-                            [
-                                ("name", "=", currency_rate_data["name"]),
-                                ("currency_id", "=", currency.old_id),
-                                ("company_id", "=", migrator.company_id.id),
-                            ],
-                            limit=1,
-                        )
 
-                    if currency_rate_id:
+                    rate_name = currency_rate_data["name"][:10]
+                    rate_currency_id = currency.id
+                    rate_company_id = migrator.company_id.id
+
+                    ################################################
+                    import ipdb
+
+                    ipdb.set_trace()
+                    print("IPDB")
+                    ################################################
+
+                    rate_id = migrator._find_a_currency_rate_for(
+                        rate_name=rate_name,
+                        rate_company_id=rate_company_id,
+                        rate_currency_id=rate_currency_id,
+                    )
+
+                    if bool(rate_id):
+                        currency_rate_id = currency_rate_obj.sudo().browse(rate_id)
                         print(f'la cotización {currency_rate_data["name"]} ya existe')
                         currency_rate_id.old_id = currency_rate_data["id"]
                         migrator.currency_rate_ids += currency_rate_id
@@ -1313,39 +1290,46 @@ class OdooMigrator(models.Model):
                     currency_rate_data = migrator.remove_unused_fields(
                         record_data=currency_rate_data, odoo_model=model_name
                     )
-                    currency_rate_data["company_id"] = migrator.company_id.id
-                    currency_rate_data["currency_id"] = currency.id
+                    currency_rate_data["company_id"] = rate_company_id
+                    currency_rate_data["currency_id"] = rate_currency_id
                     # migrator._remove_m2o_o2m_and_m2m_data_from(data=currency_rate_data, model_obj=currency_rate_obj)
-
-                    # value = currency_rate_data
-                    # if "old_id" in value and (
-                    #     value["old_id"] == 7680 or value["old_id"] == 11431
-                    # ):
-                    #     import ipdb
-
-                    #     ipdb.set_trace()
-                    #     print("IPDB")
 
                     is_success, result = migrator.try_to_create_record(
                         odoo_object=currency_rate_obj, value=currency_rate_data
                     )
                     if not is_success:
-                        # import ipdb
-
-                        # ipdb.set_trace()
-                        # print("IPDB")
-
                         migrator.create_error_log(
                             msg=str(result), values=currency_rate_data
                         )
                         continue
                     migrator.create_success_log(values=currency_rate_data)
                     print(f"se creo la tasa {result.name}")
+
                     migrator.currency_rate_ids += result
 
             # Marca la migración de monedas como completa
-            print(f"se crearon {len(self.currency_rate_ids)} tasas de monedas")
+            print(f"se crearon {len(migrator.currency_rate_ids)} tasas de monedas")
         return True
+
+    def _find_a_currency_rate_for(
+        self, rate_name: str, rate_company_id: int, rate_currency_id: int
+    ):
+        self._cr.execute(
+            self._get_sql_to_find_currency_rate(),
+            (
+                rate_name,
+                rate_currency_id,
+                rate_company_id,
+            ),
+        )
+        return self._cr.fetchone()
+
+    def _get_sql_to_find_currency_rate(self) -> str:
+        return """
+            SELECT cr.id
+            FROM res_currency_rate cr
+            WHERE cr.name = %s AND cr.currency_id = %s AND cr.company_id = %s
+        """
 
     def migrate_chart_of_accounts(self) -> bool:
         """
