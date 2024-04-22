@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm+all,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm+all,pycharm
 
@@ -175,6 +176,25 @@ fabric.properties
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
+=======
+# Editors
+.vscode/
+.idea/
+
+# Vagrant
+.vagrant/
+
+# Mac/OSX
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Source for the following rules: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*/**/__pycache__/*/**/
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
 *.py[cod]
 *$py.class
 
@@ -195,7 +215,10 @@ parts/
 sdist/
 var/
 wheels/
+<<<<<<< HEAD
 share/python-wheels/
+=======
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
 *.egg-info/
 .installed.cfg
 *.egg
@@ -221,10 +244,15 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+<<<<<<< HEAD
 *.py,cover
 .hypothesis/
 .pytest_cache/
 cover/
+=======
+.hypothesis/
+.pytest_cache/
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
 
 # Translations
 *.mo
@@ -234,7 +262,10 @@ cover/
 *.log
 local_settings.py
 db.sqlite3
+<<<<<<< HEAD
 db.sqlite3-journal
+=======
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
 
 # Flask stuff:
 instance/
@@ -247,7 +278,10 @@ instance/
 docs/_build/
 
 # PyBuilder
+<<<<<<< HEAD
 .pybuilder/
+=======
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
 target/
 
 # Jupyter Notebook
@@ -258,6 +292,7 @@ profile_default/
 ipython_config.py
 
 # pyenv
+<<<<<<< HEAD
 #   For a library or package, you might want to ignore these files since the code is
 #   intended to run in multiple environments; otherwise, check them in:
 # .python-version
@@ -290,6 +325,12 @@ __pypackages__/
 # Celery stuff
 celerybeat-schedule
 celerybeat.pid
+=======
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
 
 # SageMath parsed files
 *.sage.py
@@ -316,6 +357,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 .dmypy.json
+<<<<<<< HEAD
 dmypy.json
 
 # Pyre type checker
@@ -345,3 +387,6 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm+all,pycharm
+=======
+dmypy.json
+>>>>>>> d576b9eb548b8006b4df8780906402fe316185e7
