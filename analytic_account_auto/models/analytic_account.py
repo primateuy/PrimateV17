@@ -15,6 +15,10 @@ class AccountAnalyticAccount(models.Model):
 
     can_edit = fields.Boolean(compute=_compute_can_edit)
 
+    # def read(self, fields=None, load='_classic_read'):
+    #     print('leyendo...')
+    #     return super(AccountAnalyticAccount, self).read(fields=fields, load=load)
+
     def create(self, vals_list):
         account_analytic_account = super(AccountAnalyticAccount, self).create(vals_list)
         if account_analytic_account and account_analytic_account.create_distribution:

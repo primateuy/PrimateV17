@@ -4,7 +4,7 @@
     'author': 'PrimateUY',
     'website': 'https://primate.com.uy/',
     'category': 'Accounting/Accounting',
-    'depends' : ['base', 'analytic', 'account'],
+    'depends' : ['base', 'analytic', 'account', 'sale'],
     'description': """
 Módulo de automatizaciones para las cuentas analíticas.
 ===============================================
