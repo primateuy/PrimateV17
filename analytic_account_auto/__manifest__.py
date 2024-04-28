@@ -18,6 +18,7 @@ asociado a esta.
         'security/ir.model.access.csv',
         'views/analytic_distribution_model_views.xml',
         'views/account_move_views.xml',
+        'views/analytic_plan_views.xml',
     ],
     'demo': [
     ],

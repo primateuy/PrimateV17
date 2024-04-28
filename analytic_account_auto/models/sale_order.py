@@ -19,6 +19,20 @@ class SaleOrder(models.Model):
             for line in self.order_line:
                 line.analytic_distribution = analytic_distribution
 
+            if analytic_account_id.plan_id:
+                plan_note = analytic_account_id.plan_id.note
+                self.note += plan_note
+
+
+    def _recursive_get_notes(self, plan_id):
+        note = ''
+        for subplan in plan_id.children_ids:
+            note += f'{subplan.name}: {subplan.note} <br>'
+            note += self._recursive_get_notes(subplan)
+
+        if note == '':
+            note = plan_id.note
+        return note
 
 
 
