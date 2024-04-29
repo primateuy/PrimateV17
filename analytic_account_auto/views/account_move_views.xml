@@ -10,6 +10,7 @@
                 <!--linea 193-->
                 <xpath expr="//tree/field[@name='analytic_distribution']" position="after">
                     <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
                 </xpath>
                 <xpath expr="//tree/field[@name='analytic_distribution']" position="attributes">
                     <attribute name="readonly">1</attribute>
@@ -28,6 +29,7 @@
                 <!--linea 1026-->
                 <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/tree/field[@name='analytic_distribution']" position="after">
                     <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
                 </xpath>
                 <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/tree/field[@name='analytic_distribution']" position="attributes">
                     <attribute name="readonly">1</attribute>
@@ -36,6 +38,7 @@
                 <!--linea 1139-->
                 <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/form/sheet/group/field[@name='analytic_distribution']" position="after">
                     <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
                 </xpath>
                 <xpath expr="//form/sheet/notebook/page[@id='invoice_tab']/field/form/sheet/group/field[@name='analytic_distribution']" position="attributes">
                     <attribute name="readonly">1</attribute>
@@ -44,6 +47,7 @@
                 <!--linea 1202-->
                 <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/tree/field[@name='analytic_distribution']" position="after">
                     <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
                 </xpath>
                 <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/tree/field[@name='analytic_distribution']" position="attributes">
                     <attribute name="readonly">1</attribute>
@@ -52,6 +56,7 @@
                 <!--linea 1282-->
                 <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/form/group/field[@name='analytic_distribution']" position="after">
                     <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
                 </xpath>
                 <xpath expr="//form/sheet/notebook/page[@id='aml_tab']/field/form/group/field[@name='analytic_distribution']" position="attributes">
                     <attribute name="readonly">1</attribute>

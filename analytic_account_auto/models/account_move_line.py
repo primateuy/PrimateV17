@@ -4,11 +4,14 @@ class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
     analytic_auto_account_id = fields.Many2one('analytic.account.auto', string="Mapeo con Cuenta Analítica")
+    plan_id = fields.Many2one('account.analytic.plan', string="Plan analítico", compute="_compute_plan_id")
 
     @api.onchange('analytic_auto_account_id')
     def _onchange_analytic_auto_account_id(self):
         analytic_auto_account_id = self.analytic_auto_account_id.id
         self.analytic_distribution = self._get_analytic_distribution(analytic_auto_account_id)
+        self._compute_plan_id()
+    #     self.analytic_auto_account_id.analytic_account_id.plan_id
 
     @api.model
     def create(self, vals):
@@ -32,3 +35,11 @@ class AccountMoveLine(models.Model):
             analytic_auto_account = self.env['analytic.account.auto'].browse(analytic_auto_account_id)
             return analytic_auto_account
         return False
+
+
+    def _compute_plan_id(self):
+        for record in self:
+            if record.analytic_auto_account_id:
+                record.plan_id = record.analytic_auto_account_id.analytic_account_id.plan_id
+            else:
+                record.plan_id = False
