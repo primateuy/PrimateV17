@@ -27,8 +27,10 @@ class SaleOrder(models.Model):
                 self._compute_note()
 
                 plan_note = analytic_account_id.plan_id.note
-                self.note += plan_note
-
+                if not self.note:
+                    self.note = plan_note
+                else:
+                    self.note += plan_note
 
     def _recursive_get_notes(self, plan_id):
         note = ''
