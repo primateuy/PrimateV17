@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="purchase_order_form_inherited" model="ir.ui.view">
+            <field name="name">analytic_account_auto.purchase_order_form_inherited</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase_order.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Add or modify fields as needed -->
+                <field name="analytic_auto_account_id"/>
+                <!-- Add more fields here if necessary -->
+            </field>
+        </record>
+    </data>
+</odoo>

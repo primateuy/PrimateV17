@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="purchase_order_form_inherited" model="ir.ui.view">
+            <field name="name">analytic_account_auto.purchase_order_form_inherited</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//form/sheet/notebook/page[@name='products']/field/tree/field[@name='analytic_distribution']"
+                       position="after">
+                    <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@name='products']/field/tree/field[@name='analytic_distribution']"
+                       position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+
+                <xpath expr="//form/sheet/notebook/page[@name='products']/field/form/group/group/field[@name='analytic_distribution']"
+                       position="after">
+                    <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[@name='products']/field/form/group/group/field[@name='analytic_distribution']"
+                       position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="purchase_order_line_form2_inherited" model="ir.ui.view">
+            <field name="name">analytic_account_auto.purchase_order_line_form2_inherited</field>
+            <field name="model">purchase.order.line</field>
+            <field name="priority" eval="20"/>
+            <field name="inherit_id" ref="purchase.purchase_order_line_form2"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//form/sheet/group/group/field[@name='analytic_distribution']" position="after">
+                    <field name="analytic_auto_account_id"/>
+                    <field name="plan_id"/>
+                </xpath>
+
+                <xpath expr="//form/sheet/group/group/field[@name='analytic_distribution']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

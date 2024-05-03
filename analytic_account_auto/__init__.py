@@ -5,4 +5,5 @@ from .models import \
     account_move_line, \
     sale_order, \
     sale_order_line, \
-    analytic_plan
+    analytic_plan, \
+    purchase_order_line

@@ -1,10 +1,10 @@
 {
     'name' : 'Cuentas Analíticas Automatizadas',
-    'version': '2024.03.10',
+    'version': '2024.05.03',
     'author': 'PrimateUY',
     'website': 'https://primate.com.uy/',
     'category': 'Accounting/Accounting',
-    'depends' : ['base', 'analytic', 'account', 'sale'],
+    'depends' : ['base', 'analytic', 'account', 'purchase', 'sale'],
     'description': """
 Módulo de automatizaciones para las cuentas analíticas.
 ===============================================
@@ -19,6 +19,7 @@ asociado a esta.
         'views/analytic_distribution_model_views.xml',
         'views/account_move_views.xml',
         'views/analytic_plan_views.xml',
+        'views/purchase_views.xml'
     ],
     'demo': [
     ],
