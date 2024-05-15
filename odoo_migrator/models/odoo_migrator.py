@@ -2,8 +2,6 @@
 from email.utils import parseaddr
 from typing import Any, Dict, List, Tuple
 from functools import partial
-
-
 from odoo import models, fields, api, release, _
 from odoo.exceptions import UserError
 import xmlrpc.client
@@ -1706,7 +1704,7 @@ class OdooMigrator(models.Model):
                         "type",
                         "company_id",
                         "partner_id",
-                        "move_id",
+                        # "move_id",
                     ],  # ACCOUNT_MOVE_FIELDS,
                     "offset": migrator.pagination_offset,
                     "limit": migrator.pagination_limit,
@@ -1721,10 +1719,7 @@ class OdooMigrator(models.Model):
                 print(f"vamos {contador} / {total}")
                 move_old_id = account_move_data["id"]
                 move_name = account_move_data["name"]
-                account_move_id = account_move_obj.search(
-                    [("old_id", "=", move_old_id)],
-                    limit=1,
-                )
+                account_move_id = account_move_obj.search([("old_id", "=", move_old_id)], limit=1,)
 
                 if bool(account_move_id):
                     print(f"la Factura {move_name} ya existe")
@@ -1733,24 +1728,15 @@ class OdooMigrator(models.Model):
                     continue
 
                 account_move_data["move_type"] = account_move_data.pop("type")
-                account_move_data["invoice_date"] = account_move_data.pop(
-                    "date_invoice"
-                )
+                account_move_data["invoice_date"] = account_move_data.pop("date_invoice")
                 account_move_data["name"] = account_move_data.pop("number")
-                old_move_id = account_move_data["move_id"][0]
-                account_move_data.pop("move_id")
-                account_move_data["old_full_reconcile_ids"] = (
-                    migrator.get_old_full_reconcile_id_for(
-                        old_move_ids=[old_move_id], from_payment=False
-                    )
-                )
-                migrator._clean_relational_fields_for(
-                    data=account_move_data, model_obj=account_move_obj
-                )
-
-                is_success, result = migrator.try_to_create_record(
-                    odoo_object=account_move_obj, value=account_move_data
-                )
+                old_move_id_data = account_move_data.get('move_id', False)
+                if old_move_id_data:
+                    old_move_id = old_move_id_data[0]
+                    account_move_data.pop("move_id")
+                    account_move_data["old_full_reconcile_ids"] = (migrator.get_old_full_reconcile_id_for(old_move_ids=[old_move_id], from_payment=False))
+                migrator._clean_relational_fields_for(data=account_move_data, model_obj=account_move_obj)
+                is_success, result = migrator.try_to_create_record(odoo_object=account_move_obj, value=account_move_data)
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=account_move_data)
                     continue
