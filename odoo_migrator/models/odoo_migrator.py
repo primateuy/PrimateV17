@@ -1731,7 +1731,7 @@ class OdooMigrator(models.Model):
                 account_move_data["invoice_date"] = account_move_data.pop("date_invoice")
                 account_move_data["name"] = account_move_data.pop("number")
                 old_move_id_data = account_move_data.get('move_id', False)
-                
+
                 if old_move_id_data:
                     old_move_id = old_move_id_data[0]
                     account_move_data.pop("move_id")
