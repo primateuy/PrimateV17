@@ -112,6 +112,11 @@ class AccountAccount(models.Model):
 
     old_id = fields.Integer(string="ID on old DB")
 
+class AccountAnalyticAccount(models.Model):
+    _inherit = 'account.analytic.account'
+
+    old_id = fields.Integer(string="ID on old DB")
+
 class AccountTax(models.Model):
     _inherit = "account.tax"
 

@@ -99,6 +99,25 @@ CHART_OF_ACCOUNT_FIELDS: List[str] = [
     "user_type_id",
 ]
 
+ANALYTIC_ACCOUNT_FIELDS: List[str] = [
+    "code",
+    "id",
+    "name",
+    "company_id",
+    "partner_id",
+    "user_type_id",
+]
+RES_USERS_FIELDS: List[str] = [
+    "id",
+    "name",
+    "company_id",
+    "partner_id",
+    "login",
+    "lang",
+    "tz",
+    "signature",
+]
+
 ACCOUNT_JOURNAL_FIELDS: List[str] = [
     "name",
     "type",
@@ -111,7 +130,7 @@ PRODUCT_TEMPLATE_FIELDS: List[str] = [
     "name",
     "sale_ok",
     "purchase_ok",
-    "can_be_expensed",
+    # "can_be_expensed",
     "purchase_method",
 ]
 PRODUCT_FIELDS: List[str] = []
@@ -240,6 +259,8 @@ class OdooMigrator(models.Model):
         [
             # Contacts
             ("chart_accounts", "Plan de Cuentas"),
+            ("analytic_accounts", "Plan de Cuentas analitico"),
+            ("users", "Usuarios"),
             ("countries", "Paises"),
             ("states", "Estados"),
             ("contacts", "Contactos"),
@@ -247,7 +268,6 @@ class OdooMigrator(models.Model):
             # Currencies
             ("currencies", "Monedas"),
             ("currency_rates", "Tasas de la Monedas"),
-            ("chart_of_accounts", "Plan de Cuentas"),
             ("taxes", "Impuestos"),
             #
             # Journals
@@ -294,6 +314,7 @@ class OdooMigrator(models.Model):
     pagination_limit = fields.Integer(string="Limit", default=500)
 
     contact_ids = fields.Many2many(comodel_name="res.partner", string="Contactos")
+    state_ids = fields.Many2many(comodel_name="res.country.state", string="Estados")
     tax_ids = fields.Many2many(comodel_name="account.tax", string="Impuestos")
     currency_ids = fields.Many2many(comodel_name="res.currency", string="Monedas")
     currency_rate_ids = fields.Many2many(
@@ -319,7 +340,8 @@ class OdooMigrator(models.Model):
         comodel_name="account.move.line", string="Lineas de Facturas"
     )
     country_ids = fields.Many2many(comodel_name="res.country", string="Países")
-    state_ids = fields.Many2many(comodel_name="res.country.state", string="Estados")
+    analytic_account_ids = fields.Many2many(comodel_name="account.analytic.account", string="Cuentas Analiticas")
+    user_ids = fields.Many2many(comodel_name="res.users", string="Usuarios")
     account_move_types_ids = fields.Many2many(
         comodel_name="account.move",
         relation="odoo_migrator_account_move_type_rel",
@@ -354,6 +376,10 @@ class OdooMigrator(models.Model):
     contact_count = fields.Integer(
         string="Número de Contactos", compute="_get_contact_count"
     )
+
+    def paginate(self):
+        self.ensure_one()
+        self.pagination_offset += self.pagination_limit
 
     def clear_logs(self):
         self.log_ids.unlink()
@@ -646,9 +672,7 @@ class OdooMigrator(models.Model):
         if lang is None:
             lang = self.env.lang
         odoo_object = odoo_object.with_context(lang=lang)
-        source_models, source_uid, source_database, source_password = (
-            self._get_source_odoo_connection()
-        )
+        source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
         domain = [("name", "ilike", value)]
 
         if odoo_object._name == "res.partner":
@@ -747,63 +771,63 @@ class OdooMigrator(models.Model):
         los campos m2m vienen en el formato
         {'field_name': [1,2,3,4]} donde la lista son los ids del registro
         """
-        source_models, source_uid, source_database, source_password = (
-            self._get_source_odoo_connection()
-        )
+
         if lang is None:
             lang = self.env.lang
         value_ids = []
         m2m_ids = value.get(field, False)
         for m2m_id in m2m_ids:
             odoo_object = self.env[field_to_model.get(field)]
-            if odoo_object._name == "res.partner":
-                try:
-                    record = source_models.execute_kw(
-                        source_database,
-                        source_uid,
-                        source_password,
-                        field_to_model.get(field),
-                        "search_read",
-                        [[("id", "=", m2m_id)]],
-                        {
-                            "fields": ["name", "type", "email"],
-                            "limit": 1,
-                            "context": {"lang": "es_UY"},
-                        },
-                    )
-                    record_name = record[0]["name"]
-                    child_record = odoo_object.search(
-                        [("name", "ilike", record_name)], limit=1
-                    )
-                    if not child_record:
-                        child_record = odoo_object.with_context(lang=lang).create(
-                            record[0]
+            domain = [("old_id", "=", m2m_id)]
+            record = odoo_object.search(domain, limit=1)
+            if record:
+                value_ids.append(record.id)
+            if not record:
+                source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
+                if odoo_object._name == "res.partner":
+                    try:
+                        record = source_models.execute_kw(
+                            source_database,
+                            source_uid,
+                            source_password,
+                            field_to_model.get(field),
+                            "search_read",
+                            [[("id", "=", m2m_id)]],
+                            {
+                                "fields": ["name", "type", "email"],
+                                "limit": 1,
+                                "context": {"lang": "es_UY"},
+                            },
                         )
-                    value_ids.append(child_record.id)
-                except Exception as error:
-                    print(error)
-            else:
-                try:
-                    record = source_models.execute_kw(
-                        source_database,
-                        source_uid,
-                        source_password,
-                        field_to_model.get(field),
-                        "search_read",
-                        [[("id", "=", m2m_id)]],
-                        {"fields": ["name"], "limit": 1, "context": {"lang": "es_UY"}},
-                    )
-                    record_name = record[0]["name"]
-                    child_record = odoo_object.search(
-                        [("name", "ilike", record_name)], limit=1
-                    )
-                    if not child_record:
-                        child_record = odoo_object.with_context(lang=lang).create(
-                            record[0]
+                        record_name = record[0]["name"]
+                        child_record = odoo_object.search(
+                            [("name", "ilike", record_name)], limit=1
                         )
-                    value_ids.append(child_record.id)
-                except Exception as error:
-                    print(error)
+                        if not child_record:
+                            child_record = odoo_object.with_context(lang=lang).create(
+                                record[0]
+                            )
+                        value_ids.append(child_record.id)
+                    except Exception as error:
+                        print(error)
+                else:
+                    try:
+                        record = source_models.execute_kw(
+                            source_database,
+                            source_uid,
+                            source_password,
+                            field_to_model.get(field),
+                            "search_read",
+                            [[("id", "=", m2m_id)]],
+                            {"fields": ["name"], "limit": 1, "context": {"lang": "es_UY"}},
+                        )
+                        record_name = record[0]["name"]
+                        child_record = odoo_object.search([("name", "ilike", record_name)], limit=1)
+                        if not child_record:
+                            child_record = odoo_object.with_context(lang=lang).create(record[0])
+                        value_ids.append(child_record.id)
+                    except Exception as error:
+                        print(error)
         if field_type == "one2many":
             value[field] = [(0, 0, value_ids)]
         elif field_type == "many2many":
@@ -854,7 +878,11 @@ class OdooMigrator(models.Model):
                 #     return True, record
         try:
             if old_odoo_obj and old_odoo_obj == "account.invoice.line":
-                value["invoice_old_id"] = value.pop("id")
+                if isinstance(value,list):
+                    for val in value:
+                        val["invoice_old_id"] = val.pop("id")
+                else:
+                    value["invoice_old_id"] = value.pop("id")
             else:
                 value["old_id"] = value.pop("id")
             record = odoo_object.sudo().create(value)
@@ -995,16 +1023,10 @@ class OdooMigrator(models.Model):
                     contact_id.old_id = contact_data["id"]
                     migrator.contact_ids += contact_id
                     continue
-                    contact_data = migrator.remove_unused_fields(
-                        record_data=contact_data, odoo_model=model_name
-                    )
-                migrator._remove_m2o_o2m_and_m2m_data_from(
-                    data=contact_data, model_obj=contact_obj, lang=lang
-                )
+                    contact_data = migrator.remove_unused_fields(record_data=contact_data, odoo_model=model_name)
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=contact_data, model_obj=contact_obj, lang=lang)
 
-                is_success, result = migrator.try_to_create_record(
-                    odoo_object=contact_obj, value=contact_data
-                )
+                is_success, result = migrator.try_to_create_record(odoo_object=contact_obj, value=contact_data)
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=contact_data)
                     continue
@@ -1431,6 +1453,88 @@ class OdooMigrator(models.Model):
         print(final_message)
         return True
 
+    def migrate_analytic_accounts(self) -> bool:
+        """
+        Método para migrar el plan de cuentas de odoo origen a destino.
+        """
+        print("\nMigrando Plan de cuentas analitico")
+
+        model_name: str = "account.analytic.account"
+        analytic_accounts_obj = self.env[model_name]
+        for migrator in self:
+            company = migrator.company_id
+            is_company_old_id_set = company.old_id <= 0
+            if is_company_old_id_set:
+                raise UserError(f"¡La Old_id de la Compañía {company.name} no es correcta!")
+
+            analytic_accounts_datas = migrator._run_remote_command_for(
+                model_name=model_name,
+                command_params_dict={
+                    "fields": ANALYTIC_ACCOUNT_FIELDS,
+                },
+            )
+            if not bool(analytic_accounts_datas):
+                continue
+
+            total = len(analytic_accounts_datas)
+            import ipdb;ipdb.set_trace()
+            for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
+                print(f"vamos {contador} / {total}")
+                user_type_name = analytic_accounts_data.pop("user_type_id")[1]
+                account_type_id = analytic_accounts_obj.search([("name", "=", user_type_name)],limit=1)
+                analytic_accounts_data["account_type"] = account_type_id.account_type
+                analytic_accounts_data["old_id"] = analytic_accounts_data.pop("id")
+                analytic_accounts_data["internal_group"] = analytic_accounts_data.pop("internal_type")
+                account_id = analytic_accounts_obj.create(analytic_accounts_data)
+                migrator.create_success_log(values=analytic_accounts_data)
+                print(f"Se creo la cuenta {account_id.name}")
+                migrator.analytic_account_ids += account_id
+        final_message = f"se actualizaron {len(self.chart_of_accounts_ids)} Planes de cuentas"
+        migrator.create_success_log(msg=final_message, values='n/a')
+        print(final_message)
+        return True
+
+    def migrate_users(self) -> bool:
+        """
+        Método para migrar los usuarios de odoo origen a destino.
+        """
+        print("\nMigrando Usuarios")
+
+        model_name: str = "res.users"
+        res_user_obj = self.env[model_name]
+        for migrator in self:
+            company = migrator.company_id
+            is_company_old_id_set = company.old_id <= 0
+            if is_company_old_id_set:
+                raise UserError(f"¡La Old_id de la Compañía {company.name} no es correcta!")
+
+            res_users_datas = migrator._run_remote_command_for(
+                model_name=model_name,
+                command_params_dict={
+                    "fields": RES_USERS_FIELDS,
+                },
+            )
+            if not bool(res_users_datas):
+                continue
+
+            total = len(res_users_datas)
+            import ipdb;ipdb.set_trace()
+            for contador, res_users_data in enumerate(res_users_datas, start=1):
+                print(f"vamos {contador} / {total}")
+                user_type_name = res_users_data.pop("user_type_id")[1]
+                account_type_id = res_users_datas.search([("name", "=", user_type_name)],limit=1)
+                res_users_data["account_type"] = account_type_id.account_type
+                res_users_data["old_id"] = res_users_data.pop("id")
+                res_users_data["internal_group"] = res_users_data.pop("internal_type")
+                user_id = res_user_obj.create(res_users_data)
+                migrator.create_success_log(values=res_users_data)
+                print(f"Se creo la cuenta {user_id.name}")
+                migrator.user_ids += user_id
+        final_message = f"Se migraron {len(self.user_ids)} usuarios"
+        migrator.create_success_log(msg=final_message, values='n/a')
+        print(final_message)
+        return True
+
     def create_account_journal_id(self, values: Dict) -> bool:
         account_journal_obj = self.env["account.journal"].sudo()
         account_journal_id = False
@@ -1776,6 +1880,7 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move"
         model_name_old: str = "account.invoice"
         account_move_obj = self.env[model_name].sudo()
+        to_create = []
         for migrator in self:
             account_move_datas = migrator._run_remote_command_for(
                 model_name=model_name_old,
@@ -1791,6 +1896,7 @@ class OdooMigrator(models.Model):
                         "type",
                         "company_id",
                         "partner_id",
+                        "user_id",
                         # "move_id",
                     ],  # ACCOUNT_MOVE_FIELDS,
                     "offset": migrator.pagination_offset,
@@ -1850,12 +1956,14 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move.line"
         model_name_old: str = "account.invoice.line"
         move_line_obj = self.env[model_name]
+        to_create = []
+        import ipdb;ipdb.set_trace()
         for migrator in self:
+            already_migrated_ids = migrator.account_move_line_ids.mapped("old_id")
+            domain = [("invoice_id", "in", account_moves_ids.mapped("old_id")), ("id", "not in", already_migrated_ids)]
             move_line_datas = migrator._run_remote_command_for(
                 model_name=model_name_old,
-                operation_params_list=[
-                    ("invoice_id", "in", account_moves_ids.mapped("old_id"))
-                ],
+                operation_params_list=domain,
                 command_params_dict={
                     "fields": ACCOUNT_MOVE_LINE_FIELDS,
                     "offset": migrator.pagination_offset,
@@ -1867,17 +1975,25 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(move_line_datas)
+            commit_count = 50000
+            side_count = 0
+            count = 0
             for contador, move_line_data in enumerate(move_line_datas, start=1):
+                count += 1
+                side_count += 1
+                if side_count > commit_count:
+                    print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 print(f"vamos {contador} / {total}")
                 old_data = move_line_data
                 move_line_data["tax_ids"] = move_line_data.pop("invoice_line_tax_ids")
                 move_line_data["move_id"] = move_line_data.pop("invoice_id")
                 move_line_old_id = move_line_data["id"]
                 move_line_name = move_line_data["name"]
-                move_line_id = move_line_obj.search(
-                    [("invoice_old_id", "=", move_line_old_id)],
-                    limit=1,
-                )
+                move_line_id = move_line_obj.search([("invoice_old_id", "=", move_line_old_id)],limit=1)
 
                 if bool(move_line_id):
                     print(f"la Linea de asiento {move_line_name} ya existe")
@@ -1886,16 +2002,21 @@ class OdooMigrator(models.Model):
                     continue
 
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=move_line_data, model_obj=move_line_obj)
-                is_success, result = migrator.try_to_create_record(odoo_object=move_line_obj,value=move_line_data, old_odoo_obj=model_name_old)
+                to_create.append(move_line_data)
+                # is_success, result = migrator.try_to_create_record(odoo_object=move_line_obj,value=move_line_data, old_odoo_obj=model_name_old)
+                #
+                # if not is_success:
+                #     migrator.create_error_log(msg=str(result), values=move_line_data)
+                #     continue
 
-                if not is_success:
-                    migrator.create_error_log(msg=str(result), values=move_line_data)
-                    continue
+                # migrator.create_success_log(values=move_line_data)
+                # print(f"se creo la Linea de asiento {result.name}")
 
-                migrator.create_success_log(values=move_line_data)
-                print(f"se creo la Linea de asiento {result.name}")
+            is_success, result = migrator.try_to_create_record(odoo_object=move_line_obj, value=to_create,old_odoo_obj=model_name_old)
+            if is_success:
                 migrator.account_move_line_ids += result
-
+            if not is_success:
+                migrator.create_error_log(msg=str(result), values=to_create)
             print(f"se crearon {len(self.account_move_line_ids)} Lineas de asientos")
         return True
 
@@ -1940,27 +2061,35 @@ class OdooMigrator(models.Model):
                 old_data = move_line_data
                 invoice_id = move_line_data.pop("invoice_id")[0]
                 invoice = invoice_obj.search([("old_id", "=", invoice_id)])
-                aml = invoice.line_ids.filtered(
-                    lambda x: x.balance == move_line_data.get("balance")
-                    or x.balance == round(move_line_data.get("balance"), 2)
-                )
+                aml = invoice.line_ids.filtered(lambda x: x.balance == move_line_data.get("balance") or x.balance == round(move_line_data.get("balance"), 2))
                 if aml:
                     if len(aml) == 1:
                         aml.old_id = move_line_data.get("id")
                         migrator.create_success_log(values=move_line_data)
                         print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                     else:
-                        result = f"Se encontro mas de una la linea {move_line_data.get('id')} para la factura {invoice.name}"
-                        migrator.create_error_log(
-                            msg=str(result), values=move_line_data
-                        )
-                        continue
+                        aml = invoice.line_ids.filtered(lambda x: (x.balance == move_line_data.get("balance") or x.balance == round(move_line_data.get("balance"), 2)) and x.name[:64] == move_line_data.get("name"))
+                        if len(aml) == 1:
+                            aml.old_id = move_line_data.get("id")
+                            migrator.create_success_log(values=move_line_data)
+                            print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
+                        else:
+                            import ipdb;ipdb.set_trace()
+                            result = f"Se encontro mas de una la linea {move_line_data.get('id')} para la factura {invoice.name}"
+                            migrator.create_error_log(msg=str(result), values=move_line_data)
+                            continue
                 else:
+
                     result = f"No se encontro una la linea {move_line_data.get('id')} para la factura {invoice.name}"
                     migrator.create_error_log(msg=str(result), values=move_line_data)
                     continue
             for invoice in account_moves_ids:
-                invoice.action_post()
+                try:
+                    invoice.action_post()
+                except Exception as error:
+                    migrator.create_error_log(msg=str(error), values=invoice)
+                    self.env.cr.commit()
+                    continue
             print(f"se crearon {len(self.account_move_line_ids)} Lineas de asientos")
         return True
 
@@ -2309,6 +2438,8 @@ class OdooMigrator(models.Model):
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
             "chart_accounts": self.migrate_chart_of_accounts,
+            "analytic_accounts": self.migrate_analytic_accounts,
+            "users": self.migrate_users,
             "countries": self.migrate_countries,
             "states": self.migrate_states,
             "contacts": self.migrate_contacts,
