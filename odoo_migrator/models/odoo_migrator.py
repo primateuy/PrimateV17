@@ -345,8 +345,28 @@ class OdooMigrator(models.Model):
         comodel_name="res.partner", string="Partner", related="company_id.partner_id"
     )
     contact_count = fields.Integer(
-        string="Número de Contactos", compute="_get_contact_count"
+        string="Número de Contactos", compute="_get_models_data_count"
     )
+
+    countries_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    states_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    currencies_count = fields.Integer(string="Número de" )
+    product_categories_count = fields.Integer(string="Número de")
+    supplier_payments_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    supplier_invoice_lines_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    supplier_invoices_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    customer_moves_lines_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    customer_invoice_lines_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    customer_invoices_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    product_templates_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    customer_payment_moves_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    supplier_reconcile_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    customer_reconcile_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    customer_payments_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    account_entries_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    chart_of_accounts_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    currency_rates_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    account_journals_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
 
     def clear_logs(self):
         self.log_ids.unlink()
@@ -355,14 +375,132 @@ class OdooMigrator(models.Model):
         self.write({"state": "draft"})
 
     @api.depends("contact_ids")
-    def _get_contact_count(self):
+    def _get_models_data_count(self):
+        # fixme cambiar esto
         for rec in self:
             rec.contact_count = len(rec.contact_ids)
+            rec.countries_count = len(rec.country_ids)
+            rec.states_count = len(rec.state_ids)
+            rec.currencies_count = len(rec.currency_ids)
+            rec.product_categories_count = len(rec.product_categories_ids)
+            rec.supplier_payments_count = len(rec.account_payments_ids)
+            rec.supplier_invoice_lines_count = len(rec.account_move_line_ids)
+            rec.supplier_invoices_count = len(rec.account_move_line_ids)
+            rec.customer_moves_lines_count = len(rec.account_move_line_ids)
+            rec.customer_invoice_lines_count = len(rec.account_move_line_ids)
+            rec.customer_invoices_count = len(rec.account_move_line_ids)
+            rec.product_templates_count = len(rec.product_templates_ids)
+            rec.customer_payment_moves_count = len(rec.account_payments_ids)
+            rec.supplier_reconcile_count = len(rec.account_move_line_ids)
+            rec.customer_reconcile_count = len(rec.account_move_line_ids)
+            rec.customer_payments_count = len(rec.account_payments_ids)
+            rec.customer_payments_count = len(rec.account_payments_ids)
+            rec.account_entries_count = len(rec.account_moves_ids)
+            rec.chart_of_accounts_count = len(rec.chart_of_accounts_ids)
+            rec.currency_rates_count = len(rec.currency_rate_ids)
+            rec.account_journals_count = len(rec.account_journals_ids)
 
     def action_view_contacts(self):
-        action = self.env.ref("contacts.action_contacts").read()[0]
-        action["domain"] = [("id", "in", self.contact_ids.ids)]
-        return action
+        model_name = self._context.get('model_name')
+        
+        if model_name == 'contact':
+            action = self.env.ref("contacts.action_contacts").read()[0]
+            action["domain"] = [("id", "in", self.contact_ids.ids)]
+            return action
+
+        elif model_name == 'countries':
+            action = self.env.ref("base.action_country").read()[0]
+            action["domain"] = [("id", "in", self.country_ids.ids)]
+            return action
+
+        elif model_name == 'states':
+            action = self.env.ref("base.action_country_state").read()[0]
+            action["domain"] = [("id", "in", self.state_ids.ids)]
+            return action
+
+        elif model_name == 'currencies':
+            action = self.env.ref("base.action_currency_form").read()[0]
+            action["domain"] = [("id", "in", self.currency_ids.ids)]
+            return action
+
+        elif model_name == 'account_journals':
+            action = self.env.ref("account.action_account_journal_form").read()[0]
+            action["domain"] = [("id", "in", self.account_journals_ids.ids)]
+            return action
+        elif model_name == 'currency_rates':
+            action = self.env.ref("base.act_view_currency_rates").read()[0]
+            action["domain"] = [("id", "in", self.currency_rate_ids.ids)]
+            return action
+
+        elif model_name == 'chart_of_accounts':
+            action = self.env.ref("account.action_account_form").read()[0]
+            action["domain"] = [("id", "in", self.chart_of_accounts_ids.ids)]
+            return action
+
+        elif model_name == 'product_categories':
+            action = self.env.ref("product.product_category_action_form").read()[0]
+            action["domain"] = [("id", "in", self.product_categories_ids.ids)]
+            return action
+
+        elif model_name == 'product_templates':
+            action = self.env.ref("account.product_product_action_sellable").read()[0]
+            action['context'] = {}
+            action["domain"] = [("id", "in", self.product_templates_ids.ids)]
+            return action
+
+        elif model_name == 'customer_invoices':
+            action = self.env.ref("account.action_move_line_form").read()[0]
+            action["domain"] = [("id", "in", self.account_moves_ids.ids)]
+            return action
+
+        elif model_name == 'customer_invoice_lines':
+            action = self.env.ref("account.action_move_line_form").read()[0]
+            action["domain"] = [("id", "in", self.account_moves_ids.ids)]
+            return action
+
+        elif model_name == 'customer_moves_lines':
+            action = self.env.ref("account.action_move_line_form").read()[0]
+            action["domain"] = [("id", "in", self.account_moves_ids.ids)]
+            return action
+
+        elif model_name == 'supplier_invoices':
+            action = self.env.ref("account.action_move_line_form").read()[0]
+            action["domain"] = [("id", "in", self.account_moves_ids.ids)]
+            return action
+
+        elif model_name == 'supplier_invoice_lines':
+            action = self.env.ref("account.action_move_line_form").read()[0]
+            action["domain"] = [("id", "in", self.account_moves_ids.ids)]
+            return action
+
+        elif model_name == 'account_entries':
+            action = self.env.ref("account.action_move_line_form").read()[0]
+            action["domain"] = [("id", "in", self.account_moves_ids.ids)]
+            return action
+
+        elif model_name == 'customer_payments':
+            action = self.env.ref("account.action_account_all_payments").read()[0]
+            action["domain"] = [("id", "in", self.account_payments_ids.ids)]
+            return action
+
+        elif model_name == 'customer_payment_moves':
+            action = self.env.ref("account.action_account_all_payments").read()[0]
+            action["domain"] = [("id", "in", self.account_payments_ids.ids)]
+            return action
+        elif model_name == 'customer_reconcile':
+            action = self.env.ref("contacts.action_contacts").read()[0] # Modificar la ref
+            action["domain"] = [("id", "in", self.contact_ids.ids)] # Modificar este domain
+            return action
+
+        elif model_name == 'supplier_reconcile':
+            action = self.env.ref("contacts.action_contacts").read()[0] # Modificar la ref
+            action["domain"] = [("id", "in", self.contact_ids.ids)] # Modificar este domain
+            return action
+
+        elif model_name == 'supplier_payments':
+            action = self.env.ref("contacts.action_contacts").read()[0] # Modificar la ref
+            action["domain"] = [("id", "in", self.contact_ids.ids)] # Modificar este domain
+            return action
 
     def connect_with_source(self):
         self.ensure_one()
