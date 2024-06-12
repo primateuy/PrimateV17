@@ -2060,7 +2060,9 @@ class OdooMigrator(models.Model):
                 print(f"vamos {contador} / {total}")
                 old_data = move_line_data
                 invoice_id = move_line_data.pop("invoice_id")[0]
+
                 invoice = invoice_obj.search([("old_id", "=", invoice_id)])
+
                 aml = invoice.line_ids.filtered(lambda x: x.balance == move_line_data.get("balance") or x.balance == round(move_line_data.get("balance"), 2))
                 if aml:
                     if len(aml) == 1:
@@ -2075,6 +2077,9 @@ class OdooMigrator(models.Model):
                             print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                         else:
                             import ipdb;ipdb.set_trace()
+                            if not invoice.amount_total:
+                                migrator.create_error_log(msg=f'omitimos esta factura porque tiene importe cero {invoice_id}', values=move_line_data)
+                                continue
                             result = f"Se encontro mas de una la linea {move_line_data.get('id')} para la factura {invoice.name}"
                             migrator.create_error_log(msg=str(result), values=move_line_data)
                             continue
