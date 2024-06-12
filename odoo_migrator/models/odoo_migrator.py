@@ -93,6 +93,10 @@ COMPANY_FIELDS: List[str] = [
 CHART_OF_ACCOUNT_FIELDS: List[str] = [
     "code",
     "id",
+    "name",
+    "reconcile",
+    "internal_type",
+    "user_type_id",
 ]
 
 ACCOUNT_JOURNAL_FIELDS: List[str] = [
@@ -1370,6 +1374,7 @@ class OdooMigrator(models.Model):
             print("¡Sin Planes de cuenta que actualizar!")
             return False
         chart_accounts_ids = have_local_charts_of_accounts.mapped('code')
+        odoo_account_type_obj = self.env['odoo.migrator.account.type']
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -1384,10 +1389,9 @@ class OdooMigrator(models.Model):
                 command_params_dict={
                     "fields": CHART_OF_ACCOUNT_FIELDS,
                     # "offset": migrator.pagination_offset,
-                    # "limit": migrator.pagination_limit,
+                    # "limit": 10,
                 },
             )
-            import ipdb;ipdb.set_trace()
 
 
             if not bool(chart_of_accounts_datas):
@@ -1403,29 +1407,28 @@ class OdooMigrator(models.Model):
                 self.env.cr.commit()
                 raise UserError(message)
 
-            account_type_mapping = self.env['odoo.migrator.account.type'].search([])
+            account_type_mapping = odoo_account_type_obj.search([])
             if not account_type_mapping:
                 self.migrate_account_type_mapping()
             elif account_type_mapping.filtered(lambda x: not x.account_type):
                 raise UserError("Se encontraron mapeos de tipos de cuentas sin tipo de cuenta asociado. \n Por favor, resuelva estos conflictos antes de continuar (Menu Mapeo de Datos/Tipos de Cuentas)")
 
             total = len(chart_of_accounts_datas)
+            import ipdb;ipdb.set_trace()
             for contador, chart_of_accounts_data in enumerate(chart_of_accounts_datas, start=1):
                 print(f"vamos {contador} / {total}")
-                chart_of_account_code = chart_of_accounts_data["code"]
-                chart_of_accounts_id = chart_of_accounts_obj.search([("code", "=", chart_of_account_code)],limit=1)
-
-                if not bool(chart_of_accounts_id):
-                    message = f"¡El Plan de cuentas con Codigo {chart_of_account_code} no existe!"
-                    migrator.create_error_log(msg=message, values=chart_of_accounts_data)
-                    continue
-
-                chart_of_accounts_id.old_id = chart_of_accounts_data["id"]
+                user_type_name = chart_of_accounts_data.pop("user_type_id")[1]
+                account_type_id = odoo_account_type_obj.search([("name", "=", user_type_name)],limit=1)
+                chart_of_accounts_data["account_type"] = account_type_id.account_type
+                chart_of_accounts_data["old_id"] = chart_of_accounts_data.pop("id")
+                chart_of_accounts_data["internal_group"] = chart_of_accounts_data.pop("internal_type")
+                account_id = chart_of_accounts_obj.create(chart_of_accounts_data)
                 migrator.create_success_log(values=chart_of_accounts_data)
-                print(f"se actualizó el Plan de cuentas {chart_of_accounts_id.name}")
-                migrator.chart_of_accounts_ids += chart_of_accounts_id
-
-        print(f"se actualizaron {len(self.chart_of_accounts_ids)} Planes de cuentas")
+                print(f"Se creo la cuenta {account_id.name}")
+                migrator.chart_of_accounts_ids += account_id
+        final_message = f"se actualizaron {len(self.chart_of_accounts_ids)} Planes de cuentas"
+        migrator.create_success_log(msg=final_message, values='n/a')
+        print(final_message)
         return True
 
     def create_account_journal_id(self, values: Dict) -> bool:
