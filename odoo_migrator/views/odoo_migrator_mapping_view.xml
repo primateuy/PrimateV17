@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+
+
+
+        <record id="view_mapping_account_types_tree" model="ir.ui.view">
+            <field name="name">odoo.migrator.account.type.tree</field>
+            <field name="model">odoo.migrator.account.type</field>
+            <field name="arch" type="xml">
+                <tree string="Tipos de cuenta" editable="top" create="false" delete="false">
+                    <field name="name" />
+                    <field name="account_type"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_mapping_account_types" model="ir.actions.act_window">
+            <field name="name">Mapping account types</field>
+            <field name="res_model">odoo.migrator.account.type</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+
+        <menuitem id="migrator_mapping_main_menu" name="Mapeo de Datos" sequence="2" parent="migrator_root_menu"/>
+        <menuitem id="migrator_mapping_account_types" name="Tipos de Cuenta" sequence="1" parent="migrator_mapping_main_menu" action="action_mapping_account_types"/>
+
+    </data>
+</odoo>

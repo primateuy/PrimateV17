@@ -12,6 +12,7 @@
         "security/ir.model.access.csv",
         "data/sequence.xml",
         "views/odoo_migrator_view.xml",
+        "views/odoo_migrator_mapping_view.xml",
     ],
     "installable": True,
 }

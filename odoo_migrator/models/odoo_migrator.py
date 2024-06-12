@@ -6,7 +6,6 @@ from odoo import models, fields, api, release, _
 from odoo.exceptions import UserError
 import xmlrpc.client
 import logging
-
 _logger = logging.getLogger("MIGRATION SERVICES LOGGER")
 
 odoo_versions: List[Tuple[str, str]] = [
@@ -34,6 +33,7 @@ field_to_model: Dict[str, str] = {
     "account_id": "account.account",
     "product_id": "product.product",
     "tax_ids": "account.tax",
+    "tax_group_id": "account.tax.group",
 }
 
 m2o_fields: List[str] = [
@@ -235,6 +235,7 @@ class OdooMigrator(models.Model):
     migration_model = fields.Selection(
         [
             # Contacts
+            ("chart_accounts", "Plan de Cuentas"),
             ("countries", "Paises"),
             ("states", "Estados"),
             ("contacts", "Contactos"),
@@ -243,6 +244,7 @@ class OdooMigrator(models.Model):
             ("currencies", "Monedas"),
             ("currency_rates", "Tasas de la Monedas"),
             ("chart_of_accounts", "Plan de Cuentas"),
+            ("taxes", "Impuestos"),
             #
             # Journals
             ("account_journals", "Diarios"),
@@ -288,6 +290,7 @@ class OdooMigrator(models.Model):
     pagination_limit = fields.Integer(string="Limit", default=500)
 
     contact_ids = fields.Many2many(comodel_name="res.partner", string="Contactos")
+    tax_ids = fields.Many2many(comodel_name="account.tax", string="Impuestos")
     currency_ids = fields.Many2many(comodel_name="res.currency", string="Monedas")
     currency_rate_ids = fields.Many2many(
         comodel_name="res.currency.rate", string="tasas de Monedas"
@@ -350,6 +353,9 @@ class OdooMigrator(models.Model):
 
     def clear_logs(self):
         self.log_ids.unlink()
+
+    def clear_error_logs(self):
+        self.log_ids.filtered_domain([('log_type', '=', 'error')]).unlink()
 
     def action_draft(self):
         self.write({"state": "draft"})
@@ -712,23 +718,11 @@ class OdooMigrator(models.Model):
         except Exception as error:
             raise UserError(error)
         try:
-            record = odoo_object.search(
-                [
-                    "|",
-                    ("name", "ilike", record_name),
-                    ("old_id", "=", value[m2o][0]),
-                ],
-                limit=1,
-            )
-            if (
-                not record
-                and odoo_object._fields.get("active", False)
-                and not dont_search_for_no_actives
-            ):
-                record = odoo_object.search(
-                    ["|", ("active", "=", False), ("name", "ilike", record_name)],
-                    limit=1,
-                )
+            domain = ["|",("name", "ilike", record_name),("old_id", "=", value[m2o][0])]
+            record = odoo_object.search(domain, limit=1)
+            if not record and odoo_object._fields.get("active", False) and not dont_search_for_no_actives:
+                domain = ["|", ("active", "=", False), ("name", "ilike", record_name)]
+                record = odoo_object.search(domain,limit=1)
                 record.old_id = value[m2o][0]
         except Exception as error:
             raise UserError(error)
@@ -739,16 +733,12 @@ class OdooMigrator(models.Model):
             re-formatear la llamada y hacer el create de los odoo_object
             """
             m2oid = value[m2o][0]
-            record = self.create_odoo_record(
-                m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang
-            )
+            record = self.create_odoo_record(m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang)
             record.old_id = value[m2o][0]
         value[m2o] = record.id
         return value
 
-    def resolve_m2m_o2m_fields(
-        self, value=None, field_type=None, field=None, lang=None
-    ):
+    def resolve_m2m_o2m_fields(self, value=None, field_type=None, field=None, lang=None):
         """
         los campos m2m vienen en el formato
         {'field_name': [1,2,3,4]} donde la lista son los ids del registro
@@ -871,29 +861,22 @@ class OdooMigrator(models.Model):
     #################### UTILITY FUNC ####################
     def _remove_m2o_o2m_and_m2m_data_from(self, data, model_obj=None, lang=None):
         if not bool(data) or model_obj is None:
-            print(
-                "¡Parametros incorrectos, data y model_obj tienen que estar seteados!"
-            )
+            print("¡Parametros incorrectos, data y model_obj tienen que estar seteados!")
             return
         for field in data:
             if field == "move_id" and model_obj._name == "account.move.line":
-                old_id = self.env["account.move"].search(
-                    [("old_id", "=", data.get("move_id")[0])], limit=1
-                )
+                old_id = self.env["account.move"].search([("old_id", "=", data.get("move_id")[0])], limit=1)
                 data[field] = old_id.id
                 continue
 
             is_field_empty = bool(data.get(field, False))
             if not is_field_empty:
                 continue
-
             field_type = model_obj._fields[field].type
             if field_type == "many2one" and is_field_empty:
                 data = self.resolve_m2o_fields(value=data, m2o=field, lang=lang)
             elif field_type in ["many2many", "one2many"] and is_field_empty:
-                data = self.resolve_m2m_o2m_fields(
-                    value=data, field_type=field_type, field=field, lang=lang
-                )
+                data = self.resolve_m2m_o2m_fields(value=data, field_type=field_type, field=field, lang=lang)
 
     def _run_remote_command_for(
         self,
@@ -1095,11 +1078,12 @@ class OdooMigrator(models.Model):
 
         return True
 
+
     def migrate_states(self) -> bool:
         """
         Método para migrar paises desde el Odoo de origen al Odoo de destino.
         """
-        print("\nMigrando los paises")
+        print("\nMigrando los estados")
         limit = 100000
         model_name: str = "res.country.state"
         state_obj = self.env[model_name]
@@ -1250,10 +1234,10 @@ class OdooMigrator(models.Model):
                 currency_rate_datas = migrator._run_remote_command_for(
                     model_name=model_name,
                     operation_params_list=search_conditions,
-                    command_params_dict={
-                        "offset": migrator.pagination_offset,
-                        "limit": migrator.pagination_limit,
-                    },
+                    # command_params_dict={
+                    #     "offset": migrator.pagination_offset,
+                    #     "limit": migrator.pagination_limit,
+                    # },
                 )
 
                 if not bool(currency_rate_datas):
@@ -1329,11 +1313,55 @@ class OdooMigrator(models.Model):
             WHERE cr.name = %s AND cr.currency_id = %s AND cr.company_id = %s
         """
 
+    def migrate_account_type_mapping(self) -> bool:
+        """
+        Método para migrar el plan de cuentas de odoo origen a destino.
+        """
+        print("\nMigrando Tipos de cuenta")
+        import ipdb;ipdb.set_trace()
+        model_name: str = "account.account.type"
+        migrator_account_type_obj = self.env['odoo.migrator.account.type']
+
+        for migrator in self:
+            company = migrator.company_id
+            is_company_old_id_set = company.old_id <= 0
+            if is_company_old_id_set:
+                raise UserError(f"¡La Old_id de la Compañía {company.name} no es correcta!")
+
+            account_type_datas = migrator._run_remote_command_for(
+                model_name=model_name,
+                command_params_dict={
+                    "fields": [
+                        "name",
+                    ],
+                },
+            )
+            import ipdb;ipdb.set_trace()
+
+
+            if not bool(account_type_datas):
+                continue
+
+            total = len(account_type_datas)
+            for contador, account_type_data in enumerate(account_type_datas, start=1):
+                print(f"vamos {contador} / {total}")
+                account_type_name = account_type_data["name"]
+                migrator_account_type_id = migrator_account_type_obj.search([("name", "=", account_type_name)],limit=1)
+
+                if not migrator_account_type_id:
+                    migrator_account_type_id = migrator_account_type_obj.create({'name': account_type_name})
+
+                    migrator.create_success_log(values=account_type_datas)
+                    print(f"se creo el tipo de  cuentas {migrator_account_type_id.name}")
+
+        print(f"se crearon {len(migrator_account_type_obj.search([]))} tipos de cuentas")
+        return True
+
     def migrate_chart_of_accounts(self) -> bool:
         """
-        Método para actualiza los old_id de los Planes de cuenta desde el Odoo de origen al Odoo de destino.
+        Método para migrar el plan de cuentas de odoo origen a destino.
         """
-        print("\nActualizando IDs de Planes de cuenta")
+        print("\nMigrando Plan de cuenta")
 
         model_name: str = "account.account"
         chart_of_accounts_obj = self.env[model_name]
@@ -1341,7 +1369,7 @@ class OdooMigrator(models.Model):
         if not bool(have_local_charts_of_accounts):
             print("¡Sin Planes de cuenta que actualizar!")
             return False
-
+        chart_accounts_ids = have_local_charts_of_accounts.mapped('code')
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -1355,30 +1383,41 @@ class OdooMigrator(models.Model):
                 operation_params_list=[("company_id", "=", company.old_id)],
                 command_params_dict={
                     "fields": CHART_OF_ACCOUNT_FIELDS,
-                    "offset": migrator.pagination_offset,
-                    "limit": migrator.pagination_limit,
+                    # "offset": migrator.pagination_offset,
+                    # "limit": migrator.pagination_limit,
                 },
             )
+            import ipdb;ipdb.set_trace()
+
 
             if not bool(chart_of_accounts_datas):
                 continue
 
+            old_chart_of_accounts_ids = [x['code'] for x in chart_of_accounts_datas]
+            #estas son las cuentas que ya existen en el odoo destino (es decir, existen en ambos)
+            #le pedimos al usuario que resuelva estos conflictos
+            conflictive_accounts = [x for x in old_chart_of_accounts_ids if x in chart_accounts_ids]
+            if conflictive_accounts:
+                message = f"Las siguientes cuentas ya existen en el sistema: {conflictive_accounts} \n Por favor, resuelva estos conflictos antes de continuar"
+                migrator.create_error_log(msg=str(message), values='n/a')
+                self.env.cr.commit()
+                raise UserError(message)
+
+            account_type_mapping = self.env['odoo.migrator.account.type'].search([])
+            if not account_type_mapping:
+                self.migrate_account_type_mapping()
+            elif account_type_mapping.filtered(lambda x: not x.account_type):
+                raise UserError("Se encontraron mapeos de tipos de cuentas sin tipo de cuenta asociado. \n Por favor, resuelva estos conflictos antes de continuar (Menu Mapeo de Datos/Tipos de Cuentas)")
+
             total = len(chart_of_accounts_datas)
-            for contador, chart_of_accounts_data in enumerate(
-                chart_of_accounts_datas, start=1
-            ):
+            for contador, chart_of_accounts_data in enumerate(chart_of_accounts_datas, start=1):
                 print(f"vamos {contador} / {total}")
                 chart_of_account_code = chart_of_accounts_data["code"]
-                chart_of_accounts_id = chart_of_accounts_obj.search(
-                    [("code", "=", chart_of_account_code)],
-                    limit=1,
-                )
+                chart_of_accounts_id = chart_of_accounts_obj.search([("code", "=", chart_of_account_code)],limit=1)
 
                 if not bool(chart_of_accounts_id):
                     message = f"¡El Plan de cuentas con Codigo {chart_of_account_code} no existe!"
-                    migrator.create_error_log(
-                        msg=message, values=chart_of_accounts_data
-                    )
+                    migrator.create_error_log(msg=message, values=chart_of_accounts_data)
                     continue
 
                 chart_of_accounts_id.old_id = chart_of_accounts_data["id"]
@@ -1429,17 +1468,12 @@ class OdooMigrator(models.Model):
 
             if not bool(account_journal_datas):
                 continue
-
             total = len(account_journal_datas)
-            for contador, account_journal_data in enumerate(
-                account_journal_datas, start=1
-            ):
+            for contador, account_journal_data in enumerate(account_journal_datas, start=1):
                 print(f"vamos {contador} / {total}")
 
                 account_journal_code = account_journal_data["code"]
-                account_journal_id = account_journals_obj.search(
-                    [("code", "=", account_journal_code)]
-                )
+                account_journal_id = account_journals_obj.search([("code", "=", account_journal_code)])
 
                 if not bool(account_journal_id):
                     message = f"¡El Diario con Codigo {account_journal_code} no existe!"
@@ -1635,6 +1669,58 @@ class OdooMigrator(models.Model):
                 f"se crearon {len(self.product_templates_ids)} Plantillas de producto"
             )
         return True
+    def migrate_taxes(self) -> bool:
+        """
+        Método para migrar los impuestoso desde el Odoo de origen al Odoo de destino.
+        """
+        print("\nMigrando los impuestos")
+
+        model_name: str = "account.tax"
+
+        account_tax_obj = self.env[model_name]
+        for migrator in self:
+            account_tax_datas = migrator._run_remote_command_for(
+                model_name=model_name,
+                operation_params_list=[("active", "=", True), ('company_id', '=', self.company_id.old_id)],
+                command_params_dict={
+                    # "fields": PRODUCT_TEMPLATE_FIELDS,
+                    # "offset": migrator.pagination_offset,
+                    # "limit": migrator.pagination_limit,
+                },
+            )
+            if not bool(account_tax_datas):
+                continue
+
+            total = len(account_tax_datas)
+            for contador, account_tax_data in enumerate(account_tax_datas, start=1):
+                account_tax_data = self.remove_unused_fields(record_data=account_tax_data, odoo_model=model_name)
+                print(f"vamos {contador} / {total}")
+                tax_old_id = account_tax_data["id"]
+                tax_name = account_tax_data["name"]
+                print(tax_name)
+                account_tax_id = account_tax_obj.search([("old_id", "=", tax_old_id)],limit=1,)
+
+                if bool(account_tax_id):
+                    print(f"la Plantilla de producto {tax_name} ya existe")
+                    account_tax_id.old_id = tax_old_id
+                    account_tax_id.company_id = self.company_id.id
+                    migrator.product_templates_ids += account_tax_id
+                    continue
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=account_tax_data, model_obj=account_tax_obj, lang=self.company_id.partner_id.lang)
+
+                is_success, result = migrator.try_to_create_record(odoo_object=account_tax_obj, value=account_tax_data)
+
+                if not is_success:
+                    migrator.create_error_log(msg=str(result), values=account_tax_data)
+                    continue
+
+                result.company_id = migrator.company_id.id
+                migrator.create_success_log(values=account_tax_data)
+                print(f"se creo el Impuesto {result.name}")
+                migrator.tax_ids += result
+
+        print(f"se crearon {len(self.tax_ids)} impuestos")
+        return True
 
     def migrate_products(self) -> bool:
         return False
@@ -1672,9 +1758,7 @@ class OdooMigrator(models.Model):
         """
         print("\nMigrando las Facturas")
         journal_type = "sale" if move_type == "out_invoice" else "purchase"
-        old_journal_ids = self.account_journals_ids.filtered(
-            lambda x: x.type == journal_type
-        ).mapped("old_id")
+        old_journal_ids = self.account_journals_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
         operation_params_list = [
             ("company_id", "=", self.company_id.old_id),
             ("currency_id", "in", self.currency_ids.mapped("old_id")),
@@ -1756,12 +1840,9 @@ class OdooMigrator(models.Model):
 
         if not bool(self.account_moves_ids):
             raise UserError("No hay Asientos contables migrados")
-
         account_moves_ids = self.account_moves_ids
         if bool(move_type):
-            account_moves_ids = account_moves_ids.filtered(
-                lambda move: move.move_type == move_type
-            )
+            account_moves_ids = account_moves_ids.filtered(lambda move: move.move_type == move_type)
 
         model_name: str = "account.move.line"
         model_name_old: str = "account.invoice.line"
@@ -1801,14 +1882,8 @@ class OdooMigrator(models.Model):
                     migrator.account_move_line_ids += move_line_id
                     continue
 
-                migrator._remove_m2o_o2m_and_m2m_data_from(
-                    data=move_line_data, model_obj=move_line_obj
-                )
-                is_success, result = migrator.try_to_create_record(
-                    odoo_object=move_line_obj,
-                    value=move_line_data,
-                    old_odoo_obj=model_name_old,
-                )
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=move_line_data, model_obj=move_line_obj)
+                is_success, result = migrator.try_to_create_record(odoo_object=move_line_obj,value=move_line_data, old_odoo_obj=model_name_old)
 
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=move_line_data)
@@ -2199,16 +2274,13 @@ class OdooMigrator(models.Model):
 
         model_name: str = "account.partial.reconcile"
         aml_obj = self.env["account.move.line"]
+        import ipdb;ipdb.set_trace()
         for migrator in self:
             move_ids = []
             if migrator.account_payments_ids:
-                move_ids += migrator.account_payments_ids.move_id.line_ids.filtered(
-                    lambda line: line.old_id
-                ).mapped("old_id")
+                move_ids += migrator.account_payments_ids.move_id.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
             if migrator.account_moves_ids:
-                move_ids += migrator.account_moves_ids.line_ids.filtered(
-                    lambda line: line.old_id
-                ).mapped("old_id")
+                move_ids += migrator.account_moves_ids.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
             if not move_ids:
                 raise UserError("No se migraron asientos para conciliar")
             reconcile_datas = migrator._run_remote_command_for(
@@ -2226,25 +2298,20 @@ class OdooMigrator(models.Model):
                 },
             )
             for reconcile in reconcile_datas:
-                debit_move = aml_obj.search(
-                    [("old_id", "=", reconcile.get("debit_move_id")[0])]
-                )
-                credit_move = aml_obj.search(
-                    [("old_id", "=", reconcile.get("credit_move_id")[0])]
-                )
-                (debit_move + credit_move).with_context(
-                    skip_account_move_synchronization=True
-                ).reconcile()
+                debit_move = aml_obj.search([("old_id", "=", reconcile.get("debit_move_id")[0])])
+                credit_move = aml_obj.search([("old_id", "=", reconcile.get("credit_move_id")[0])])
+                (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
         return True
 
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
+            "chart_accounts": self.migrate_chart_of_accounts,
             "countries": self.migrate_countries,
             "states": self.migrate_states,
             "contacts": self.migrate_contacts,
             "currencies": self.migrate_currencies,
             "currency_rates": self.migrate_currency_rates,
-            "chart_of_accounts": self.migrate_chart_of_accounts,
+            "taxes": self.migrate_taxes,
             "account_journals": self.migrate_account_journals,
             "product_categories": self.migrate_product_categories,
             "product_templates": self.migrate_product_template,
