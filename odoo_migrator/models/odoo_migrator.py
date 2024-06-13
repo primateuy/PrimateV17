@@ -100,12 +100,10 @@ CHART_OF_ACCOUNT_FIELDS: List[str] = [
 ]
 
 ANALYTIC_ACCOUNT_FIELDS: List[str] = [
-    "code",
     "id",
     "name",
     "company_id",
     "partner_id",
-    "user_type_id",
 ]
 RES_USERS_FIELDS: List[str] = [
     "id",
@@ -1453,12 +1451,14 @@ class OdooMigrator(models.Model):
         print(final_message)
         return True
 
+    def _migrate_analytic_account_plan(self):
+        return self.env.ref('odoo_migrator.migration_analytic_plan').id
+
     def migrate_analytic_accounts(self) -> bool:
         """
         Método para migrar el plan de cuentas de odoo origen a destino.
         """
         print("\nMigrando Plan de cuentas analitico")
-
         model_name: str = "account.analytic.account"
         analytic_accounts_obj = self.env[model_name]
         for migrator in self:
@@ -1469,39 +1469,41 @@ class OdooMigrator(models.Model):
 
             analytic_accounts_datas = migrator._run_remote_command_for(
                 model_name=model_name,
+                operation_params_list=[("company_id", "=", company.old_id)],
                 command_params_dict={
                     "fields": ANALYTIC_ACCOUNT_FIELDS,
                 },
             )
             if not bool(analytic_accounts_datas):
                 continue
-
             total = len(analytic_accounts_datas)
-            import ipdb;ipdb.set_trace()
             for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
                 print(f"vamos {contador} / {total}")
-                user_type_name = analytic_accounts_data.pop("user_type_id")[1]
-                account_type_id = analytic_accounts_obj.search([("name", "=", user_type_name)],limit=1)
-                analytic_accounts_data["account_type"] = account_type_id.account_type
-                analytic_accounts_data["old_id"] = analytic_accounts_data.pop("id")
-                analytic_accounts_data["internal_group"] = analytic_accounts_data.pop("internal_type")
-                account_id = analytic_accounts_obj.create(analytic_accounts_data)
-                migrator.create_success_log(values=analytic_accounts_data)
-                print(f"Se creo la cuenta {account_id.name}")
-                migrator.analytic_account_ids += account_id
-        final_message = f"se actualizaron {len(self.chart_of_accounts_ids)} Planes de cuentas"
-        migrator.create_success_log(msg=final_message, values='n/a')
-        print(final_message)
-        return True
+                analytic_accounts_data = migrator.remove_unused_fields(record_data=analytic_accounts_data, odoo_model=model_name)
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=analytic_accounts_data, model_obj=analytic_accounts_obj)
+                analytic_accounts_id = analytic_accounts_data["id"]
+                analytic_account_id = analytic_accounts_obj.search([("old_id", "=", analytic_accounts_id)])
+                analytic_accounts_data["plan_id"] = self._migrate_analytic_account_plan()
+                # analytic_accounts_data["company_id"] = migrator.company_id.old_id
+                if not bool(analytic_account_id):
+                    is_success, result = migrator._try_to_create_model(model_name=model_name, values=analytic_accounts_data)
+                    if not is_success:
+                        migrator.create_error_log(msg=str(result), values=analytic_accounts_data)
+                        continue
+                    migrator.analytic_account_ids += result
 
+                migrator.create_success_log(values=analytic_accounts_data)
+                print(f"Se creo la cuenta analitica {analytic_account_id.name}")
+
+        print(f"se migraron {len(self.analytic_account_ids)} cuentas analiticas")
+        return True
     def migrate_users(self) -> bool:
         """
         Método para migrar los usuarios de odoo origen a destino.
         """
-        print("\nMigrando Usuarios")
-
+        print("\nMigrando Plan de cuentas analitico")
         model_name: str = "res.users"
-        res_user_obj = self.env[model_name]
+        res_users_obj = self.env[model_name]
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -1510,29 +1512,37 @@ class OdooMigrator(models.Model):
 
             res_users_datas = migrator._run_remote_command_for(
                 model_name=model_name,
+                operation_params_list=['|',("company_id", "=", company.old_id),("company_id", "=", False)],
                 command_params_dict={
                     "fields": RES_USERS_FIELDS,
                 },
             )
             if not bool(res_users_datas):
                 continue
-
             total = len(res_users_datas)
             import ipdb;ipdb.set_trace()
             for contador, res_users_data in enumerate(res_users_datas, start=1):
                 print(f"vamos {contador} / {total}")
-                user_type_name = res_users_data.pop("user_type_id")[1]
-                account_type_id = res_users_datas.search([("name", "=", user_type_name)],limit=1)
-                res_users_data["account_type"] = account_type_id.account_type
-                res_users_data["old_id"] = res_users_data.pop("id")
-                res_users_data["internal_group"] = res_users_data.pop("internal_type")
-                user_id = res_user_obj.create(res_users_data)
+                res_users_data = migrator.remove_unused_fields(record_data=res_users_data, odoo_model=model_name)
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=res_users_data, model_obj=res_users_obj)
+                res_users_data_id = res_users_data["id"]
+                res_users_data_name = res_users_data["login"]
+
+                user_id = res_users_obj.search(['|',("old_id", "=", res_users_data_id),("login", "=", res_users_data_name)])
+
+                if not bool(user_id):
+                    is_success, result = migrator._try_to_create_model(model_name=model_name, values=res_users_data)
+                    if not is_success:
+                        migrator.create_error_log(msg=str(result), values=res_users_data)
+                        continue
+                    migrator.user_ids += result
+                else:
+                    user_id.old_id = res_users_data_id
+
                 migrator.create_success_log(values=res_users_data)
-                print(f"Se creo la cuenta {user_id.name}")
-                migrator.user_ids += user_id
-        final_message = f"Se migraron {len(self.user_ids)} usuarios"
-        migrator.create_success_log(msg=final_message, values='n/a')
-        print(final_message)
+                print(f"Se creo el usuario {user_id.name}")
+
+        print(f"se migraron {len(self.user_ids)} usuarios")
         return True
 
     def create_account_journal_id(self, values: Dict) -> bool:
@@ -1657,12 +1667,8 @@ class OdooMigrator(models.Model):
                     migrator.product_categories_ids += product_category_id
                     continue
 
-                product_category_data = migrator.remove_unused_fields(
-                    record_data=product_category_data, odoo_model=model_name
-                )
-                migrator._remove_m2o_o2m_and_m2m_data_from(
-                    data=product_category_data, model_obj=product_category_obj
-                )
+                product_category_data = migrator.remove_unused_fields(record_data=product_category_data, odoo_model=model_name)
+                migrator._remove_m2o_o2m_and_m2m_data_from(data=product_category_data, model_obj=product_category_obj)
 
                 category_creation_data = {
                     "id": category_old_id,
@@ -1776,6 +1782,7 @@ class OdooMigrator(models.Model):
                 f"se crearon {len(self.product_templates_ids)} Plantillas de producto"
             )
         return True
+
     def migrate_taxes(self) -> bool:
         """
         Método para migrar los impuestoso desde el Odoo de origen al Odoo de destino.
@@ -2076,15 +2083,22 @@ class OdooMigrator(models.Model):
                             migrator.create_success_log(values=move_line_data)
                             print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                         else:
-                            import ipdb;ipdb.set_trace()
                             if not invoice.amount_total:
                                 migrator.create_error_log(msg=f'omitimos esta factura porque tiene importe cero {invoice_id}', values=move_line_data)
                                 continue
-                            result = f"Se encontro mas de una la linea {move_line_data.get('id')} para la factura {invoice.name}"
-                            migrator.create_error_log(msg=str(result), values=move_line_data)
-                            continue
+                            import ipdb
+                            ipdb.set_trace()
+                            #Tenemos que diferenciar por cuenta analitica
+                            if aml:
+                                aml = invoice.line_ids.filtered(lambda x: (x.balance == move_line_data.get("balance") or x.balance == round(move_line_data.get("balance"), 2)) and x.name[:64] == move_line_data.get("name") and not x.old_id)[0]
+                                aml.old_id = move_line_data.get("id")
+                                migrator.create_success_log(values=move_line_data)
+                                print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
+                            else:
+                                result = f"No se encontro una la linea {move_line_data.get('id')} para la factura {invoice.name}"
+                                migrator.create_error_log(msg=str(result), values=move_line_data)
+                                continue
                 else:
-
                     result = f"No se encontro una la linea {move_line_data.get('id')} para la factura {invoice.name}"
                     migrator.create_error_log(msg=str(result), values=move_line_data)
                     continue
