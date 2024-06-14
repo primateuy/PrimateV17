@@ -7,7 +7,7 @@
     "summary": "Módulo para migrar datos de Odoo entre versiones de Odoo",
     "author": "Felipe Ferreira",
     "website": "https://proyectasoft.odoo.com",
-    "depends": ["base","contacts", "account", "analytic", "sale", "purchase"],
+    "depends": ["base","analytic","contacts", "account", "analytic", "sale", "purchase"],
     "data": [
         "security/ir.model.access.csv",
         "data/sequence.xml",

@@ -79,6 +79,16 @@ class AccountMove(models.Model):
     old_id = fields.Integer(string="ID on old DB")
     old_name = fields.Char(string="Name")
     old_full_reconcile_ids = fields.Char(string="Full reconcile IDs on old DB")
+    old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago")])
+    migration_error = fields.Boolean(string="Migration Error")
+
+    def _must_check_constrains_date_sequence(self):
+        ctx = self.env.context.copy()
+        if ctx.get('dont_check_constrains_date_sequence', False):
+            return False
+        return super()._must_check_constrains_date_sequence()
+
+
 
 
 class AccountMoveLine(models.Model):
