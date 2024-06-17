@@ -23,6 +23,16 @@
             <field name="company_id"></field>
         </record>
 
+        <record id="odoo_migrator_reconciliation_sequence" model="ir.sequence">
+            <field name="name">Odoo migrator reconciliation sequence</field>
+            <field name="code">odoo.migrator.reconciliation.sequence</field>
+            <field name="prefix">OM-RECON-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id"></field>
+        </record>
+
         <record id="migration_analytic_plan" model="account.analytic.plan">
             <field name="name">Migration</field>
             <field name="default_applicability">optional</field>

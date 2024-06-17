@@ -38,6 +38,9 @@ field_to_model: Dict[str, str] = {
     "account_analytic_id": "account.analytic.account",
     "invoice_user_id": "res.users",
     "default_account_id": "account.account",
+    "property_account_receivable_id": "account.account",
+    "property_account_payable_id": "account.account",
+    "title": "res.partner.title",
 }
 
 m2o_fields: List[str] = [
@@ -48,6 +51,8 @@ m2o_fields: List[str] = [
     "partner_id",
     "invoice_user_id",
     "default_account_id",
+    "property_account_receivable_id",
+    "property_account_payable_id",
 ]
 
 m2m_fields: List[str] = ["child_ids", "category_id", "invoice_line_tax_ids"]
@@ -68,7 +73,10 @@ CONTACT_FIELDS: List[str] = [
     "website",
     "lang",
     "category_id",
-    "child_ids" "title",
+    "child_ids",
+    "title",
+    "property_account_receivable_id",
+    "property_account_payable_id",
 ]
 
 COMPANY_FIELDS: List[str] = [
@@ -219,7 +227,92 @@ class MigratorLogLine(models.Model):
         "odoo.migrator", string="Migrator Reference", ondelete="cascade"
     )
 
+    migration_model = fields.Selection(
+        [
+            # Contacts
+            ("chart_accounts", "Plan de Cuentas"),
+            ("analytic_accounts", "Plan de Cuentas analitico"),
+            ("users", "Usuarios"),
+            ("countries", "Paises"),
+            ("states", "Estados"),
+            ("contacts", "Contactos"),
+            #
+            # Currencies
+            ("currencies", "Monedas"),
+            ("currency_rates", "Tasas de la Monedas"),
+            ("taxes", "Impuestos"),
+            #
+            # Journals
+            ("account_journals", "Diarios"),
+            #
+            # Products
+            ("product_categories", "Categorias de productos"),
+            ("product_templates", "Plantillas de productos"),
+            # ("products", "Productos"),
+            #
+            # Customer invoices
+            ("customer_invoices", "Facturas de Clientes (cabezales)"),
+            ("customer_invoice_lines", "Facturas de Clientes (lineas)"),
+            ("customer_moves_lines", "Facturas de Clientes (movimientos)"),
+            # ("customer_refunds", "Notas de Credito de Clientes (cabezales)"),
+            # ("customer_refund_lines", "Notas de Credito de Clientes (lineas)"),
+            #
+            # Supplier invoices
+            ("supplier_invoices", "Facturas de Proveedor (cabezales)"),
+            ("supplier_invoice_lines", "Facturas de Proveedor (lineas)"),
+            # ("supplier_refunds", "Notas de Credito de Proveedor (cabezales)"),
+            # ("supplier_refund_lines", "Notas de Credito de Proveedor (lineas)"),
+            #
+            # Account entries
+            ("account_entries", "Asientos contables"),
+            #
+            # Entries
+            # ("entries", "Apuntes contables (cabezales)"),
+            # ("entry_lines", "Apuntes contables (lineas)"),
+            #
+            # Payments
+            ("customer_payments", "Pagos de Clientes"),
+            ("customer_payment_moves", "Pagos de Clientes (movimientos)"),
+            ("supplier_payments", "Pagos de Proveedores"),
+            # Conciliations
+            ("customer_reconcile", "Conciliaciones de Clientes"),
+            ("supplier_reconcile", "Conciliaciones de Proveedores"),
+            #Publications
+            ("post_customer_invoices", "Publicar facturas de cliente"),
+            ("post_customer_payments", "Publicar pagos de cliente"),
+            ("post_supplier_invoices", "Publicar facturas de proveedor"),
+            ("post_supplier_payments", "Publicar pagos de proveedor")
+        ],
+        string="Modelo a Migrar",
+        required=True,
+    )
+
+
     # Puedes agregar más campos según tus necesidades
+
+class OdooMigratorReconciliation(models.Model):
+    _name = "odoo.migrator.reconciliation"
+    _description = "Migrator reconciliation"
+
+    name = fields.Char(
+        string="Name",
+        default=lambda self: self.env["ir.sequence"].next_by_code("odoo.migrator.reconciliation.sequence"),
+        required=True,
+        index="trigram",
+    )
+    migrator_id = fields.Many2one(
+        "odoo.migrator", string="Migrator Reference", ondelete="cascade"
+    )
+    old_debit_move_id = fields.Char(string="Old Debit")
+    old_credit_move_id = fields.Char(string="Old Credit")
+    debit_move_id = fields.Many2one(comodel_name='account.move.line', string="Debit Move")
+    credit_move_id = fields.Many2one(comodel_name='account.move.line', string="Credit Move")
+
+
+    def view_record(self):
+        ctx = self._context.copy()
+        return
+
 
 
 class OdooMigrator(models.Model):
@@ -382,6 +475,7 @@ class OdooMigrator(models.Model):
         inverse_name="migrator_id",
         string="Log Lines",
     )
+    reconciliation_line_ids = fields.One2many(comodel_name="odoo.migrator.reconciliation", inverse_name="migrator_id", string="Conciliaciones")
     is_multicompany = fields.Boolean(string="¿Es Multicompañía?", default=False)
     company_count = fields.Integer(string="Número de Compañías")
     company_data = fields.Text(string="Datos de Compañías")
@@ -392,10 +486,7 @@ class OdooMigrator(models.Model):
     partner_id = fields.Many2one(
         comodel_name="res.partner", string="Partner", related="company_id.partner_id"
     )
-    contact_count = fields.Integer(
-        string="Número de Contactos", compute="_get_models_data_count"
-    )
-
+    contact_count = fields.Integer(string="Número de Contactos", compute="_get_models_data_count")
     countries_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     states_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     currencies_count = fields.Integer(string="Número de" )
@@ -415,6 +506,7 @@ class OdooMigrator(models.Model):
     chart_of_accounts_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     currency_rates_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     account_journals_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+
 
     def paginate(self):
         self.ensure_one()
@@ -458,12 +550,12 @@ class OdooMigrator(models.Model):
             rec.currency_rates_count = len(rec.currency_rate_ids)
             rec.account_journals_count = len(rec.account_journals_ids)
 
-    def action_view_contacts(self):
+    def action_view_model(self):
         model_name = self._context.get('model_name', False)
         if not model_name:
             raise UserError('No se pudo encontrar el modelo')
         action = False
-        
+
         if model_name == 'contact':
             action = self.env.ref("contacts.action_contacts").read()[0]
             action["domain"] = [("id", "in", self.contact_ids.ids)]
@@ -997,6 +1089,7 @@ class OdooMigrator(models.Model):
                 "error": error,
                 "log_type": log_type,
                 "values": values,
+                "migration_model": self.migration_model,
             }
         )
         return True
@@ -1096,7 +1189,8 @@ class OdooMigrator(models.Model):
             return
         for field_name in data:
             if not field_name in field_to_model:
-                print(f"El field {field_name} no esta en la list {field_to_model}")
+                # import ipdb;ipdb.set_trace()
+                # print(f"El field {field_name} no esta en la list {field_to_model}")
                 continue
 
             field_model: str = field_to_model.get(field_name, "")
@@ -1170,6 +1264,7 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(contact_datas)
+            import ipdb;ipdb.set_trace()
             for contador, contact_data in enumerate(contact_datas, start=1):
                 print(f"vamos {contador} / {total}")
                 search_conditions = [("old_id", "=", contact_data["id"])]
@@ -2221,21 +2316,16 @@ class OdooMigrator(models.Model):
                 _logger.info(body)
                 print(body)
                 move.message_post(body=body)
-                move.message_post(body=body)
                 move.button_cancel()
             else:
                 try:
-                    if move.id == 929:
-                        import ipdb;
-                        ipdb.set_trace()
-
                     print(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
                     move.with_context(dont_check_constrains_date_sequence=True).action_post()
                 except Exception as error:
                     move.message_post(body=f'Error al validar la factura {error}')
                     move.migration_error = True
                     self.create_error_log(msg=str(error), values=move)
-                    import ipdb;ipdb.set_trace()
+                    # import ipdb;ipdb.set_trace()
                     continue
         return True
 
@@ -2393,8 +2483,6 @@ class OdooMigrator(models.Model):
                     result = f"No se encontro una la linea {move_line_data.get('id')} para la factura {invoice.name}"
                     migrator.create_error_log(msg=str(result), values=move_line_data)
                     continue
-            for invoice in account_moves_ids:
-                invoice.action_post()
             print(f"se crearon {len(self.account_move_line_ids)} Lineas de asientos")
         return True
 
@@ -2677,15 +2765,11 @@ class OdooMigrator(models.Model):
             for move in filtered_moves:
                 move.line_ids.unlink()
                 try:
-                    move.with_context(skip_account_move_synchronization=True).write(
-                        {"line_ids": filtered_moves[move]}
-                    )
-                    move.payment_id.action_post()
+                    move.with_context(skip_account_move_synchronization=True).write({"line_ids": filtered_moves[move]})
+                    # move.payment_id.action_post()
                 except Exception as e:
                     result = f"{e} Este error se encontro al querer agregar las lineas del movimiento de pago {move.name}"
-                    migrator.create_error_log(
-                        msg=str(result), values=filtered_moves[move]
-                    )
+                    migrator.create_error_log(msg=str(result), values=filtered_moves[move])
                     continue
                 move.name = move.old_name
                 move.payment_id.name = move.payment_id.old_name
@@ -2699,12 +2783,12 @@ class OdooMigrator(models.Model):
 
         model_name: str = "account.partial.reconcile"
         aml_obj = self.env["account.move.line"]
-
         for migrator in self:
             move_ids = []
-            if migrator.account_payments_ids:
-                move_ids += migrator.account_payments_ids.move_id.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
-            if migrator.account_moves_ids:
+            if migrator.account_payments_ids.filtered(lambda x: x.state == "posted"):
+                move_ids += migrator.account_payments_ids.move_id.line_ids.filtered(lambda line: line.old_id).mapped(
+                    "old_id")
+            if migrator.account_moves_ids.filtered(lambda x: x.state == "posted"):
                 move_ids += migrator.account_moves_ids.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
             if not move_ids:
                 raise UserError("No se migraron asientos para conciliar")
@@ -2722,10 +2806,35 @@ class OdooMigrator(models.Model):
                     "limit": migrator.pagination_limit,
                 },
             )
+            import ipdb;
+            ipdb.set_trace()
             for reconcile in reconcile_datas:
-                debit_move = aml_obj.search([("old_id", "=", reconcile.get("debit_move_id")[0])])
-                credit_move = aml_obj.search([("old_id", "=", reconcile.get("credit_move_id")[0])])
-                (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
+                old_debit_move_id = reconcile.get("debit_move_id")[0]
+                debit_move = aml_obj.search([("old_id", "=", old_debit_move_id), ('reconciled', '=', False)])
+
+                if debit_move.move_id.state == "draft":
+                    message = f'El asiento de debito {debit_move.move_id.name} no se encuentra validado (id: --> {debit_move.move_id.id})'
+                    migrator.create_error_log(msg=message, values=reconcile)
+                    raise UserError(message)
+
+                old_credit_move_id = reconcile.get("credit_move_id")[0]
+                credit_move = aml_obj.search([("old_id", "=", old_credit_move_id), ('reconciled', '=', False)])
+
+                if credit_move.move_id.state == "draft":
+                    message = f'El asiento de credito {credit_move.move_id.name} no se encuentra validado (id: --> {credit_move.move_id.id})'
+                    migrator.create_error_log(msg=message, values=reconcile)
+                    raise UserError(message)
+                if not credit_move and not debit_move:
+                    migrator.create_error_log(msg=f'No se encontro el asiento de debito {old_debit_move_id} y el asiento de credito {old_credit_move_id}', values=reconcile)
+                    continue
+                try:
+                    (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
+                except Exception as error:
+                    migrator.create_error_log(msg=str(error), values=reconcile)
+                    # import ipdb;ipdb.set_trace()
+                    self.env.cr.commit()
+                    # raise UserError(error)
+
         return True
 
     def _get_migrator_for(self, migrator_type: str):
