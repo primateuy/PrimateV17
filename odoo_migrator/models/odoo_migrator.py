@@ -1857,9 +1857,7 @@ class OdooMigrator(models.Model):
     def migrate_products(self) -> bool:
         return False
 
-    def get_old_full_reconcile_id_for(
-            self, old_move_ids: List[int] = [], from_payment: bool = False
-    ) -> List[int]:
+    def get_old_full_reconcile_id_for(self, old_move_ids: List[int] = [], from_payment: bool = False) -> List[int]:
         if not bool(old_move_ids):
             print("¡old_move_ids esta vacia!")
             return []
@@ -2056,43 +2054,57 @@ class OdooMigrator(models.Model):
         return True
 
     def post_moves(self, move_type: str = "", payment_type: str = "") -> bool:
-        if not bool(self.account_moves_ids):
-            raise UserError("No hay Asientos contables migrados")
-        # account_moves_ids
-        invoice_ids = self.account_moves_ids
+        import ipdb;ipdb.set_trace()
+        global moves
         if bool(move_type):
-            account_moves_ids = invoice_ids.filtered(lambda move: move.move_type == move_type)
+            moves = self.account_moves_ids.filtered(lambda move: move.move_type == move_type)
+        if bool(payment_type):
+            moves = self.account_payments_ids.filtered(lambda move: move.partner_type == payment_type)
+        if not bool(moves):
+            raise UserError("No hay Asientos contables migrados")
+        import ipdb;ipdb.set_trace()
+        moves_draft = moves.filtered(lambda x: x.state == "draft" and x.old_state != "draft")
+        total = len(moves_draft)
+        commit_count = 500
+        side_count = 0
+        for contador, move in enumerate(moves_draft, start=1):
 
-        import ipdb;
-        ipdb.set_trace()
-        invoice_ids_draft = invoice_ids.filtered(lambda x: x.state == "draft" and x.old_state != "draft")
-        total = len(invoice_ids_draft)
-        for contador, invoice in enumerate(invoice_ids_draft, start=1):
             print(f"vamos {contador} / {total}")
             _logger.info(f"vamos {contador} / {total}")
-            if invoice.old_state == "draft":
-                body = 'Esta factura se deja en borrador porque la factura original esta en borrador'
+            side_count += 1
+            if side_count > commit_count:
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                self.env.cr.commit()
+                side_count = 0
+            if move.old_state == "draft":
+                body = 'Esta factura/pago se deja en borrador porque la factura original esta en borrador'
                 _logger.info(body)
                 print(body)
-                invoice.message_post(body=body)
-            elif invoice.old_state == "cancel":
-                body = 'Cncelamos esta factura porque la factura original esta cancelada'
+                move.message_post(body=body)
+            elif move.old_state == "cancel":
+                body = 'Cancelamos esta factura porque la factura original esta cancelada'
                 _logger.info(body)
                 print(body)
-                invoice.message_post(body=body)
-                invoice.message_post(body=body)
-                invoice.button_cancel()
+                move.message_post(body=body)
+                move.message_post(body=body)
+                move.button_cancel()
             else:
                 try:
-                    print(f'Vamos a validar la factura {invoice.name}')
-                    invoice.with_context(dont_check_constrains_date_sequence=True).action_post()
+                    if move.id == 929:
+                        import ipdb;
+                        ipdb.set_trace()
+
+                    print(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
+                    move.with_context(dont_check_constrains_date_sequence=True).action_post()
                 except Exception as error:
-                    invoice.message_post(body=f'Error al validar la factura {error}')
-                    invoice.migration_error = True
-                    self.create_error_log(msg=str(error), values=invoice)
-                    self.env.cr.commit()
+                    move.message_post(body=f'Error al validar la factura {error}')
+                    move.migration_error = True
+                    self.create_error_log(msg=str(error), values=move)
+                    import ipdb;ipdb.set_trace()
                     continue
-        print(f"se crearon {len(self.account_move_line_ids)} Lineas de asientos")
+        return True
 
     def migrate_invoice_account_moves_lines(self, move_type: str = "") -> bool:
         """
@@ -2102,7 +2114,7 @@ class OdooMigrator(models.Model):
         moves_types = []
         if not bool(self.account_moves_ids):
             raise UserError("No hay Asientos contables migrados")
-        fix_error = True
+        fix_error = False
         if fix_error:
             account_moves_ids = self.migration_error_account_moves_ids
         else:
@@ -2118,7 +2130,6 @@ class OdooMigrator(models.Model):
         model_name_old: str = "account.move.line"
         invoice_obj = self.env["account.move"]
         move_line_obj = self.env[model_name]
-        import ipdb;ipdb.set_trace()
         for migrator in self:
             move_line_datas = migrator._run_remote_command_for(
                 model_name=model_name_old,
@@ -2178,18 +2189,18 @@ class OdooMigrator(models.Model):
                                 continue
                             #Tenemos que diferenciar por cuenta analitica
                             if aml:
-                                analytic_account_id = self.env['account.analytic.account'].search([('old_id','=',move_line_data['analytic_account_id'][0])]).id
+                                field_is_not_empty = move_line_data['analytic_account_id']
+                                if field_is_not_empty:
+                                    analytic_account_id = self.env['account.analytic.account'].search([('old_id','=', move_line_data['analytic_account_id'][0])]).id
+                                else:
+                                    continue
                                 aml = invoice.line_ids.filtered(lambda x: (x.balance == move_line_data.get("balance") or x.balance == round(move_line_data.get("balance"), 2)) and x.name[:64] == line_name and str(analytic_account_id) in x.analytic_distribution)
                                 if len(aml) == 1:
                                     aml.old_id = move_line_data.get("id")
                                     migrator.create_success_log(values=move_line_data)
                                     print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                                 else:
-                                    aml = invoice.line_ids.filtered(lambda x: (x.balance == move_line_data.get(
-                                        "balance") or x.balance == round(move_line_data.get("balance"), 2)) and x.name[
-                                                                                                                :64] == move_line_data.get(
-                                        "name") and str(
-                                        analytic_account_id) in x.analytic_distribution and not x.old_id)
+                                    aml = invoice.line_ids.filtered(lambda x: (x.balance == move_line_data.get("balance") or x.balance == round(move_line_data.get("balance"), 2)) and x.name[:64] == move_line_data.get("name") and str(analytic_account_id) in x.analytic_distribution and not x.old_id)
                                     if aml:
                                         aml = aml[0]
                                         aml.old_id = move_line_data.get("id")
@@ -2197,7 +2208,6 @@ class OdooMigrator(models.Model):
                                         print(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                             else:
                                 result = f"No se encontro una la linea {move_line_data.get('id')} para la factura {invoice.name}"
-                                import ipdb;ipdb.set_trace()
                                 migrator.create_error_log(msg=str(result), values=move_line_data)
                                 continue
                 elif aml and not same_currency:
@@ -2220,7 +2230,12 @@ class OdooMigrator(models.Model):
                                 continue
                             #Tenemos que diferenciar por cuenta analitica
                             if aml:
-                                analytic_account_id = self.env['account.analytic.account'].search([('old_id','=',move_line_data['analytic_account_id'][0])]).id
+                                field_is_not_empty = move_line_data['analytic_account_id']
+                                if field_is_not_empty:
+                                    analytic_account_id = self.env['account.analytic.account'].search([('old_id','=', move_line_data['analytic_account_id'][0])]).id
+                                else:
+                                    continue
+
                                 aml = invoice.line_ids.filtered(lambda x: (abs(x.amount_currency) == abs(amount_currency) or abs(x.amount_currency) == round(abs(amount_currency), 2)) and x.name[:64] == line_name and str(analytic_account_id) in x.analytic_distribution)
                                 if len(aml) == 1:
                                     aml.old_id = move_line_data.get("id")
@@ -2353,7 +2368,8 @@ class OdooMigrator(models.Model):
                         "payment_date",
                         "amount",
                         "currency_id",
-                        "move_line_ids",
+                        "state",
+                        # "move_line_ids",
                     ],
                     "offset": migrator.pagination_offset,
                     "limit": migrator.pagination_limit,
@@ -2364,26 +2380,17 @@ class OdooMigrator(models.Model):
                 continue
             total = len(payment_datas)
             transfer_count = 0
-
+            import ipdb;ipdb.set_trace()
             for contador, payment_data in enumerate(payment_datas, start=1):
                 print(f"vamos {contador} / {total}")
                 payment_old_id = payment_data["id"]
                 payment_data["date"] = payment_data.pop("payment_date")
+                payment_data["old_state"] = payment_data.pop("state")
                 payment_name = payment_data["name"]
-                old_move_id = (
-                    payment_data.pop("move_line_ids")
-                    if "move_line_ids" in payment_data
-                    else []
-                )
-                if old_move_id:
-                    payment_data["old_full_reconcile_ids"] = (
-                        migrator.get_old_full_reconcile_id_for(
-                            old_move_ids=old_move_id, from_payment=True
-                        )
-                    )
-                payment_id = payment_obj.search(
-                    [("old_id", "=", payment_old_id)], limit=1
-                )
+                old_move_id = (payment_data.pop("move_line_ids") if "move_line_ids" in payment_data else [])
+                # if old_move_id:
+                #     payment_data["old_full_reconcile_ids"] = (migrator.get_old_full_reconcile_id_for(old_move_ids=old_move_id, from_payment=True))
+                payment_id = payment_obj.search([("old_id", "=", payment_old_id)], limit=1)
 
                 if bool(payment_id):
                     print(f"el Pago {payment_name} ya existe")
@@ -2398,12 +2405,8 @@ class OdooMigrator(models.Model):
                     print(f"el Pago {payment_name}, es una Transferencia")
                     continue
 
-                migrator._clean_relational_fields_for(
-                    data=payment_data, model_obj=payment_obj
-                )
-                is_success, result = migrator.try_to_create_record(
-                    odoo_object=payment_obj, value=payment_data
-                )
+                migrator._clean_relational_fields_for(data=payment_data, model_obj=payment_obj)
+                is_success, result = migrator.try_to_create_record(odoo_object=payment_obj, value=payment_data)
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=payment_data)
                     continue

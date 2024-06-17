@@ -79,7 +79,7 @@ class AccountMove(models.Model):
     old_id = fields.Integer(string="ID on old DB")
     old_name = fields.Char(string="Name")
     old_full_reconcile_ids = fields.Char(string="Full reconcile IDs on old DB")
-    old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago")])
+    old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado")])
     migration_error = fields.Boolean(string="Migration Error")
 
     def _must_check_constrains_date_sequence(self):
