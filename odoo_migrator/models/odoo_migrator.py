@@ -459,22 +459,22 @@ class OdooMigrator(models.Model):
             rec.account_journals_count = len(rec.account_journals_ids)
 
     def action_view_contacts(self):
-        model_name = self._context.get('model_name')
+        model_name = self._context.get('model_name', False)
+        if not model_name:
+            raise UserError('No se pudo encontrar el modelo')
+        action = False
         
         if model_name == 'contact':
             action = self.env.ref("contacts.action_contacts").read()[0]
             action["domain"] = [("id", "in", self.contact_ids.ids)]
-            return action
 
         elif model_name == 'countries':
             action = self.env.ref("base.action_country").read()[0]
             action["domain"] = [("id", "in", self.country_ids.ids)]
-            return action
 
         elif model_name == 'states':
             action = self.env.ref("base.action_country_state").read()[0]
             action["domain"] = [("id", "in", self.state_ids.ids)]
-            return action
 
         elif model_name == 'currencies':
             action = self.env.ref("base.action_currency_form").read()[0]
@@ -484,37 +484,31 @@ class OdooMigrator(models.Model):
         elif model_name == 'account_journals':
             action = self.env.ref("account.action_account_journal_form").read()[0]
             action["domain"] = [("id", "in", self.account_journals_ids.ids)]
-            return action
+
         elif model_name == 'currency_rates':
             action = self.env.ref("base.act_view_currency_rates").read()[0]
             action["domain"] = [("id", "in", self.currency_rate_ids.ids)]
-            return action
 
         elif model_name == 'chart_of_accounts':
             action = self.env.ref("account.action_account_form").read()[0]
             action["domain"] = [("id", "in", self.chart_of_accounts_ids.ids)]
-            return action
 
         elif model_name == 'product_categories':
             action = self.env.ref("product.product_category_action_form").read()[0]
             action["domain"] = [("id", "in", self.product_categories_ids.ids)]
-            return action
 
         elif model_name == 'product_templates':
             action = self.env.ref("account.product_product_action_sellable").read()[0]
             action['context'] = {}
             action["domain"] = [("id", "in", self.product_templates_ids.ids)]
-            return action
 
         elif model_name == 'customer_invoices':
             action = self.env.ref("account.action_move_line_form").read()[0]
             action["domain"] = [("id", "in", self.account_moves_ids.ids)]
-            return action
 
         elif model_name == 'customer_invoice_lines':
             action = self.env.ref("account.action_move_line_form").read()[0]
             action["domain"] = [("id", "in", self.account_moves_ids.ids)]
-            return action
 
         elif model_name == 'customer_moves_lines':
             action = self.env.ref("account.action_move_line_form").read()[0]
@@ -524,41 +518,38 @@ class OdooMigrator(models.Model):
         elif model_name == 'supplier_invoices':
             action = self.env.ref("account.action_move_line_form").read()[0]
             action["domain"] = [("id", "in", self.account_moves_ids.ids)]
-            return action
 
         elif model_name == 'supplier_invoice_lines':
             action = self.env.ref("account.action_move_line_form").read()[0]
             action["domain"] = [("id", "in", self.account_moves_ids.ids)]
-            return action
 
         elif model_name == 'account_entries':
             action = self.env.ref("account.action_move_line_form").read()[0]
             action["domain"] = [("id", "in", self.account_moves_ids.ids)]
-            return action
 
         elif model_name == 'customer_payments':
             action = self.env.ref("account.action_account_all_payments").read()[0]
             action["domain"] = [("id", "in", self.account_payments_ids.ids)]
-            return action
 
         elif model_name == 'customer_payment_moves':
             action = self.env.ref("account.action_account_all_payments").read()[0]
             action["domain"] = [("id", "in", self.account_payments_ids.ids)]
-            return action
+
         elif model_name == 'customer_reconcile':
             action = self.env.ref("contacts.action_contacts").read()[0] # Modificar la ref
             action["domain"] = [("id", "in", self.contact_ids.ids)] # Modificar este domain
-            return action
 
         elif model_name == 'supplier_reconcile':
             action = self.env.ref("contacts.action_contacts").read()[0] # Modificar la ref
             action["domain"] = [("id", "in", self.contact_ids.ids)] # Modificar este domain
-            return action
 
         elif model_name == 'supplier_payments':
             action = self.env.ref("contacts.action_contacts").read()[0] # Modificar la ref
             action["domain"] = [("id", "in", self.contact_ids.ids)] # Modificar este domain
-            return action
+
+        if not action:
+            raise UserError('No se pudo encontrar la vista')
+        return action
 
     def connect_with_source(self):
         self.ensure_one()
