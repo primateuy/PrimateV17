@@ -1,0 +1,274 @@
+<odoo>
+    <data>
+        <record id="res_company_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.company.form.inherit.view</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data">
+                        <field name="old_id"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_country_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.country.form.inherit.view</field>
+            <field name="model">res.country</field>
+            <field name="inherit_id" ref="base.view_country_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state_ids']" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_country_state_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.country.state.form.inherit.view</field>
+            <field name="model">res.country.state</field>
+            <field name="inherit_id" ref="base.view_country_state_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_partner_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.view</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data">
+                        <field name="old_id"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_currency_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.currency.form.inherit.view</field>
+            <field name="model">res.currency</field>
+            <field name="inherit_id" ref="base.view_currency_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data">
+                        <field name="old_id"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_currency_rate_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.currency.rate.form.inherit.view</field>
+            <field name="model">res.currency.rate</field>
+            <field name="inherit_id" ref="base.view_currency_rate_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_account_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.account.form.inherit.view</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_journal_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.journal.form.inherit.view</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_category_inherit_form_view" model="ir.ui.view">
+            <field name="name">product.category.form.inherit.view</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='account_property']" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_template_inherit_form_view" model="ir.ui.view">
+            <field name="name">product.template.form.inherit.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_product_inherit_form_view" model="ir.ui.view">
+            <field name="name">product.product.form.inherit.view</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_move_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.move.form.inherit.view</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                            <field name="old_name"/>
+                            <field name="old_full_reconcile_ids"/>
+                            <field name="old_state"/>
+                            <field name="migration_error"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_move_line_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.move.line.form.inherit.view</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_move_line_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="invoice_old_id"/>
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_full_reconcile_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.full.reconcile.form.inherit.view</field>
+            <field name="model">account.full.reconcile</field>
+            <field name="inherit_id" ref="account.view_full_reconcile_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_payment_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.payment.inherit.view</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                            <field name="old_name"/>
+                            <field name="old_full_reconcile_ids"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_analytic_account_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.analytic.account.inherit.view</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_tax_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.tax.form.inherit.view</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_tax_group_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.tax.group.form.inherit.view</field>
+            <field name="model">account.tax.group</field>
+            <field name="inherit_id" ref="account.view_tax_group_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[last()]" position="after">
+                    <notebook>
+                        <page string="Old migration data">
+                            <field name="old_id"/>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

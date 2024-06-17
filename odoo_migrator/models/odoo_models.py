@@ -117,11 +117,6 @@ class AccountPartialReconcile(models.Model):
 
     old_id = fields.Integer(string="ID on old DB")
 
-class AccountAccount(models.Model):
-    _inherit = "account.account"
-
-    old_id = fields.Integer(string="ID on old DB")
-
 class AccountAnalyticAccount(models.Model):
     _inherit = 'account.analytic.account'
 
