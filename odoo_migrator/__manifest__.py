@@ -13,6 +13,7 @@
         "data/sequence.xml",
         "views/odoo_migrator_view.xml",
         "views/odoo_migrator_mapping_view.xml",
+        "views/odoo_migrator_reconcile_view.xml",
         "views/odoo_models_inherits_view.xml",
     ],
     "installable": True,

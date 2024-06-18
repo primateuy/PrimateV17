@@ -1,0 +1,165 @@
+<odoo>
+
+
+    <!-- Acción -->
+    <record id="action_odoo_migrator_reconciliation" model="ir.actions.act_window">
+        <field name="name">Reconciliaciones</field>
+        <field name="res_model">odoo.migrator.reconciliation</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No reconciliations found.
+            </p>
+        </field>
+    </record>
+
+    <!-- Vista Tree -->
+    <record id="view_migrator_reconciliation_tree" model="ir.ui.view">
+        <field name="name">odoo.migrator.reconciliation.tree</field>
+        <field name="model">odoo.migrator.reconciliation</field>
+        <field name="arch" type="xml">
+            <tree string="Conciliaciones"
+                  edit="0"
+                  create="0"
+                  delete="0"
+                  decoration-danger="not debit_move_id and not credit_move_id and not successful_reconciliation"
+                  decoration-warning="debit_move_id and credit_move_id and not successful_reconciliation"
+                  decoration-success="successful_reconciliation"
+            >
+                <header>
+                    <button name="reconcile"
+                            type="object"
+                            string="Reconciliar"
+                            class="btn-primary"
+                    />
+                </header>
+
+                <field name="name" />
+                <field name="old_id" />
+                <field name="old_debit_move_id" />
+                <field name="old_credit_move_id" />
+                <field name="debit_move_id" />
+                <field name="credit_move_id" />
+                <field name="successful_reconciliation" />
+                <button name="reconcile"
+                        invisible="successful_reconciliation"
+                        string="Reconciliar"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-solid fa-puzzle-piece"
+                />
+                <button name="view_record"
+                        string="Ver Registro Débito"
+                        type="object"
+                        class="btn-primary"
+                        context="{'model_to_view':'debit'}"
+                />
+                <button name="view_record"
+                        string="Ver Registro Crédito"
+                        type="object"
+                        class="btn-primary"
+                        context="{'model_to_view':'credit'}"
+                />
+
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form -->
+    <record id="view_migrator_reconciliation_form" model="ir.ui.view">
+        <field name="name">odoo.migrator.reconciliation.form</field>
+        <field name="model">odoo.migrator.reconciliation</field>
+        <field name="arch" type="xml">
+            <form string="Reconciliación">
+                <header>
+                    <button name="reconcile"
+                            invisible="successful_reconciliation"
+                            string="Reconciliar"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-solid fa-puzzle-piece"
+                    />
+                    <button name="view_record"
+                            string="Ver Registro Débito"
+                            type="object"
+                            class="btn-primary"
+                            context="{'model_to_view':'debit'}"
+                    />
+                    <button name="view_record"
+                            string="Ver Registro Crédito"
+                            type="object"
+                            class="btn-primary"
+                            context="{'model_to_view':'credit'}"
+                    />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="old_id"/>
+                        <field name="old_debit_move_id"/>
+                        <field name="old_credit_move_id"/>
+                        <field name="debit_move_id"/>
+                        <field name="credit_move_id"/>
+                        <field name="successful_reconciliation"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Kanban -->
+    <record id="view_migrator_reconciliation_kanban" model="ir.ui.view">
+        <field name="name">odoo.migrator.reconciliation.kanban</field>
+        <field name="model">odoo.migrator.reconciliation</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_example">
+                <field name="name"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_title">
+                                    <strong>
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista Search -->
+    <record id="view_migrator_reconciliation_search" model="ir.ui.view">
+        <field name="name">odoo.migrator.reconciliation.search</field>
+        <field name="model">odoo.migrator.reconciliation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="old_id"/>
+                <field name="old_debit_move_id"/>
+                <field name="old_credit_move_id"/>
+                <field name="debit_move_id"/>
+                <field name="credit_move_id"/>
+                <field name="successful_reconciliation"/>
+                <filter string="Sin reconciliar" name="no_reconciliation" domain="[('debit_move_id', '!=', False), ('credit_move_id', '!=', False),('successful_reconciliation', '=', False)]"/>
+                <filter string="Reconciliaciones exitosas" name="successful_reconciliation" domain="[('successful_reconciliation', '=', True)]"/>
+                <filter string="Faltan movimientos de débito" name="missing_debit_move" domain="[('debit_move_id', '=', False)]"/>
+                <filter string="Faltan movimientos de crédito" name="missing_credit_move" domain="[('credit_move_id', '=', False)]"/>
+                <filter string="Faltan movimientos de crédito y débito" name="missing_credit_debit_move" domain="[('credit_move_id', '=', False), ('debit_move_id', '=', False)]"/>
+                <separator/>
+
+                <filter string="Migrador" name="groupby_migrator" domain="[]" context="{'group_by': 'migrator_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Menú de Acceso -->
+    <menuitem id="migrator_reconcile_main_menu" name="Conciliaciones" sequence="3" parent="migrator_root_menu"/>
+    <menuitem id="migrator_reconcile" name="Conciliaciones" sequence="1" parent="migrator_reconcile_main_menu" action="action_odoo_migrator_reconciliation"/>
+
+</odoo>

@@ -221,33 +221,51 @@
                                 </group>
                             </page>
                             <page name="page_reconciliation" string="Conciliaciones">
-                                <group>
-                                    <field name="reconciliation_line_ids" mode="tree">
-                                        <tree edit="0" create="0" delete="0" nolabel="1">
-                                            <field name="name" />
-                                            <field name="old_debit_move_id" />
-                                            <field name="old_credit_move_id" />
-                                            <field name="debit_move_id" />
-                                            <field name="credit_move_id" />
-                                            <button name="view_record"
-                                                    string="Registro Débito"
-                                                    type="object"
-                                                    class="btn-primary"
-                                                    icon="fa-arrow"
-                                                    icon_color="white"
-                                                    widget="action"
-                                            />
-                                            <button name="view_record"
-                                                    string="Registro Crédito"
-                                                    type="object"
-                                                    class="btn-primary"
-                                                    icon="fa-arrow"
-                                                    icon_color="white"
-                                                    widget="action"
-                                            />
-                                        </tree>
-                                    </field>
-                                </group>
+                                <button name="reconcile_lines"
+                                        string="Reconciliar lineas"
+                                        type="object"
+                                        class="btn-primary"
+                                        icon="fa-solid fa-puzzle-piece"
+                                />
+                                <field name="reconciliation_line_ids" mode="tree">
+                                    <tree edit="0"
+                                          create="0"
+                                          delete="0"
+                                          nolabel="1"
+                                          decoration-danger="not debit_move_id and not credit_move_id and not successful_reconciliation"
+                                          decoration-warning="debit_move_id and credit_move_id and not successful_reconciliation"
+                                          decoration-success="successful_reconciliation"
+                                    >
+                                        <field name="name" />
+                                        <field name="old_id" />
+                                        <field name="old_debit_move_id" />
+                                        <field name="old_credit_move_id" />
+                                        <field name="debit_move_id" />
+                                        <field name="credit_move_id" />
+                                        <field name="successful_reconciliation" />
+                                        <button name="reconcile"
+                                                invisible="successful_reconciliation"
+                                                string="Reconciliar"
+                                                type="object"
+                                                class="btn-primary"
+                                                icon="fa-solid fa-puzzle-piece"
+                                        />
+                                        <button name="view_record"
+                                                string="Ver Registro Débito"
+                                                type="object"
+                                                class="btn-primary"
+                                                context="{'model_to_view':'debit'}"
+                                        />
+                                        <button name="view_record"
+                                                string="Ver Registro Crédito"
+                                                type="object"
+                                                class="btn-primary"
+                                                context="{'model_to_view':'credit'}"
+                                        />
+
+                                    </tree>
+                                </field>
+
                             </page>
                             <page name="aux_fields_page" string="Aux fields">
                                 <group>

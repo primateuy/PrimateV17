@@ -164,16 +164,16 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
+                <xpath expr="//page[@id='other_tab']" position="after">
+                    <page string="Old migration data" id="migration_page">
+                        <group string="Migration Data">
                             <field name="old_id"/>
                             <field name="old_name"/>
                             <field name="old_full_reconcile_ids"/>
                             <field name="old_state"/>
                             <field name="migration_error"/>
-                        </page>
-                    </notebook>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>

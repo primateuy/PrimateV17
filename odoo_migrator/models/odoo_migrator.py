@@ -300,18 +300,70 @@ class OdooMigratorReconciliation(models.Model):
         required=True,
         index="trigram",
     )
-    migrator_id = fields.Many2one(
-        "odoo.migrator", string="Migrator Reference", ondelete="cascade"
-    )
+    old_id = fields.Char(string="Old ID")
+    migrator_id = fields.Many2one(comodel_name="odoo.migrator", string="Migrator Reference", ondelete="cascade")
     old_debit_move_id = fields.Char(string="Old Debit")
     old_credit_move_id = fields.Char(string="Old Credit")
     debit_move_id = fields.Many2one(comodel_name='account.move.line', string="Debit Move")
     credit_move_id = fields.Many2one(comodel_name='account.move.line', string="Credit Move")
+    successful_reconciliation = fields.Boolean(string="Successful Reconciliation", default=False)
+
+    def reconcile(self):
+        # import ipdb;ipdb.set_trace()
+        for rec in self:
+            debit_move = rec.debit_move_id
+            if debit_move.move_id.state == "draft":
+                message = f'El asiento de debito {debit_move.move_id.name} no se encuentra validado (id: --> {debit_move.move_id.id})'
+                raise UserError(message)
+
+            credit_move = rec.credit_move_id
+
+            if credit_move.move_id.state == "draft":
+                message = f'El asiento de credito {credit_move.move_id.name} no se encuentra validado (id: --> {credit_move.move_id.id})'
+                raise UserError(message)
+            if not credit_move and not debit_move:
+                raise UserError(f'No se encontro el asiento de debito {rec.old_debit_move_id} y el asiento de credito {rec.old_credit_move_id}')
+            try:
+                (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
+                rec.successful_reconciliation = True
+            except Exception as error:
+                rec.successful_reconciliation = False
+                # import ipdb;ipdb.set_trace()
+                self.env.cr.commit()
+                raise UserError(error)
+        #
+        return True
+
 
 
     def view_record(self):
+        """
+        model_to_view
+        :return: 
+        debit
+        credit
+        """
+        import ipdb;ipdb.set_trace()
         ctx = self._context.copy()
-        return
+        model_to_view = ctx.get('model_to_view')
+        if model_to_view == 'debit':
+            res_id = self.debit_move_id.move_id.id
+            if not res_id:
+                raise UserError('No se encontro el asiento de debito')
+            action = self.env.ref("account.action_move_journal_line").read()[0]
+            action['res_id'] = res_id
+            action['domain'] = [('id', '=', res_id)]
+        elif model_to_view == 'credit':
+            res_id = self.credit_move_id.payment_id.id
+            if not res_id:
+                raise UserError('No se encontro el asiento de credito')
+            action = self.env.ref("account.action_account_payments").read()[0]
+            action['res_id'] = res_id
+            action['domain'] = [('id', '=', res_id)]
+        else:
+            raise UserError('No se encontro el modelo a visualizar')
+
+        return action
 
 
 
@@ -506,6 +558,8 @@ class OdooMigrator(models.Model):
     chart_of_accounts_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     currency_rates_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     account_journals_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+
+
 
 
     def paginate(self):
@@ -2783,6 +2837,7 @@ class OdooMigrator(models.Model):
 
         model_name: str = "account.partial.reconcile"
         aml_obj = self.env["account.move.line"]
+        odoo_reconciliation_obj = self.env["odoo.migrator.reconciliation"].sudo()
         for migrator in self:
             move_ids = []
             if migrator.account_payments_ids.filtered(lambda x: x.state == "posted"):
@@ -2808,34 +2863,81 @@ class OdooMigrator(models.Model):
             )
             import ipdb;
             ipdb.set_trace()
-            for reconcile in reconcile_datas:
+            values = {}
+            to_create = []
+            total = len(reconcile_datas)
+            for contador, reconcile in enumerate(reconcile_datas, start=1):
+                print(f"vamos {contador} / {total}")
+                old_id = reconcile.get("id")
                 old_debit_move_id = reconcile.get("debit_move_id")[0]
-                debit_move = aml_obj.search([("old_id", "=", old_debit_move_id), ('reconciled', '=', False)])
-
-                if debit_move.move_id.state == "draft":
-                    message = f'El asiento de debito {debit_move.move_id.name} no se encuentra validado (id: --> {debit_move.move_id.id})'
-                    migrator.create_error_log(msg=message, values=reconcile)
-                    raise UserError(message)
-
                 old_credit_move_id = reconcile.get("credit_move_id")[0]
+                debit_move = aml_obj.search([("old_id", "=", old_debit_move_id), ('reconciled', '=', False)])
                 credit_move = aml_obj.search([("old_id", "=", old_credit_move_id), ('reconciled', '=', False)])
 
-                if credit_move.move_id.state == "draft":
-                    message = f'El asiento de credito {credit_move.move_id.name} no se encuentra validado (id: --> {credit_move.move_id.id})'
-                    migrator.create_error_log(msg=message, values=reconcile)
-                    raise UserError(message)
-                if not credit_move and not debit_move:
-                    migrator.create_error_log(msg=f'No se encontro el asiento de debito {old_debit_move_id} y el asiento de credito {old_credit_move_id}', values=reconcile)
-                    continue
-                try:
-                    (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
-                except Exception as error:
-                    migrator.create_error_log(msg=str(error), values=reconcile)
-                    # import ipdb;ipdb.set_trace()
-                    self.env.cr.commit()
-                    # raise UserError(error)
+                values = {
+                    'old_id': old_id,
+                    'old_debit_move_id': old_debit_move_id,
+                    'old_credit_move_id': old_credit_move_id,
+                    'debit_move_id': debit_move.id if debit_move else False,
+                    'credit_move_id': credit_move.id if credit_move else False,
+                    'migrator_id': migrator.id
+                }
+                # to_create.append(values)
+                result = odoo_reconciliation_obj.search([('old_id', '=', old_id)])
+                if not result:
+                    result = odoo_reconciliation_obj.create(values)
+
+
+
+                # debit_move = aml_obj.search([("old_id", "=", old_debit_move_id), ('reconciled', '=', False)])
+                #
+                # if debit_move.move_id.state == "draft":
+                #     message = f'El asiento de debito {debit_move.move_id.name} no se encuentra validado (id: --> {debit_move.move_id.id})'
+                #     migrator.create_error_log(msg=message, values=reconcile)
+                #     raise UserError(message)
+                #
+                #
+                # credit_move = aml_obj.search([("old_id", "=", old_credit_move_id), ('reconciled', '=', False)])
+                #
+                # if credit_move.move_id.state == "draft":
+                #     message = f'El asiento de credito {credit_move.move_id.name} no se encuentra validado (id: --> {credit_move.move_id.id})'
+                #     migrator.create_error_log(msg=message, values=reconcile)
+                #     raise UserError(message)
+                # if not credit_move and not debit_move:
+                #     migrator.create_error_log(msg=f'No se encontro el asiento de debito {old_debit_move_id} y el asiento de credito {old_credit_move_id}', values=reconcile)
+                #     continue
+                # try:
+                #     (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
+                # except Exception as error:
+                #     migrator.create_error_log(msg=str(error), values=reconcile)
+                #     # import ipdb;ipdb.set_trace()
+                #     self.env.cr.commit()
+                #     # raise UserError(error)
 
         return True
+
+    def reconcile_lines(self):
+        import ipdb;ipdb.set_trace()
+        lines_to_reconcile = self.reconciliation_line_ids.filtered(lambda x: x.debit_move_id and x.credit_move_id and not x.successful_reconciliation)
+        total = len(lines_to_reconcile)
+        commit_count = 500
+        side_count = 0
+        for contador, line in enumerate(lines_to_reconcile, start=1):
+            print(f'Vamos {contador} / {total}')
+            if side_count > commit_count:
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                self.env.cr.commit()
+                side_count = 0
+            try:
+                line.reconcile()
+                self.create_success_log("Se creo una conciliación para la linea %s" % line.id)
+            except Exception as error:
+                self.env.cr.commit()
+                #pepe
+                self.create_error_log(msg=str(error), values=line)
+
 
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
