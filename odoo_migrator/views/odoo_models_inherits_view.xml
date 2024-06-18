@@ -6,8 +6,10 @@
             <field name="inherit_id" ref="base.view_company_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//notebook[last()]" position="inside">
-                    <page string="Old migration data">
-                        <field name="old_id"/>
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
                     </page>
                 </xpath>
             </field>
@@ -18,12 +20,10 @@
             <field name="model">res.country</field>
             <field name="inherit_id" ref="base.view_country_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='state_ids']" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//group[@name='phone_vat_settings']" position="before">
+                    <group string="Old migration data" id="old_migration_data">
+                        <field name="old_id" readonly="1"/>
+                    </group>
                 </xpath>
             </field>
         </record>
@@ -35,8 +35,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
+                        <page string="Old migration data" id="old_migration_data">
+                            <group>
+                                <field name="old_id" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
@@ -49,8 +51,10 @@
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//notebook[last()]" position="inside">
-                    <page string="Old migration data">
-                        <field name="old_id"/>
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
                     </page>
                 </xpath>
             </field>
@@ -62,8 +66,10 @@
             <field name="inherit_id" ref="base.view_currency_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//notebook[last()]" position="inside">
-                    <page string="Old migration data">
-                        <field name="old_id"/>
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
                     </page>
                 </xpath>
             </field>
@@ -76,8 +82,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
+                        <page string="Old migration data" id="old_migration_data">
+                            <group>
+                                <field name="old_id" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
@@ -89,12 +97,12 @@
             <field name="model">account.account</field>
             <field name="inherit_id" ref="account.view_account_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -104,12 +112,12 @@
             <field name="model">account.journal</field>
             <field name="inherit_id" ref="account.view_account_journal_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -121,23 +129,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='account_property']" position="after">
                     <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
-                </xpath>
-            </field>
-        </record>
-
-        <record id="product_template_inherit_form_view" model="ir.ui.view">
-            <field name="name">product.template.form.inherit.view</field>
-            <field name="model">product.template</field>
-            <field name="inherit_id" ref="product.product_template_form_view"/>
-            <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
+                        <page string="Old migration data" id="old_migration_data">
+                            <group>
+                                <field name="old_id" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
@@ -149,12 +144,12 @@
             <field name="model">product.product</field>
             <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -164,14 +159,14 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//page[@id='other_tab']" position="after">
-                    <page string="Old migration data" id="migration_page">
-                        <group string="Migration Data">
-                            <field name="old_id"/>
-                            <field name="old_name"/>
-                            <field name="old_full_reconcile_ids"/>
-                            <field name="old_state"/>
-                            <field name="migration_error"/>
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                            <field name="old_name" readonly="1"/>
+                            <field name="old_full_reconcile_ids" readonly="1"/>
+                            <field name="old_state" readonly="1"/>
+                            <field name="migration_error" readonly="1"/>
                         </group>
                     </page>
                 </xpath>
@@ -183,13 +178,13 @@
             <field name="model">account.move.line</field>
             <field name="inherit_id" ref="account.view_move_line_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="invoice_old_id"/>
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="invoice_old_id" readonly="1"/>
+                            <field name="old_id" readonly="1"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -199,12 +194,10 @@
             <field name="model">account.full.reconcile</field>
             <field name="inherit_id" ref="account.view_full_reconcile_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//group[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//group[last()]" position="before">
+                    <group string="Old migration data" id="old_migration_data">
+                        <field name="old_id" readonly="1"/>
+                    </group>
                 </xpath>
             </field>
         </record>
@@ -216,10 +209,12 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                            <field name="old_name"/>
-                            <field name="old_full_reconcile_ids"/>
+                        <page string="Old migration data" id="old_migration_data">
+                            <group>
+                                <field name="old_id" readonly="1"/>
+                                <field name="old_name" readonly="1"/>
+                                <field name="old_full_reconcile_ids" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
@@ -233,8 +228,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
+                        <page string="Old migration data" id="old_migration_data">
+                            <group>
+                                <field name="old_id" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
@@ -246,12 +243,12 @@
             <field name="model">account.tax</field>
             <field name="inherit_id" ref="account.view_tax_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
-                        </page>
-                    </notebook>
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data">
+                        <group>
+                            <field name="old_id" readonly="1"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -263,8 +260,10 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
-                        <page string="Old migration data">
-                            <field name="old_id"/>
+                        <page string="Old migration data" id="old_migration_data">
+                            <group>
+                                <field name="old_id" readonly="1"/>
+                            </group>
                         </page>
                     </notebook>
                 </xpath>
