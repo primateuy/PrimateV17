@@ -87,6 +87,7 @@ class AccountMove(models.Model):
     old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")])
     migration_error = fields.Boolean(string="Migration Error")
 
+
     def _must_check_constrains_date_sequence(self):
         ctx = self.env.context.copy()
         if ctx.get('dont_check_constrains_date_sequence', False):
@@ -101,6 +102,7 @@ class AccountMoveLine(models.Model):
 
     invoice_old_id = fields.Integer(string="Invoice Line ID on old DB")
     old_id = fields.Integer(string="ID on old DB")
+    move_version = fields.Selection(selection=[("old_move", "Old Move"), ("new_move", "New Move")], default="old_move")
 
 
 class AccountPayment(models.Model):
