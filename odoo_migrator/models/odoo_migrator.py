@@ -1,4 +1,5 @@
 # migracion_datos_v13_v15/models/models.py
+import datetime
 from email.utils import parseaddr
 from typing import Any, Dict, List, Tuple
 from functools import partial
@@ -2224,11 +2225,7 @@ class OdooMigrator(models.Model):
                 "order": "id asc",
             },
         )
-        result = [
-            x.get("full_reconcile_id")[0]
-            for x in account_move_line_datas
-            if x.get("full_reconcile_id")
-        ]
+        result = [x.get("full_reconcile_id")[0] for x in account_move_line_datas if x.get("full_reconcile_id")]
 
         return result
 
@@ -2298,8 +2295,7 @@ class OdooMigrator(models.Model):
 
                 account_move_data["old_state"] = account_move_data.pop("state")
                 old_move_id_data = account_move_data.get('move_id', False)
-
-                if old_move_id_data:
+                if old_move_id_data and False:
                     old_move_id = old_move_id_data[0]
                     if move_type != "entry":
                         account_move_data["old_full_reconcile_ids"] = (migrator.get_old_full_reconcile_id_for(old_move_ids=[old_move_id], from_payment=False))
@@ -2312,7 +2308,6 @@ class OdooMigrator(models.Model):
                 migrator.create_success_log(values=account_move_data)
                 print(f"se creo la Factura {result.name}")
                 migrator.account_moves_ids += result
-
             print(f"se crearon {len(self.account_moves_ids)} Facturas")
         return True
 
@@ -2335,6 +2330,9 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move.line"
         model_name_old: str = "account.invoice.line"
         move_line_obj = self.env[model_name]
+        tax_obj = self.env['account.tax']
+        sale_exempt_tax = tax_obj.search([('type_tax_use', '=', 'sale'), ('amount', '=', 0.00), ('active', '=', True)], limit=1)
+        purchase_exempt_tax = tax_obj.search([('type_tax_use', '=', 'purchase'), ('amount', '=', 0.00), ('active', '=', True)], limit=1)
         to_create = []
         for migrator in self:
             already_migrated_ids = migrator.account_move_line_ids.mapped("old_id")
@@ -2355,7 +2353,6 @@ class OdooMigrator(models.Model):
             total = len(move_line_datas)
             commit_count = 500
             side_count = 0
-
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
@@ -2369,7 +2366,10 @@ class OdooMigrator(models.Model):
                     side_count = 0
                 print(f"vamos {contador} / {total}")
                 old_data = move_line_data
-                move_line_data["tax_ids"] = move_line_data.pop("invoice_line_tax_ids")
+                if move_line_data.get("invoice_line_tax_ids", False):
+                    move_line_data["tax_ids"] = move_line_data.pop("invoice_line_tax_ids")
+                elif sale_exempt_tax and sale_exempt_tax.old_id:
+                    move_line_data["tax_ids"] = [sale_exempt_tax.old_id]
                 move_line_data["move_id"] = move_line_data.pop("invoice_id")
                 move_line_old_id = move_line_data["id"]
                 move_line_name = move_line_data["name"]
@@ -2497,8 +2497,6 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(move_line_datas)
-            import ipdb
-            ipdb.set_trace()
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 print(f"vamos {contador} / {total}")
                 old_data = move_line_data
@@ -2648,8 +2646,6 @@ class OdooMigrator(models.Model):
                         account_id = account_obj.search([('old_id', '=', old_account_id)], limit=1)
                         if not account_id:
                             raise UserError('¡¡¡¡Esto no deberia suceder!!!!')
-                        if contador == 6030:
-                            ipdb.set_trace()
                         aml.account_id = account_id.id
                         print('cambiamos la cuenta')
 
