@@ -2301,11 +2301,11 @@ class OdooMigrator(models.Model):
 
                 if old_move_id_data:
                     old_move_id = old_move_id_data[0]
-                    account_move_data.pop("move_id")
                     if move_type != "entry":
                         account_move_data["old_full_reconcile_ids"] = (migrator.get_old_full_reconcile_id_for(old_move_ids=[old_move_id], from_payment=False))
+                account_move_data.pop("move_id")
                 migrator._clean_relational_fields_for(data=account_move_data, model_obj=account_move_obj)
-                is_success, result = migrator.try_to_create_record(odoo_object=account_move_obj,value=account_move_data)
+                is_success, result = migrator.try_to_create_record(odoo_object=account_move_obj, value=account_move_data)
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=account_move_data)
                     continue
@@ -2497,7 +2497,8 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(move_line_datas)
-
+            import ipdb
+            ipdb.set_trace()
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 print(f"vamos {contador} / {total}")
                 old_data = move_line_data
@@ -2647,6 +2648,8 @@ class OdooMigrator(models.Model):
                         account_id = account_obj.search([('old_id', '=', old_account_id)], limit=1)
                         if not account_id:
                             raise UserError('¡¡¡¡Esto no deberia suceder!!!!')
+                        if contador == 6030:
+                            ipdb.set_trace()
                         aml.account_id = account_id.id
                         print('cambiamos la cuenta')
 
