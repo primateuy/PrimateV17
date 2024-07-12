@@ -273,166 +273,168 @@
                                 </group>
                             </page>
                             <page name="buttons_page" string="Botones">
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-user"
-                                        name="action_view_model"
-                                        context="{'model_name': 'contact'}"
-                                        invisible="contact_count == 0">
-                                    <field name="contact_count" string="Contactos" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-globe"
-                                        name="action_view_model"
-                                        context="{'model_name': 'countries'}"
-                                        invisible="countries_count == 0">
-                                    <field name="countries_count" string="Paises" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-map"
-                                        name="action_view_model"
-                                        context="{'model_name': 'states'}"
-                                        invisible="states_count == 0">
-                                    <field name="states_count" string="Estados" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-usd"
-                                        name="action_view_model"
-                                        context="{'model_name': 'currencies'}"
-                                        invisible="currencies_count == 0">
-                                    <field name="currencies_count" string="Monedas" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-book"
-                                        name="action_view_model"
-                                        context="{'model_name': 'account_journals'}"
-                                        invisible="account_journals_count == 0">
-                                    <field name="account_journals_count" string="Diarios" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-line-chart"
-                                        name="action_view_model"
-                                        context="{'model_name': 'currency_rates'}"
-                                        invisible="currency_rates_count == 0">
-                                    <field name="currency_rates_count" string="Tasas de la Monedas" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-folder"
-                                        name="action_view_model"
-                                        context="{'model_name': 'chart_of_accounts'}"
-                                        invisible="chart_of_accounts_count == 0">
-                                    <field name="chart_of_accounts_count" string="Plan de Cuentas" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-cubes"
-                                        name="action_view_model"
-                                        context="{'model_name': 'product_categories'}"
-                                        invisible="product_categories_count == 0">
-                                    <field name="product_categories_count" string="Categorias de productos" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-cube"
-                                        name="action_view_model"
-                                        context="{'model_name': 'product_templates'}"
-                                        invisible="product_templates_count == 0">
-                                    <field name="product_templates_count" string="Plantillas de productos" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-file-zip-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'customer_invoices'}"
-                                        invisible="customer_invoices_count == 0">
-                                    <field name="customer_invoices_count" string="Facturas de Clientes (cabezales)" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-file-zip-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'customer_invoice_lines'}"
-                                        invisible="customer_invoice_lines_count == 0">
-                                    <field name="customer_invoice_lines_count" string="Facturas de Clientes (lineas)" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-file-zip-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'customer_moves_lines'}"
-                                        invisible="customer_moves_lines_count == 0">
-                                    <field name="customer_moves_lines_count" string="Facturas de Clientes (movimientos)" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-file-zip-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'supplier_invoices'}"
-                                        invisible="supplier_invoices_count == 0">
-                                    <field name="supplier_invoices_count" string="Facturas de Proveedor (cabezales)" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-file-zip-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'supplier_invoice_lines'}"
-                                        invisible="supplier_invoice_lines_count == 0">
-                                    <field name="supplier_invoice_lines_count" string="Facturas de Proveedor (lineas)" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-balance-scale"
-                                        name="action_view_model"
-                                        context="{'model_name': 'account_entries'}"
-                                        invisible="account_entries_count == 0">
-                                    <field name="account_entries_count" string="Asientos contables" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-paypal"
-                                        name="action_view_model"
-                                        context="{'model_name': 'customer_payments'}"
-                                        invisible="customer_payments_count == 0">
-                                    <field name="customer_payments_count" string="Pagos de Clientes" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-paypal"
-                                        name="action_view_model"
-                                        context="{'model_name': 'customer_payment_moves'}"
-                                        invisible="customer_payment_moves_count == 0">
-                                    <field name="customer_payment_moves_count" string="Pagos de Clientes (movimientos)" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-handshake-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'customer_reconcile'}"
-                                        invisible="customer_reconcile_count == 0">
-                                    <field name="customer_reconcile_count" string="Conciliaciones de Clientes" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-handshake-o"
-                                        name="action_view_model"
-                                        context="{'model_name': 'supplier_reconcile'}"
-                                        invisible="supplier_reconcile_count == 0">
-                                    <field name="supplier_reconcile_count" string="Conciliaciones de Proveedores" widget="statinfo" />
-                                </button>
-                                <button class="oe_stat_button"
-                                        type="object"
-                                        icon="fa-paypal"
-                                        name="action_view_model"
-                                        context="{'model_name': 'supplier_payments'}"
-                                        invisible="supplier_payments_count == 0">
-                                    <field name="supplier_payments_count" string="Pagos de Proveedores" widget="statinfo" />
-                                </button>
+                                <group>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-user"
+                                            name="action_view_model"
+                                            context="{'model_name': 'contact'}"
+                                            invisible="contact_count == 0">
+                                        <field name="contact_count" string="Contactos" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-globe"
+                                            name="action_view_model"
+                                            context="{'model_name': 'countries'}"
+                                            invisible="countries_count == 0">
+                                        <field name="countries_count" string="Paises" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-map"
+                                            name="action_view_model"
+                                            context="{'model_name': 'states'}"
+                                            invisible="states_count == 0">
+                                        <field name="states_count" string="Estados" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-usd"
+                                            name="action_view_model"
+                                            context="{'model_name': 'currencies'}"
+                                            invisible="currencies_count == 0">
+                                        <field name="currencies_count" string="Monedas" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-book"
+                                            name="action_view_model"
+                                            context="{'model_name': 'account_journals'}"
+                                            invisible="account_journals_count == 0">
+                                        <field name="account_journals_count" string="Diarios" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-line-chart"
+                                            name="action_view_model"
+                                            context="{'model_name': 'currency_rates'}"
+                                            invisible="currency_rates_count == 0">
+                                        <field name="currency_rates_count" string="Tasas de la Monedas" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-folder"
+                                            name="action_view_model"
+                                            context="{'model_name': 'chart_of_accounts'}"
+                                            invisible="chart_of_accounts_count == 0">
+                                        <field name="chart_of_accounts_count" string="Plan de Cuentas" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-cubes"
+                                            name="action_view_model"
+                                            context="{'model_name': 'product_categories'}"
+                                            invisible="product_categories_count == 0">
+                                        <field name="product_categories_count" string="Categorias de productos" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-cube"
+                                            name="action_view_model"
+                                            context="{'model_name': 'product_templates'}"
+                                            invisible="product_templates_count == 0">
+                                        <field name="product_templates_count" string="Plantillas de productos" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-file-zip-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'customer_invoices'}"
+                                            invisible="customer_invoices_count == 0">
+                                        <field name="customer_invoices_count" string="Facturas de Clientes (cabezales)" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-file-zip-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'customer_invoice_lines'}"
+                                            invisible="customer_invoice_lines_count == 0">
+                                        <field name="customer_invoice_lines_count" string="Facturas de Clientes (lineas)" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-file-zip-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'customer_moves_lines'}"
+                                            invisible="customer_moves_lines_count == 0">
+                                        <field name="customer_moves_lines_count" string="Facturas de Clientes (movimientos)" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-file-zip-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'supplier_invoices'}"
+                                            invisible="supplier_invoices_count == 0">
+                                        <field name="supplier_invoices_count" string="Facturas de Proveedor (cabezales)" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-file-zip-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'supplier_invoice_lines'}"
+                                            invisible="supplier_invoice_lines_count == 0">
+                                        <field name="supplier_invoice_lines_count" string="Facturas de Proveedor (lineas)" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-balance-scale"
+                                            name="action_view_model"
+                                            context="{'model_name': 'account_move_entries'}"
+                                            invisible="account_entries_count == 0">
+                                        <field name="account_entries_count" string="Asientos contables" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-paypal"
+                                            name="action_view_model"
+                                            context="{'model_name': 'customer_payments'}"
+                                            invisible="customer_payments_count == 0">
+                                        <field name="customer_payments_count" string="Pagos de Clientes" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-paypal"
+                                            name="action_view_model"
+                                            context="{'model_name': 'customer_payment_moves'}"
+                                            invisible="customer_payment_moves_count == 0">
+                                        <field name="customer_payment_moves_count" string="Pagos de Clientes (movimientos)" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-handshake-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'customer_reconcile'}"
+                                            invisible="customer_reconcile_count == 0">
+                                        <field name="customer_reconcile_count" string="Conciliaciones de Clientes" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-handshake-o"
+                                            name="action_view_model"
+                                            context="{'model_name': 'supplier_reconcile'}"
+                                            invisible="supplier_reconcile_count == 0">
+                                        <field name="supplier_reconcile_count" string="Conciliaciones de Proveedores" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-paypal"
+                                            name="action_view_model"
+                                            context="{'model_name': 'supplier_payments'}"
+                                            invisible="supplier_payments_count == 0">
+                                        <field name="supplier_payments_count" string="Pagos de Proveedores" widget="statinfo" />
+                                    </button>
+                                </group>
                             </page>
                         </notebook>
                     </sheet>
