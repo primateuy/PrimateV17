@@ -1064,7 +1064,7 @@ class OdooMigrator(models.Model):
 
         for value in record_data:
             for field_record in value:
-                if field_record == 'image' and odoo_object._name == "res.partner":
+                if field_record == 'image':
                     value['image_1920'] = value.pop(field_record)
                 if odoo_object._fields[field_record].type == "many2one":
                     value = self.resolve_m2o_fields(
