@@ -789,7 +789,9 @@ class OdooMigrator(models.Model):
             self.company_count = len(company_data)
             self.company_data = company_data
             lang_obj = self.env["res.lang"]
-            for company in company_data:
+            total = len(company_data)
+            for counter, company in enumerate(company_data, start=1):
+                _logger.info(f"Company {counter}/{total}")
                 odoo_migrator_company_exists = odoo_migrator_company_obj.search([('old_id', '=', company['id'])], limit=1)
                 if odoo_migrator_company_exists:
                     odoo_migrator_company_exists.migrator_id = self.id
@@ -808,12 +810,11 @@ class OdooMigrator(models.Model):
                 if not lang_obj._read_group([("code", "=", company_lang)], ["id"]):
                     raise UserError(f"Debe activar el idioma {company_lang} en Odoo")
 
-                for company_field in company:
+                for contador, company_field in enumerate(company, start=1):
+                    _logger.info("Migrando campo {contador}/{len(company)}: {company_field}")
                     if company_field not in odoo_migrator_company_obj._fields:
                         continue
-                    if odoo_migrator_company_obj._fields[
-                        company_field
-                    ].type == "many2one" and company.get(company_field, False):
+                    if odoo_migrator_company_obj._fields[company_field].type == "many2one" and company.get(company_field, False):
                         company = self.with_context(
                             dont_search_for_no_actives=True
                         ).resolve_m2o_fields(
