@@ -17,4 +17,5 @@
         "views/odoo_models_inherits_view.xml",
     ],
     "installable": True,
+    "license": 'LGPL-3',
 }
