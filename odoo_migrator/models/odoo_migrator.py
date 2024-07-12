@@ -779,6 +779,7 @@ class OdooMigrator(models.Model):
                 [[]],
                 {"fields": COMPANY_FIELDS},
             )
+            _logger.info(f"Company data: {company_data}")
 
         except Exception as error:
             raise UserError(error)
@@ -789,8 +790,7 @@ class OdooMigrator(models.Model):
             self.company_data = company_data
             lang_obj = self.env["res.lang"]
             for company in company_data:
-                odoo_migrator_company_exists = odoo_migrator_company_obj.search([('old_id', '=', company['id'])],
-                                                                                limit=1)
+                odoo_migrator_company_exists = odoo_migrator_company_obj.search([('old_id', '=', company['id'])], limit=1)
                 if odoo_migrator_company_exists:
                     odoo_migrator_company_exists.migrator_id = self.id
                     continue
@@ -856,6 +856,8 @@ class OdooMigrator(models.Model):
                     "migrator_id": self.id,
                     "old_id": company.get("id", False),
                 }
+                _logger.info(f"Company values: {company_values}")
+                _logger.info(f'Creationg new company: {company.get("name", False)}')
                 new_company = odoo_migrator_company_obj.create(company_values)
 
         return self.write({"state": "company_ok"})
