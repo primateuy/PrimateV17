@@ -84,7 +84,7 @@ CONTACT_FIELDS: List[str] = [
     "gender",
     "nationality_id",
     "user_id",
-    #"image",
+    "image",
 ]
 
 COMPANY_FIELDS: List[str] = [
@@ -989,7 +989,7 @@ class OdooMigrator(models.Model):
 
     def remove_unused_fields(self, record_data=None, odoo_model="res.partner"):
         allowed_fields = [x for x in self.env[odoo_model]._fields]
-        allowed_fields.extend(["image",])
+        #allowed_fields.extend(["image",])
         unwanted_fields = [
             "message_follower_ids",
             "activity_date_deadline",
@@ -1064,9 +1064,6 @@ class OdooMigrator(models.Model):
 
         for value in list(record_data):
             for field_record in list(value):
-                if field_record == 'image' and odoo_object._name == "res.partner":
-                    value['image_1920'] = value.pop(field_record)
-                    field_record = 'image_1920'
                 if odoo_object._fields[field_record].type == "many2one":
                     value = self.resolve_m2o_fields(
                         value=value,
