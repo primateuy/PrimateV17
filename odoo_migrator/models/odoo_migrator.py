@@ -275,6 +275,7 @@ class MigratorLogLine(models.Model):
     migration_model = fields.Selection(
         [
             # Contacts
+            ("account_mapping", "Mapeo de Cuentas"),
             ("chart_accounts", "Plan de Cuentas"),
             ("analytic_accounts", "Plan de Cuentas analitico"),
             ("users", "Usuarios"),
@@ -474,6 +475,7 @@ class OdooMigrator(models.Model):
     migration_model = fields.Selection(
         [
             # Contacts
+            ("account_mapping", "Mapeo de Cuentas"),
             ("chart_accounts", "Plan de Cuentas"),
             ("analytic_accounts", "Plan de Cuentas analitico"),
             ("users", "Usuarios"),
@@ -1769,7 +1771,6 @@ class OdooMigrator(models.Model):
         Método para migrar el plan de cuentas de odoo origen a destino.
         """
         _logger.info("\nMigrando Plan de cuenta")
-
         model_name: str = "account.account"
         chart_of_accounts_obj = self.env[model_name]
         have_local_charts_of_accounts = chart_of_accounts_obj.search([])
@@ -3097,6 +3098,7 @@ class OdooMigrator(models.Model):
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
             "chart_accounts": self.migrate_chart_of_accounts,
+            "account_mapping": self.migrate_chart_of_accounts,
             "analytic_accounts": self.migrate_analytic_accounts,
             "users": self.migrate_users,
             "countries": self.migrate_countries,
