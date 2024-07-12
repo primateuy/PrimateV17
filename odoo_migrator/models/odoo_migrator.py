@@ -811,10 +811,11 @@ class OdooMigrator(models.Model):
                     raise UserError(f"Debe activar el idioma {company_lang} en Odoo")
 
                 for contador, company_field in enumerate(company, start=1):
-                    _logger.info("Migrando campo {contador}/{len(company)}: {company_field}")
+                    _logger.info(f"Migrando campo {contador}/{len(company)}: {company_field}")
                     if company_field not in odoo_migrator_company_obj._fields:
                         continue
                     if odoo_migrator_company_obj._fields[company_field].type == "many2one" and company.get(company_field, False):
+                        _logger.info(f"Resolviendo many2one {company_field}")
                         company = self.with_context(
                             dont_search_for_no_actives=True
                         ).resolve_m2o_fields(
@@ -828,6 +829,7 @@ class OdooMigrator(models.Model):
                         "many2many",
                         "one2many",
                     ] and company.get(company_field, False):
+                        _logger.info(f"Resolviendo many2many o one2many {company_field}")
                         company = self.resolve_m2m_o2m_fields(
                             value=company_data,
                             field_type=odoo_migrator_company_obj._fields[
