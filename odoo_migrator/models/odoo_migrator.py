@@ -84,7 +84,7 @@ CONTACT_FIELDS: List[str] = [
     "gender",
     "nationality_id",
     "user_id",
-    "image",
+    #"image",
 ]
 
 COMPANY_FIELDS: List[str] = [

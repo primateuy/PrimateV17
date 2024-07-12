@@ -12,10 +12,6 @@ from odoo.tools import html2plaintext, file_open, ormcache
 _logger = logging.getLogger(__name__)
 
 
-@api.model
-def _lang_get(self):
-    return self.env["res.lang"].get_installed()
-
 
 class OdooMigratorCompany(models.Model):
     _name = "odoo.migrator.company"
@@ -39,7 +35,7 @@ class OdooMigratorCompany(models.Model):
     paperformat_id = fields.Many2one(
         comodel_name="report.paperformat", string="Paper format"
     )
-    lang = fields.Selection(_lang_get, string="Language", related="partner_id.lang")
+    lang = fields.Selection(string="Language", related="partner_id.lang")
     migrator_id = fields.Many2one(comodel_name="odoo.migrator", string="Migrator")
     partner_id = fields.Many2one(comodel_name="res.partner", string="Related Partner")
     migrate_this_company = fields.Boolean(string="Migrate this company", default=False)
