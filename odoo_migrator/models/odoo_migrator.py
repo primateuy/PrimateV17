@@ -83,6 +83,8 @@ CONTACT_FIELDS: List[str] = [
     "nationality_id",
     "user_id",
     #"image",
+    "property_account_receivable_id",
+    "property_account_payable_id",
 ]
 
 COMPANY_FIELDS: List[str] = [
