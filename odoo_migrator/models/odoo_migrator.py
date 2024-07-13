@@ -1793,7 +1793,6 @@ class OdooMigrator(models.Model):
                     # "limit": 10,
                 },
             )
-
             if not bool(chart_of_accounts_datas):
                 continue
 
@@ -1824,11 +1823,12 @@ class OdooMigrator(models.Model):
                 chart_of_accounts_data["old_id"] = chart_of_accounts_data.pop("id")
                 chart_of_accounts_data["internal_group"] = chart_of_accounts_data.pop("internal_type")
                 account_id = chart_of_accounts_obj.create(chart_of_accounts_data)
+                _logger.info(f"Se creo la cuenta {account_id.name}")
                 migrator.create_success_log(values=chart_of_accounts_data)
                 _logger.info(f"Se creo la cuenta {account_id.name}")
                 migrator.chart_of_accounts_ids += account_id
         final_message = f"se actualizaron {len(self.chart_of_accounts_ids)} Planes de cuentas"
-        migrator.create_success_log(msg=final_message, values='n/a')
+        migrator.create_success_log( values=final_message)
         _logger.info(final_message)
         return True
 
