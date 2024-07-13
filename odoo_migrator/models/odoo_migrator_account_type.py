@@ -4,8 +4,8 @@ from odoo import models, fields, api, release, _
 class OdooMigratorAccountType(models.Model):
     _name = "odoo.migrator.account.type"
     _description = "Account Type"
-    
-    name = fields.Char(string="Name", required=True)
+
+    name = fields.Char(string="Name", required=False)
     account_type = fields.Selection(
         selection=[
             ("asset_receivable", "Receivable"),

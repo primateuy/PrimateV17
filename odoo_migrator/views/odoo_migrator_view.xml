@@ -479,7 +479,7 @@
         <record id="action_migration_wizard" model="ir.actions.act_window">
             <field name="name">Odoo Migrator</field>
             <field name="res_model">odoo.migrator</field>
-            <field name="view_mode">tree,form, kanban</field>
+            <field name="view_mode">tree,form</field>
         </record>
 
 

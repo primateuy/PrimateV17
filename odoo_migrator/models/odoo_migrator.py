@@ -78,8 +78,6 @@ CONTACT_FIELDS: List[str] = [
     "category_id",
     "child_ids",
     "title",
-    "property_account_receivable_id",
-    "property_account_payable_id",
     "birthdate_date",
     "gender",
     "nationality_id",
@@ -1732,7 +1730,6 @@ class OdooMigrator(models.Model):
         _logger.info("\nMigrando Tipos de cuenta")
         model_name: str = "account.account.type"
         migrator_account_type_obj = self.env['odoo.migrator.account.type']
-
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -3098,7 +3095,7 @@ class OdooMigrator(models.Model):
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
             "chart_accounts": self.migrate_chart_of_accounts,
-            "account_mapping": self.migrate_chart_of_accounts,
+            "account_mapping": self.migrate_account_type_mapping,
             "analytic_accounts": self.migrate_analytic_accounts,
             "users": self.migrate_users,
             "countries": self.migrate_countries,
