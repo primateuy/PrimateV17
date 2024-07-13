@@ -1907,7 +1907,11 @@ class OdooMigrator(models.Model):
             if not bool(res_users_datas):
                 continue
             total = len(res_users_datas)
+            commit_count = 10
             for contador, res_users_data in enumerate(res_users_datas, start=1):
+                if contador % commit_count == 0:
+                    self.env.cr.commit()
+                    _logger.info(f"commit {contador // commit_count}")
                 _logger.info(f"vamos {contador} / {total}")
                 res_users_data = migrator.remove_unused_fields(record_data=res_users_data, odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=res_users_data, model_obj=res_users_obj)
