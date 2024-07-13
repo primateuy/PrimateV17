@@ -1907,9 +1907,12 @@ class OdooMigrator(models.Model):
             if not bool(res_users_datas):
                 continue
             total = len(res_users_datas)
-            commit_count = 10
+            commit_count = 5
+            side_count = 0
             for contador, res_users_data in enumerate(res_users_datas, start=1):
-                if contador % commit_count == 0:
+                side_count += 1
+                if side_count > commit_count:
+                    side_count = 0
                     self.env.cr.commit()
                     _logger.info(f"commit {contador // commit_count}")
                 _logger.info(f"vamos {contador} / {total}")
