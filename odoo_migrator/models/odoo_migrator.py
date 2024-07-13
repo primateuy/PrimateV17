@@ -1890,6 +1890,7 @@ class OdooMigrator(models.Model):
         _logger.info("\nMigrando los usuarios")
         model_name: str = "res.users"
         res_users_obj = self.env[model_name]
+        to_create = []
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -1924,16 +1925,20 @@ class OdooMigrator(models.Model):
                 user_id = res_users_obj.search([("old_id", "=", res_users_data_id)])
 
                 if not bool(user_id):
-                    is_success, result = migrator._try_to_create_model(model_name=model_name, values=res_users_data)
-                    if not is_success:
-                        migrator.create_error_log(msg=str(result), values=res_users_data)
-                        continue
-                    migrator.user_ids += result
-                else:
-                    user_id.old_id = res_users_data_id
-
+                    res_users_data['old_id'] = res_users_data_id
+                    to_create.append(res_users_data)
+                    #   is_success, result = migrator._try_to_create_model(model_name=model_name, values=res_users_data)
+                    #if not is_success:
+                        #migrator.create_error_log(msg=str(result), values=res_users_data)
+                        #continue
+                    #migrator.user_ids += result
+                    #else:
+                    #user_id.old_id = res_users_data_id
                 migrator.create_success_log(values=res_users_data)
                 _logger.info(f"Se creo el usuario {user_id.name}")
+            result = self.env["res.users"].create(to_create)
+            migrator.user_ids += result
+
 
         _logger.info(f"se migraron {len(self.user_ids)} usuarios")
         return True
