@@ -1923,6 +1923,12 @@ class OdooMigrator(models.Model):
                 res_users_data_name = res_users_data["login"]
                 # user_id = res_users_obj.search(['|', ("old_id", "=", res_users_data_id), ("login", "=", res_users_data_name)])
                 user_id = res_users_obj.search([("old_id", "=", res_users_data_id)])
+                if not user_id:
+                    user_id = res_users_obj.search([("login", "=", res_users_data_name)])
+                    if user_id:
+                        user_id.old_id = res_users_data_id
+                        continue
+
 
                 if not bool(user_id):
                     res_users_data['old_id'] = res_users_data_id
