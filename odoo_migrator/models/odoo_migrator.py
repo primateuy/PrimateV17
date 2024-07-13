@@ -1384,7 +1384,7 @@ class OdooMigrator(models.Model):
             migrated_ids = migrated_contacts.mapped("old_id")
         commit_count = 500
         side_count = 0
-
+        to_create = []
         for migrator in self:
             lang = self.company_id.partner_id.lang
             contact_datas = migrator._run_remote_command_for(
@@ -1410,7 +1410,8 @@ class OdooMigrator(models.Model):
                     self.env.cr.commit()
                     side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
-                search_conditions = [("old_id", "=", contact_data["id"])]
+                old_contact_id = contact_data["id"]
+                search_conditions = [("old_id", "=",old_contact_id)]
                 contact_id = contact_obj.search(search_conditions, limit=1)
                 if contact_id:
                     _logger.info(f'el contacto {contact_data["name"]} ya existe')
@@ -1419,15 +1420,16 @@ class OdooMigrator(models.Model):
                     continue
                     contact_data = migrator.remove_unused_fields(record_data=contact_data, odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=contact_data, model_obj=contact_obj, lang=lang)
-
-                is_success, result = migrator.try_to_create_record(odoo_object=contact_obj, value=contact_data)
-                if not is_success:
-                    migrator.create_error_log(msg=str(result), values=contact_data)
-                    continue
-                migrator.create_success_log(values=contact_data)
+                contact_data['old_id'] =old_contact_id
+                to_create.append(contact_data)
+                #is_success, result = migrator.try_to_create_record(odoo_object=contact_obj, value=contact_data)
+                #if not is_success:
+                    #migrator.create_error_log(msg=str(result), values=contact_data)
+                    #continue
+                #migrator.create_success_log(values=contact_data)
                 _logger.info(f"se creo el contacto {result.name}")
                 migrator.contact_ids += result
-
+            contact_obj.create(to_create)
             _logger.info(f"se crearon {len(self.contact_ids)} contactos")
             self.env.cr.commit()
 
