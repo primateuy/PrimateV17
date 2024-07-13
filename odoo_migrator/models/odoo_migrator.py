@@ -1427,9 +1427,10 @@ class OdooMigrator(models.Model):
                     #migrator.create_error_log(msg=str(result), values=contact_data)
                     #continue
                 #migrator.create_success_log(values=contact_data)
-                _logger.info(f"se creo el contacto {result.name}")
-                migrator.contact_ids += result
-            contact_obj.create(to_create)
+                #_logger.info(f"se creo el contacto {result.name}")
+                #migrator.contact_ids += result
+            result = contact_obj.create(to_create)
+            migrator.contact_ids += result
             _logger.info(f"se crearon {len(self.contact_ids)} contactos")
             self.env.cr.commit()
 
