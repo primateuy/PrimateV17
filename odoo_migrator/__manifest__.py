@@ -9,6 +9,7 @@
     "website": "https://proyectasoft.odoo.com",
     "depends": ["base","analytic","contacts", "account", "analytic", "sale", "purchase", "partner_contact_birthdate", "partner_contact_gender", "partner_contact_nationality"],
     "data": [
+        "security/odoo_migrator_groups.xml",
         "security/ir.model.access.csv",
         "data/sequence.xml",
         "views/odoo_migrator_view.xml",
