@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 
 class Company(models.Model):
@@ -86,7 +86,7 @@ class AccountMove(models.Model):
     old_full_reconcile_ids = fields.Char(string="Full reconcile IDs on old DB")
     old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")])
     migration_error = fields.Boolean(string="Migration Error")
-
+    no_post_migrator = fields.Boolean(string="No post move in migration")
 
     def _must_check_constrains_date_sequence(self):
         ctx = self.env.context.copy()
@@ -95,14 +95,17 @@ class AccountMove(models.Model):
         return super()._must_check_constrains_date_sequence()
 
 
-
-
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
     invoice_old_id = fields.Integer(string="Invoice Line ID on old DB")
     old_id = fields.Integer(string="ID on old DB")
     move_version = fields.Selection(selection=[("old_move", "Old Move"), ("new_move", "New Move")], default="old_move")
+
+    @api.constrains('account_id', 'display_type')
+    def _check_payable_receivable(self):
+        if self._context.get('check_move_validity', True):
+            super(AccountMoveLine, self)._check_payable_receivable()
 
 
 class AccountPayment(models.Model):
