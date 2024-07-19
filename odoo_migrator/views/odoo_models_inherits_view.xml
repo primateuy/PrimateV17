@@ -171,12 +171,12 @@
                     </page>
                 </xpath>
                 <xpath expr="//page[@id='aml_tab']/field[@name='line_ids']/tree/field[@name='date_maturity']" position="after">
-                    <field name="old_id" optional="hide" readonly="1"/>
-                    <field name="invoice_old_id" optional="hide" readonly="1"/>
+                    <field name="old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
+                    <field name="invoice_old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
                 </xpath>
                 <xpath expr="//page[@id='invoice_tab']/field[@name='invoice_line_ids']/tree/field[@name='quantity']" position="after">
-                    <field name="old_id" optional="hide" readonly="1"/>
-                    <field name="invoice_old_id" optional="hide" readonly="1"/>
+                    <field name="old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
+                    <field name="invoice_old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
                 </xpath>
 
             </field>
