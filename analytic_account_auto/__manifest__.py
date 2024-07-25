@@ -9,7 +9,7 @@
 Módulo de automatizaciones para las cuentas analíticas.
 ===============================================
 
-A pertir de la creación de una cuenta analítica, crea un modelo de distribución 
+A partir de la creación de una cuenta analítica, crea un modelo de distribución 
 asociado a esta.
     """,
     'data': [
