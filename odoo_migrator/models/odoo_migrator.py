@@ -1407,8 +1407,11 @@ class OdooMigrator(models.Model):
             for contador, contact_data in enumerate(contact_datas, start=1):
                 side_count += 1
                 if side_count >= commit_count:
-                    self.env.cr.commit()
                     side_count = 0
+                    result = contact_obj.create(to_create)
+                    migrator.contact_ids += result
+                    self.env.cr.commit()
+                    continue
                 _logger.info(f"vamos {contador} / {total}")
                 old_contact_id = contact_data["id"]
                 search_conditions = [("old_id", "=",old_contact_id)]
