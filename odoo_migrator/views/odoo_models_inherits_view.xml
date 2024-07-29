@@ -1,5 +1,6 @@
 <odoo>
     <data>
+
         <record id="res_company_inherit_form_view" model="ir.ui.view">
             <field name="name">res.company.form.inherit.view</field>
             <field name="model">res.company</field>
@@ -8,7 +9,7 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
@@ -22,7 +23,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='phone_vat_settings']" position="before">
                     <group string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
-                        <field name="old_id" readonly="1"/>
+                        <field name="old_id"/>
                     </group>
                 </xpath>
             </field>
@@ -37,7 +38,7 @@
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                             <group>
-                                <field name="old_id" readonly="1"/>
+                                <field name="old_id"/>
                             </group>
                         </page>
                     </notebook>
@@ -53,12 +54,39 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
             </field>
         </record>
+
+        <record id="res_partner_title_inherit_tree_view" model="ir.ui.view">
+            <field name="name">res.partner.title.tree.inherit.view</field>
+            <field name="model">res.partner.title</field>
+            <field name="inherit_id" ref="base.view_partner_title_tree"/>
+            <field name="arch" type="xml">
+                <field name="shortcut" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="res_users_inherit_form_view" model="ir.ui.view">
+            <field name="name">res.users.form.inherit.view</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
+                        <group>
+                            <field name="old_id"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
 
         <record id="res_currency_inherit_form_view" model="ir.ui.view">
             <field name="name">res.currency.form.inherit.view</field>
@@ -68,7 +96,7 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
@@ -84,7 +112,7 @@
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                             <group>
-                                <field name="old_id" readonly="1"/>
+                                <field name="old_id"/>
                             </group>
                         </page>
                     </notebook>
@@ -100,10 +128,21 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
+            </field>
+        </record>
+
+        <record id="account_account_inherit_tree_view" model="ir.ui.view">
+            <field name="name">account.account.tree.inherit.view</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_list"/>
+            <field name="arch" type="xml">
+                <field name="currency_id" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
             </field>
         </record>
 
@@ -115,7 +154,7 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
@@ -131,7 +170,7 @@
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                             <group>
-                                <field name="old_id" readonly="1"/>
+                                <field name="old_id"/>
                             </group>
                         </page>
                     </notebook>
@@ -147,7 +186,22 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_template_inherit_form_view" model="ir.ui.view">
+            <field name="name">product.template.form.inherit.view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[last()]" position="inside">
+                    <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
+                        <group>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
@@ -162,21 +216,21 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
-                            <field name="old_name" readonly="1"/>
-                            <field name="old_full_reconcile_ids" readonly="1"/>
-                            <field name="old_state" readonly="1"/>
-                            <field name="migration_error" readonly="1"/>
+                            <field name="old_id"/>
+                            <field name="old_name"/>
+                            <field name="old_full_reconcile_ids"/>
+                            <field name="old_state"/>
+                            <field name="migration_error"/>
                         </group>
                     </page>
                 </xpath>
                 <xpath expr="//page[@id='aml_tab']/field[@name='line_ids']/tree/field[@name='date_maturity']" position="after">
-                    <field name="old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
-                    <field name="invoice_old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
+                    <field name="old_id" optional="hide" groups="odoo_migrator.group_see_old_data"/>
+                    <field name="invoice_old_id" optional="hide" groups="odoo_migrator.group_see_old_data"/>
                 </xpath>
                 <xpath expr="//page[@id='invoice_tab']/field[@name='invoice_line_ids']/tree/field[@name='quantity']" position="after">
-                    <field name="old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
-                    <field name="invoice_old_id" optional="hide" readonly="1" groups="odoo_migrator.group_see_old_data"/>
+                    <field name="old_id" optional="hide" groups="odoo_migrator.group_see_old_data"/>
+                    <field name="invoice_old_id" optional="hide" groups="odoo_migrator.group_see_old_data"/>
                 </xpath>
 
             </field>
@@ -190,8 +244,8 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="invoice_old_id" readonly="1"/>
-                            <field name="old_id" readonly="1"/>
+                            <field name="invoice_old_id"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
@@ -205,7 +259,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[last()]" position="before">
                     <group string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
-                        <field name="old_id" readonly="1"/>
+                        <field name="old_id"/>
                     </group>
                 </xpath>
             </field>
@@ -220,9 +274,9 @@
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                             <group>
-                                <field name="old_id" readonly="1"/>
-                                <field name="old_name" readonly="1"/>
-                                <field name="old_full_reconcile_ids" readonly="1"/>
+                                <field name="old_id"/>
+                                <field name="old_name"/>
+                                <field name="old_full_reconcile_ids"/>
                             </group>
                         </page>
                     </notebook>
@@ -239,13 +293,25 @@
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                             <group>
-                                <field name="old_id" readonly="1"/>
+                                <field name="old_id"/>
                             </group>
                         </page>
                     </notebook>
                 </xpath>
             </field>
         </record>
+
+        <record id="account_account_inherit_tree_view" model="ir.ui.view">
+            <field name="name">account.account.tree.inherit.view</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_account_list"/>
+            <field name="arch" type="xml">
+                <field name="balance" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
+            </field>
+        </record>
+
 
         <record id="account_tax_inherit_form_view" model="ir.ui.view">
             <field name="name">account.tax.form.inherit.view</field>
@@ -255,28 +321,35 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
-                            <field name="old_id" readonly="1"/>
+                            <field name="old_id"/>
                         </group>
                     </page>
                 </xpath>
             </field>
         </record>
 
-        <record id="account_tax_group_inherit_form_view" model="ir.ui.view">
-            <field name="name">account.tax.group.form.inherit.view</field>
-            <field name="model">account.tax.group</field>
-            <field name="inherit_id" ref="account.view_tax_group_form"/>
+        <record id="account_tax_inherit_tree_view" model="ir.ui.view">
+            <field name="name">account.tax.tree.inherit.view</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_tree"/>
             <field name="arch" type="xml">
-                <xpath expr="//group[last()]" position="after">
-                    <notebook>
-                        <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
-                            <group>
-                                <field name="old_id" readonly="1"/>
-                            </group>
-                        </page>
-                    </notebook>
-                </xpath>
+                <field name="active"  position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
             </field>
         </record>
+
+        <record id="account_tax_group_inherit_tree_view" model="ir.ui.view">
+            <field name="name">account.tax.group.tree.inherit.view</field>
+            <field name="model">account.tax.group</field>
+            <field name="inherit_id" ref="account.view_tax_group_tree"/>
+            <field name="arch" type="xml">
+                <field name="advance_tax_payment_account_id" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
+            </field>
+        </record>
+
+
     </data>
 </odoo>

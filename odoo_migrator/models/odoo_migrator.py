@@ -156,6 +156,8 @@ PRODUCT_TEMPLATE_FIELDS: List[str] = [
     "purchase_ok",
     # "can_be_expensed",
     "purchase_method",
+    "invoice_policy",
+    "type",
 ]
 PRODUCT_FIELDS: List[str] = []
 
@@ -1282,9 +1284,12 @@ class OdooMigrator(models.Model):
             _logger.info("¡Parametros incorrectos, data y model_obj tienen que estar seteados!")
             return
         for field in list(data):
+            import ipdb;ipdb.set_trace()
             if field == 'image' and model_obj._name == "res.partner":
                 data['image_1920'] = data.pop(field)
                 continue
+            if field == 'type' and model_obj._name == "":
+                data['detailed_type'] = data.pop(field)
             elif field == "move_id" and model_obj._name == "account.move.line":
                 old_id = self.env["account.move"].search([("old_id", "=", data.get("move_id")[0])], limit=1)
                 data[field] = old_id.id
@@ -2159,17 +2164,12 @@ class OdooMigrator(models.Model):
                     continue
 
                 total = len(product_template_datas)
-                for contador, product_template_data in enumerate(
-                        product_template_datas, start=1
-                ):
+                for contador, product_template_data in enumerate(product_template_datas, start=1):
                     _logger.info(f"vamos {contador} / {total}")
                     template_old_id = product_template_data["id"]
                     template_name = product_template_data["name"]
                     _logger.info(template_name)
-                    product_template_id = product_template_obj.search(
-                        [("old_id", "=", template_old_id)],
-                        limit=1,
-                    )
+                    product_template_id = product_template_obj.search([("old_id", "=", template_old_id)], limit=1)
 
                     if bool(product_template_id):
                         _logger.info(f"la Plantilla de producto {template_name} ya existe")
@@ -2179,9 +2179,7 @@ class OdooMigrator(models.Model):
                         migrator.product_templates_ids += product_template_id
                         continue
 
-                    migrator._remove_m2o_o2m_and_m2m_data_from(
-                        data=product_template_data, model_obj=product_template_obj
-                    )
+                    migrator._remove_m2o_o2m_and_m2m_data_from(data=product_template_data, model_obj=product_template_obj)
 
                     is_success, result = migrator.try_to_create_record(
                         odoo_object=product_template_obj, value=product_template_data
