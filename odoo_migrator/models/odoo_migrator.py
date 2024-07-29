@@ -32,6 +32,7 @@ field_to_model: Dict[str, str] = {
     "destination_journal_id": "account.journal",
     "category_id": "res.partner.category",
     "child_ids": "res.partner",
+    "child_id": "product.category",
     "currency_id": "res.currency",
     "company_id": "res.company",
     "account_id": "account.account",
@@ -154,6 +155,7 @@ ACCOUNT_JOURNAL_FIELDS: List[str] = [
 ]
 PRODUCT_TEMPLATE_FIELDS: List[str] = [
     "id",
+    "active",
     "name",
     "sale_ok",
     "purchase_ok",
@@ -164,6 +166,7 @@ PRODUCT_TEMPLATE_FIELDS: List[str] = [
     "categ_id",
     "property_account_income_id",
     "property_account_expense_id",
+    # "company_id",
 ]
 PRODUCT_FIELDS: List[str] = []
 
@@ -1055,21 +1058,17 @@ class OdooMigrator(models.Model):
 
     def create_odoo_record(self, m2oid=None, value=None, odoo_object=None, lang=None):
         _logger.info(f"vamos a intentar crear el registro {value} de {odoo_object._name}")
-        _logger.info(f"vamos a intentar crear el registro {value} de {odoo_object._name}")
         if lang is None:
             lang = self.env.lang
         odoo_object = odoo_object.with_context(lang=lang)
         source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
         domain = [("name", "ilike", value)]
+
+
         if odoo_object._name == "res.partner":
             odoo_object_required_fields = CONTACT_FIELDS
         else:
-            odoo_object_required_fields = [
-                x.name
-                for x in self.env["ir.model"]
-                .search([("model", "=", odoo_object._name)])
-                .field_id.filtered_domain([("required", "=", True)])
-            ]
+            odoo_object_required_fields = [x.name for x in self.env["ir.model"].search([("model", "=", odoo_object._name)]).field_id.filtered_domain([("required", "=", True)])]
         record_data = source_models.execute_kw(
             source_database,
             source_uid,
@@ -1143,6 +1142,10 @@ class OdooMigrator(models.Model):
                 record.old_id = value[m2o][0]
         except Exception as error:
             raise UserError(error)
+        if not record and odoo_object._name == "account.account":
+            account_code = value[m2o][-1].split()[0]
+            domain = [("code", "=", account_code)]
+            record = odoo_object.search(domain, limit=1)
         if not record:
             """
             aca lo que podemos hacer es ir contra la tabla 'ir.model' para este odoo_object
@@ -2050,7 +2053,6 @@ class OdooMigrator(models.Model):
         Método para migrar las Categorias de producto desde el Odoo de origen al Odoo de destino.
         """
         _logger.info("\nMigrando las Categorias de Producto")
-
         model_name: str = "product.category"
         product_category_obj = self.env[model_name]
         for migrator in self:
@@ -2073,25 +2075,13 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(product_category_datas)
-            for contador, product_category_data in enumerate(
-                    product_category_datas, start=1
-            ):
+            for contador, product_category_data in enumerate(product_category_datas, start=1):
                 _logger.info(f"vamos {contador} / {total}")
                 category_old_id = product_category_data["id"]
                 category_name = product_category_data["name"]
-                category_parent = (
-                    product_category_data["parent_id"]
-                    if "parent_id" in product_category_data
-                    else False
-                )
-                product_category_id = product_category_obj.search(
-                    [
-                        "|",
-                        ("old_id", "=", category_old_id),
-                        ("name", "ilike", category_name),
-                    ],
-                    limit=1,
-                )
+                category_parent = (product_category_data["parent_id"] if "parent_id" in product_category_data else False)
+                search_params = ["|", ("old_id", "=", category_old_id), ("name", "ilike", category_name)]
+                product_category_id = product_category_obj.search(search_params, limit=1,)
 
                 if bool(product_category_id):
                     _logger.info(f"la Categoria de producto {category_name} ya existe")
@@ -2099,8 +2089,7 @@ class OdooMigrator(models.Model):
                     migrator.product_categories_ids += product_category_id
                     continue
 
-                product_category_data = migrator.remove_unused_fields(record_data=product_category_data,
-                                                                      odoo_model=model_name)
+                product_category_data = migrator.remove_unused_fields(record_data=product_category_data,odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=product_category_data, model_obj=product_category_obj)
 
                 category_creation_data = {
@@ -2139,70 +2128,76 @@ class OdooMigrator(models.Model):
         Método para migrar las Plantillas de producto desde el Odoo de origen al Odoo de destino.
         """
         _logger.info("\nMigrando las Plantillas de Producto")
-
+        self = self.sudo()
         model_name: str = "product.template"
+        categ_model_name: str = "product.category"
+        categ_field_name: str = "categ_id"
 
         if not bool(self.product_categories_ids):
             raise UserError("No hay Categorias de productos migradas")
+
         product_template_obj = self.env[model_name]
         for migrator in self:
-            _logger.info("Migrando Plantillas de producto")
-            operation_params_list = [
-                    "|",
-                    ("active", "=", True),
-                    ("active", "=", False),
-                ]
-            product_template_datas = migrator._run_remote_command_for(
-                model_name=model_name,
-                operation_params_list=operation_params_list,
-                command_params_dict={
-                    "fields": PRODUCT_TEMPLATE_FIELDS,
-                    "offset": migrator.pagination_offset,
-                    "limit": migrator.pagination_limit,
-                },
-            )
-            if not bool(product_template_datas):
-                continue
-            import ipdb;ipdb.set_trace()
-            total = len(product_template_datas)
-            commit_count = 10
-            side_count = 0
-            for contador, product_template_data in enumerate(product_template_datas, start=1):
-                side_count += 1
-                if side_count == commit_count:
-                    side_count = 0
-                    _logger.info("committing...")
-                    print("committing...")
-                    self.env.cr.commit()
-                _logger.info(f"vamos {contador} / {total}")
-                template_old_id = product_template_data["id"]
-                template_name = product_template_data["name"]
-                _logger.info(template_name)
-                product_template_id = product_template_obj.search([("old_id", "=", template_old_id)], limit=1)
-                if bool(product_template_id):
-                    _logger.info(f"la Plantilla de producto {template_name} ya existe")
-                    product_template_id.old_id = template_old_id
-                    product_template_id.company_id = self.company_id.id
-                    migrator.product_templates_ids += product_template_id
-                    continue
-                migrator._remove_m2o_o2m_and_m2m_data_from(data=product_template_data, model_obj=product_template_obj)
-
-                is_success, result = migrator.try_to_create_record(odoo_object=product_template_obj, value=product_template_data)
-
-                if not is_success:
-                    migrator.create_error_log(msg=str(result), values=product_template_data)
+            for categ_id in migrator.product_categories_ids:
+                _logger.info(f"migrando Plantillas para la Categoria {categ_id.display_name}")
+                domain = ['&', ('categ_id', '=', categ_id.old_id), '|', ('active', '=', True), ('active', '=', False)]
+                operation_params_list = domain
+                product_template_datas = migrator._run_remote_command_for(
+                    model_name=model_name,
+                    operation_params_list=operation_params_list,
+                    command_params_dict={
+                        "fields": PRODUCT_TEMPLATE_FIELDS,
+                        "offset": migrator.pagination_offset,
+                        "limit": migrator.pagination_limit,
+                    },
+                )
+                if not bool(product_template_datas):
                     continue
 
-                # result.company_id = migrator.company_id.id
-                result.product_variant_id.old_id = result.old_id
-                migrator.create_success_log(values=product_template_data)
-                _logger.info(f"se creo la Plantilla {result.name}")
-                migrator.product_templates_ids += result
+                total = len(product_template_datas)
+                commit_count = 5
+                side_count = 0
+                for contador, product_template_data in enumerate(product_template_datas, start=1):
+                    _logger.info(f"vamos {contador} / {total}")
+                    side_count += 1
+                    if side_count >= commit_count:
+                        _logger.info("committing...")
+                        print("committing...")
+                        self.env.cr.commit()
+                        side_count = 0
+                    template_old_id = product_template_data["id"]
+                    template_name = product_template_data["name"]
+                    _logger.info(template_name)
+                    template_domain = ['&', ('old_id', '=', template_old_id), '|', ('active', '=', True), ('active', '=', False)]
+                    product_template_id = product_template_obj.search(template_domain,limit=1)
+
+                    if bool(product_template_id):
+                        _logger.info(f"la Plantilla de producto {template_name} ya existe")
+                        product_template_id.old_id = template_old_id
+                        product_template_id.categ_id = categ_id.id
+                        product_template_id.company_id = self.company_id.id
+                        migrator.product_templates_ids += product_template_id
+                        continue
+
+                    migrator._remove_m2o_o2m_and_m2m_data_from(data=product_template_data, model_obj=product_template_obj)
+
+                    is_success, result = migrator.try_to_create_record(odoo_object=product_template_obj, value=product_template_data)
+
+                    if not is_success:
+                        migrator.create_error_log(msg=str(result), values=product_template_data)
+                        continue
+
+                    # result.company_id = migrator.company_id.id
+                    result.product_variant_id.old_id = result.old_id
+                    migrator.product_templates_ids += result
+                    migrator.create_success_log(values=product_template_data)
+                    _logger.info(f"se creo el producto ->> {result.name}")
 
             _logger.info(
                 f"se crearon {len(self.product_templates_ids)} Plantillas de producto"
             )
         return True
+
 
     def migrate_taxes(self) -> bool:
         """
