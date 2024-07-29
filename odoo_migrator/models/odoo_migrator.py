@@ -1284,7 +1284,6 @@ class OdooMigrator(models.Model):
             _logger.info("¡Parametros incorrectos, data y model_obj tienen que estar seteados!")
             return
         for field in list(data):
-            import ipdb;ipdb.set_trace()
             if field == 'image' and model_obj._name == "res.partner":
                 data['image_1920'] = data.pop(field)
                 continue
