@@ -122,6 +122,7 @@ CHART_OF_ACCOUNT_FIELDS: List[str] = [
     "id",
     "name",
     "reconcile",
+    "currency_id",
     "internal_type",
     "user_type_id",
 ]
@@ -808,7 +809,6 @@ class OdooMigrator(models.Model):
 
         except Exception as error:
             raise UserError(error)
-
         if len(company_data) > 1:
             self.is_multicompany = True
             self.company_count = len(company_data)
@@ -841,7 +841,12 @@ class OdooMigrator(models.Model):
                         continue
                     if odoo_migrator_company_obj._fields[company_field].type == "many2one" and company.get(company_field, False):
                         _logger.info(f"Resolviendo many2one {company_field}")
-                        company = self.with_context(dont_search_for_no_actives=True).resolve_m2o_fields(value=company, m2o=company_field, odoo_object=odoo_migrator_company_obj,lang=company_lang)
+                        if company_field == 'partner_id':
+                            company = self.with_context(dont_search_for_no_actives=True, from_company=True).resolve_m2o_fields(
+                                value=company, m2o=company_field, odoo_object=odoo_migrator_company_obj,
+                                lang=company_lang)
+                        else:
+                            company = self.with_context(dont_search_for_no_actives=True).resolve_m2o_fields(value=company, m2o=company_field, odoo_object=odoo_migrator_company_obj,lang=company_lang)
 
                     elif odoo_migrator_company_obj._fields[company_field].type in ["many2many", "one2many"] and company.get(company_field, False):
                         _logger.info(f"Resolviendo many2many o one2many {company_field}")
@@ -871,6 +876,27 @@ class OdooMigrator(models.Model):
                 _logger.info(f"Company values: {company_values}")
                 _logger.info(f'Creationg new company: {company.get("name", False)}')
                 new_company = odoo_migrator_company_obj.create(company_values)
+
+            import ipdb
+            ipdb.set_trace()
+            model_name: str = "account.account"
+            for company in self.odoo_company_ids:
+                partner_data = source_models.execute_kw(
+                    source_database,
+                    source_uid,
+                    source_password,
+                    "res.partner",
+                    "search_read",
+                    [[("id", "=", company.partner_id.old_id)]],
+                    {"fields": ['property_account_receivable_id', 'property_account_payable_id']},
+                )
+                if partner_data:
+                    partner_data = partner_data[0]
+                    partner_data.pop("id")
+                    for account in partner_data:
+                        account_id = self.env[model_name].search([('old_id', '=', partner_data[account])])
+                        if account_id:
+                            company.partner_id.write({account: account_id.id})
 
         return self.write({"state": "company_ok"})
 
@@ -1016,7 +1042,6 @@ class OdooMigrator(models.Model):
             "activity_user_id",
             "additional_info",
             "property_account_receivable_id",
-            "property_account_receivable_id",
             "property_account_payable_id",
             "property_product_pricelist",
             "title",
@@ -1048,15 +1073,20 @@ class OdooMigrator(models.Model):
 
     def create_odoo_record(self, m2oid=None, value=None, odoo_object=None, lang=None):
         _logger.info(f"vamos a intentar crear el registro {value} de {odoo_object._name}")
+        ctx = self.env.context.copy()
         if lang is None:
             lang = self.env.lang
         odoo_object = odoo_object.with_context(lang=lang)
         source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
         domain = [("name", "ilike", value)]
 
-
         if odoo_object._name == "res.partner":
             odoo_object_required_fields = CONTACT_FIELDS
+            if ctx.get("from_company", False):
+                if 'property_account_receivable_id' in odoo_object_required_fields:
+                    odoo_object_required_fields.remove('property_account_receivable_id')
+                if 'property_account_payable_id' in odoo_object_required_fields:
+                    odoo_object_required_fields.remove('property_account_payable_id')
         else:
             odoo_object_required_fields = [x.name for x in self.env["ir.model"].search([("model", "=", odoo_object._name)]).field_id.filtered_domain([("required", "=", True)])]
         record_data = source_models.execute_kw(
@@ -1076,7 +1106,7 @@ class OdooMigrator(models.Model):
         for value in list(record_data):
             for field_record in list(value):
                 if odoo_object._fields[field_record].type == "many2one":
-                    value = self.resolve_m2o_fields(value=value,odoo_object=odoo_object, m2o=field_record,lang=lang)
+                    value = self.resolve_m2o_fields(value=value, odoo_object=odoo_object, m2o=field_record, lang=lang)
         if odoo_object._name == "res.country":
             domain.insert(0, "|")
             domain.append(("code", "=", value["code"]))
@@ -1139,7 +1169,10 @@ class OdooMigrator(models.Model):
             re-formatear la llamada y hacer el create de los odoo_object
             """
             m2oid = record_old_id
-            record = self.create_odoo_record(m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang)
+            if ctx.get("from_company", False):
+                record = self.with_context(from_company=True).create_odoo_record(m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang)
+            else:
+                record = self.create_odoo_record(m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang)
             record.old_id = record_old_id
         value[m2o] = record.id
         return value
@@ -1793,6 +1826,8 @@ class OdooMigrator(models.Model):
             return False
         chart_accounts_ids = have_local_charts_of_accounts.filtered(lambda x: not x.old_id).mapped('code')
         odoo_account_type_obj = self.env['odoo.migrator.account.type']
+        import ipdb;
+        ipdb.set_trace()
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -1848,6 +1883,9 @@ class OdooMigrator(models.Model):
                 chart_of_accounts_data["account_type"] = account_type_id.account_type
                 chart_of_accounts_data["old_id"] = chart_of_accounts_data.pop("id")
                 chart_of_accounts_data["internal_group"] = chart_of_accounts_data.pop("internal_type")
+                import ipdb;
+                ipdb.set_trace()
+                currency_id = self.env['res.currency']
                 account_id = chart_of_accounts_obj.create(chart_of_accounts_data)
                 _logger.info(f"Se creo la cuenta {account_id.name}")
                 migrator.create_success_log(values=chart_of_accounts_data)
