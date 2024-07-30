@@ -624,6 +624,7 @@ class OdooMigrator(models.Model):
         comodel_name="res.partner", string="Partner", related="company_id.partner_id"
     )
     contact_count = fields.Integer(string="Número de Contactos", compute="_get_models_data_count")
+    user_count = fields.Integer(string="Número de Usuarios", compute="_get_models_data_count")
     countries_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     states_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     currencies_count = fields.Integer(string="Número de")
@@ -685,6 +686,7 @@ class OdooMigrator(models.Model):
             rec.chart_of_accounts_count = len(rec.chart_of_accounts_ids)
             rec.currency_rates_count = len(rec.currency_rate_ids)
             rec.account_journals_count = len(rec.account_journals_ids)
+            rec.user_count = len(rec.user_ids)
 
     def action_view_model(self):
         model_name = self._context.get('model_name', False)
@@ -767,16 +769,20 @@ class OdooMigrator(models.Model):
             action["domain"] = [("id", "in", self.account_payments_ids.ids)]
 
         elif model_name == 'customer_reconcile':
-            action = self.env.ref("contacts.action_contacts").read()[0]  # Modificar la ref
-            action["domain"] = [("id", "in", self.contact_ids.ids)]  # Modificar este domain
+            action = self.env.ref("contacts.action_contacts").read()[0]
+            action["domain"] = [("id", "in", self.contact_ids.ids)]
 
         elif model_name == 'supplier_reconcile':
-            action = self.env.ref("contacts.action_contacts").read()[0]  # Modificar la ref
-            action["domain"] = [("id", "in", self.contact_ids.ids)]  # Modificar este domain
+            action = self.env.ref("contacts.action_contacts").read()[0]
+            action["domain"] = [("id", "in", self.contact_ids.ids)]
 
         elif model_name == 'supplier_payments':
-            action = self.env.ref("contacts.action_contacts").read()[0]  # Modificar la ref
-            action["domain"] = [("id", "in", self.contact_ids.ids)]  # Modificar este domain
+            action = self.env.ref("contacts.action_contacts").read()[0]
+            action["domain"] = [("id", "in", self.contact_ids.ids)]
+
+        elif model_name == 'user':
+            action = self.env.ref("base.action_res_users").read()[0]
+            action["domain"] = [("id", "in", self.user_ids.ids)]
 
         if not action:
             raise UserError('No se pudo encontrar la vista')
@@ -835,27 +841,11 @@ class OdooMigrator(models.Model):
                         continue
                     if odoo_migrator_company_obj._fields[company_field].type == "many2one" and company.get(company_field, False):
                         _logger.info(f"Resolviendo many2one {company_field}")
-                        company = self.with_context(
-                            dont_search_for_no_actives=True
-                        ).resolve_m2o_fields(
-                            value=company,
-                            m2o=company_field,
-                            odoo_object=odoo_migrator_company_obj,
-                            lang=company_lang,
-                        )
+                        company = self.with_context(dont_search_for_no_actives=True).resolve_m2o_fields(value=company, m2o=company_field, odoo_object=odoo_migrator_company_obj,lang=company_lang)
 
-                    elif odoo_migrator_company_obj._fields[company_field].type in [
-                        "many2many",
-                        "one2many",
-                    ] and company.get(company_field, False):
+                    elif odoo_migrator_company_obj._fields[company_field].type in ["many2many", "one2many"] and company.get(company_field, False):
                         _logger.info(f"Resolviendo many2many o one2many {company_field}")
-                        company = self.resolve_m2m_o2m_fields(
-                            value=company_data,
-                            field_type=odoo_migrator_company_obj._fields[
-                                company_field
-                            ].type,
-                            field=company_field,
-                        )
+                        company = self.resolve_m2m_o2m_fields(value=company_data, field_type=odoo_migrator_company_obj._fields[company_field].type,field=company_field)
                 company_values = {
                     "name": company.get("name", False),
                     "logo": company.get("logo", False),
@@ -1086,12 +1076,7 @@ class OdooMigrator(models.Model):
         for value in list(record_data):
             for field_record in list(value):
                 if odoo_object._fields[field_record].type == "many2one":
-                    value = self.resolve_m2o_fields(
-                        value=value,
-                        odoo_object=odoo_object,
-                        m2o=field_record,
-                        lang=lang,
-                    )
+                    value = self.resolve_m2o_fields(value=value,odoo_object=odoo_object, m2o=field_record,lang=lang)
         if odoo_object._name == "res.country":
             domain.insert(0, "|")
             domain.append(("code", "=", value["code"]))
@@ -1129,17 +1114,18 @@ class OdooMigrator(models.Model):
         # source_models, source_uid, source_database, source_password = migrator._get_source_odoo_connection()
         try:
             record_name = m2ovalue[-1]
+            record_old_id = value[m2o][0]
             odoo_object = self.env[field_to_model.get(m2o)].with_context(lang=lang)
         except Exception as error:
 
             raise UserError(error)
         try:
-            domain = ["|", ("name", "ilike", record_name), ("old_id", "=", value[m2o][0])]
+            domain = ["|", ("name", "ilike", record_name), ("old_id", "=", record_old_id)]
             record = odoo_object.search(domain, limit=1)
             if not record and odoo_object._fields.get("active", False) and not dont_search_for_no_actives:
                 domain = ["|", ("active", "=", False), ("name", "ilike", record_name)]
                 record = odoo_object.search(domain, limit=1)
-                record.old_id = value[m2o][0]
+                record.old_id = record_old_id
         except Exception as error:
             raise UserError(error)
         if not record and odoo_object._name == "account.account":
@@ -1152,9 +1138,9 @@ class OdooMigrator(models.Model):
             y quedarme con la lista de campos requeridos, hacer la llamada a la api con esos campos
             re-formatear la llamada y hacer el create de los odoo_object
             """
-            m2oid = value[m2o][0]
+            m2oid = record_old_id
             record = self.create_odoo_record(m2oid=m2oid, value=record_name, odoo_object=odoo_object, lang=lang)
-            record.old_id = value[m2o][0]
+            record.old_id = record_old_id
         value[m2o] = record.id
         return value
 
@@ -1805,7 +1791,7 @@ class OdooMigrator(models.Model):
         if not bool(have_local_charts_of_accounts):
             _logger.info("¡Sin Planes de cuenta que actualizar!")
             return False
-        chart_accounts_ids = have_local_charts_of_accounts.mapped('code')
+        chart_accounts_ids = have_local_charts_of_accounts.filtered(lambda x: not x.old_id).mapped('code')
         odoo_account_type_obj = self.env['odoo.migrator.account.type']
         for migrator in self:
             company = migrator.company_id
@@ -1848,6 +1834,15 @@ class OdooMigrator(models.Model):
 
             for contador, chart_of_accounts_data in enumerate(chart_of_accounts_datas, start=1):
                 _logger.info(f"vamos {contador} / {total}")
+                account_old_id = chart_of_accounts_data["id"]
+                search_conditions = [("old_id", "=", account_old_id)]
+                account_exists = chart_of_accounts_obj.search(search_conditions, limit=1)
+                if account_exists:
+                    _logger.info(f'la cuenta {chart_of_accounts_data["name"]} ya existe')
+                    print(f'la cuenta {chart_of_accounts_data["name"]} ya existe')
+                    migrator.chart_of_accounts_ids += account_exists
+                    continue
+
                 user_type_name = chart_of_accounts_data.pop("user_type_id")[1]
                 account_type_id = odoo_account_type_obj.search([("name", "=", user_type_name)], limit=1)
                 chart_of_accounts_data["account_type"] = account_type_id.account_type
@@ -1891,8 +1886,14 @@ class OdooMigrator(models.Model):
             total = len(analytic_accounts_datas)
             for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
                 _logger.info(f"vamos {contador} / {total}")
-                analytic_accounts_data = migrator.remove_unused_fields(record_data=analytic_accounts_data,
-                                                                       odoo_model=model_name)
+                analytic_account_old_id = analytic_accounts_data["id"]
+                search_conditions = [("old_id", "=", analytic_account_old_id)]
+                analytic_account_exists = analytic_accounts_obj.search(search_conditions, limit=1)
+                if analytic_account_exists:
+                    _logger.info(f'El plan de cuentas analitico {analytic_accounts_data["name"]} ya existe')
+                    print(f'El plan de cuentas analitico {analytic_accounts_data["name"]} ya existe')
+                    continue
+                analytic_accounts_data = migrator.remove_unused_fields(record_data=analytic_accounts_data,odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=analytic_accounts_data, model_obj=analytic_accounts_obj)
                 analytic_accounts_id = analytic_accounts_data["id"]
                 analytic_account_id = analytic_accounts_obj.search([("old_id", "=", analytic_accounts_id)])
@@ -1930,8 +1931,10 @@ class OdooMigrator(models.Model):
                 model_name=model_name,
                 # operation_params_list=['&', '|', ("company_id", "=", company.old_id), ("company_id", "=", False), '|', ("active", "=", True), ("active", "=", False)],
                 operation_params_list=['&', ("company_id", "=", company.old_id), '|', ("active", "=", True), ("active", "=", False)],
+                # operation_params_list=['|', ("active", "=", True), ("active", "=", False)],
                 command_params_dict={
                     "fields": RES_USERS_FIELDS,
+                    "order": "id asc",
                 },
             )
             if not bool(res_users_datas):
@@ -1954,10 +1957,13 @@ class OdooMigrator(models.Model):
                 user_id = res_users_obj.search([("old_id", "=", res_users_data_id)])
                 if not user_id:
                     user_id = res_users_obj.search([("login", "=", res_users_data_name)])
+                    if not user_id:
+                        user_id = res_users_obj.search([("login", "=", res_users_data_name),("active", "=", False)])
                     if user_id:
                         user_id.old_id = res_users_data_id
+                        migrator.user_ids += user_id
                         continue
-
+                migrator.user_ids += user_id
 
                 if not bool(user_id):
                     res_users_data['old_id'] = res_users_data_id

@@ -284,6 +284,14 @@
                                     </button>
                                     <button class="oe_stat_button"
                                             type="object"
+                                            icon="fa-user"
+                                            name="action_view_model"
+                                            context="{'model_name': 'user'}"
+                                            invisible="user_count == 0">
+                                        <field name="user_count" string="Usuarios" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
                                             icon="fa-globe"
                                             name="action_view_model"
                                             context="{'model_name': 'countries'}"
