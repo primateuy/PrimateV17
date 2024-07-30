@@ -68,8 +68,7 @@
                                         <field name="source_version" />
                                         <field name="target_version" />
                                     </group>
-                                    <group string="Paginación"
-                                           invisible="migration_model in ('contacts', 'currencies')">
+                                    <group string="Paginación">
                                         <field name="pagination_offset" />
                                         <field name="pagination_limit" />
                                         <button name="paginate" string="Paginar"
@@ -132,7 +131,7 @@
                             <page name="page_account_journals" string="Diarios"
                                   invisible="migration_model != 'account_journals'">
                                 <group>
-                                    <field name="account_journals_ids" />
+                                    <field name="journal_ids" />
                                 </group>
                             </page>
                             <page name="page_product_categories" string="Categorias de producto"
@@ -289,6 +288,14 @@
                                             context="{'model_name': 'user'}"
                                             invisible="user_count == 0">
                                         <field name="user_count" string="Usuarios" widget="statinfo" />
+                                    </button>
+                                    <button class="oe_stat_button"
+                                            type="object"
+                                            icon="fa-user"
+                                            name="action_view_model"
+                                            context="{'model_name': 'tax'}"
+                                            invisible="tax_count == 0">
+                                        <field name="tax_count" string="Impuestos" widget="statinfo" />
                                     </button>
                                     <button class="oe_stat_button"
                                             type="object"
