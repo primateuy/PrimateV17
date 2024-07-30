@@ -883,7 +883,7 @@ class OdooMigrator(models.Model):
         migrator_company = self.odoo_company_ids.filtered(lambda x: x.migrate_this_company)
         migrator_partner = migrator_company.partner_id
         if not migrator_company:
-            raise UserError("No se encontraron compañías a migrar")
+            raise UserError("No se encontraron compañías a migrar o no selecciono una compañía")
         company = self.company_id
         partner = self.partner_id
         if not company:
@@ -3240,6 +3240,11 @@ class OdooMigrator(models.Model):
         return migrators[migrator_type]
 
     def migrate_data(self):
+        selected_company = self.odoo_company_ids.filtered(lambda x: x.migrate_this_company)
+        current_company = self.env.company
+        migrator_company = self.company_id
+        if not (selected_company.old_id == current_company.old_id == migrator_company.old_id):
+            raise UserError(f'La compañia seleccionada {selected_company.name} no coincide con la compañia actual {current_company.name} o la compañia del migrador {migrator_company.name}')
         for rec in self:
             migrate_func = rec._get_migrator_for(rec.migration_model)
             migrate_func()
