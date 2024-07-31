@@ -61,6 +61,17 @@
             </field>
         </record>
 
+        <record id="res_partner_inherit_tree_view" model="ir.ui.view">
+            <field name="name">res.partner.tree.inherit.view</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
+            </field>
+        </record>
+
         <record id="res_partner_title_inherit_tree_view" model="ir.ui.view">
             <field name="name">res.partner.title.tree.inherit.view</field>
             <field name="model">res.partner.title</field>
