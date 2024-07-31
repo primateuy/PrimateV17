@@ -88,8 +88,8 @@ CONTACT_FIELDS: List[str] = [
     "nationality_id",
     "user_id",
     #"image",
-    "property_account_receivable_id",
-    "property_account_payable_id",
+    # "property_account_receivable_id",
+    # "property_account_payable_id",
 ]
 
 COMPANY_FIELDS: List[str] = [
@@ -1128,9 +1128,10 @@ class OdooMigrator(models.Model):
             domain = ["|", ("name", "ilike", record_name), ("old_id", "=", record_old_id)]
             record = odoo_object.search(domain, limit=1)
             if not record and odoo_object._fields.get("active", False) and not dont_search_for_no_actives:
-                domain = ["|", ("active", "=", False), ("name", "ilike", record_name)]
+                domain = [("active", "=", False), ("name", "ilike", record_name)]
                 record = odoo_object.search(domain, limit=1)
-                record.old_id = record_old_id
+                if record:
+                    record.old_id = record_old_id
         except Exception as error:
             raise UserError(error)
         if not record and odoo_object._name == "account.account":
@@ -1951,13 +1952,19 @@ class OdooMigrator(models.Model):
             total = len(res_users_datas)
             commit_count = 5
             side_count = 0
+            sensitive_ids = [1, 2, 3, 4, 5]
             for contador, res_users_data in enumerate(res_users_datas, start=1):
+                if res_users_data["id"] in sensitive_ids:
+                    _logger.info(f'Omitimos el usuario {res_users_data["login"]} con ID {res_users_data["id"]}')
+                    print(f'Omitimos el usuario {res_users_data["login"]} con ID {res_users_data["id"]}')
+                    continue
                 side_count += 1
                 if side_count > commit_count:
                     side_count = 0
                     self.env.cr.commit()
                     _logger.info(f"commit {contador // commit_count}")
                 _logger.info(f"vamos {contador} / {total}")
+                res_users_active = res_users_data["active"]
                 res_users_data = migrator.remove_unused_fields(record_data=res_users_data, odoo_model=model_name)
                 migrator._remove_m2o_o2m_and_m2m_data_from(data=res_users_data, model_obj=res_users_obj)
                 res_users_data_id = res_users_data["id"]
@@ -1973,21 +1980,22 @@ class OdooMigrator(models.Model):
                         migrator.user_ids += user_id
                         continue
                 migrator.user_ids += user_id
-
                 if not bool(user_id):
                     res_users_data['old_id'] = res_users_data_id
-                    to_create.append(res_users_data)
-                    #   is_success, result = migrator._try_to_create_model(model_name=model_name, values=res_users_data)
-                    #if not is_success:
-                        #migrator.create_error_log(msg=str(result), values=res_users_data)
-                        #continue
-                    #migrator.user_ids += result
-                    #else:
-                    #user_id.old_id = res_users_data_id
-                migrator.create_success_log(values=res_users_data)
-                _logger.info(f"Se creo el usuario {user_id.name}")
-            result = self.env["res.users"].create(to_create)
-            migrator.user_ids += result
+                    # to_create.append(res_users_data)
+                    is_success, result = migrator._try_to_create_model(model_name=model_name, values=res_users_data)
+                    if not is_success:
+                        migrator.create_error_log(msg=str(result), values=res_users_data)
+                        continue
+                    else:
+                        if not res_users_active:
+                            result.active = False
+                        migrator.user_ids += result
+                        user_id.old_id = res_users_data_id
+                        migrator.create_success_log(values=res_users_data)
+                        _logger.info(f"Se creo el usuario {user_id.name}")
+            # result = self.env["res.users"].create(to_create)
+            # migrator.user_ids += result
 
 
         _logger.info(f"se migraron {len(self.user_ids)} usuarios")
