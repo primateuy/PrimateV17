@@ -490,6 +490,10 @@ class OdooMigrator(models.Model):
     source_password = fields.Char(string="Contraseña de Origen", required=True)
     migration_model = fields.Selection(
         [
+            # Currencies
+            ("currencies", "Monedas"),
+            ("currency_rates", "Tasas de la Monedas"),
+            #
             # Contacts
             ("account_mapping", "Mapeo de Cuentas"),
             ("chart_accounts", "Plan de Cuentas"),
@@ -499,9 +503,7 @@ class OdooMigrator(models.Model):
             ("states", "Estados"),
             ("contacts", "Contactos"),
             #
-            # Currencies
-            ("currencies", "Monedas"),
-            ("currency_rates", "Tasas de la Monedas"),
+            # Taxes
             ("taxes", "Impuestos"),
             #
             # Journals
@@ -882,27 +884,6 @@ class OdooMigrator(models.Model):
                 _logger.info(f'Creationg new company: {company.get("name", False)}')
                 new_company = odoo_migrator_company_obj.create(company_values)
 
-            import ipdb
-            ipdb.set_trace()
-            model_name: str = "account.account"
-            for company in self.odoo_company_ids:
-                partner_data = source_models.execute_kw(
-                    source_database,
-                    source_uid,
-                    source_password,
-                    "res.partner",
-                    "search_read",
-                    [[("id", "=", company.partner_id.old_id)]],
-                    {"fields": ['property_account_receivable_id', 'property_account_payable_id']},
-                )
-                if partner_data:
-                    partner_data = partner_data[0]
-                    partner_data.pop("id")
-                    for account in partner_data:
-                        account_id = self.env[model_name].search([('old_id', '=', partner_data[account])])
-                        if account_id:
-                            company.partner_id.write({account: account_id.id})
-
         return self.write({"state": "company_ok"})
 
     def copy_company_data(self):
@@ -914,6 +895,7 @@ class OdooMigrator(models.Model):
         partner = self.partner_id
         if not company:
             raise UserError("Debe seleccionar una compañía")
+
         for field in company._fields.keys():
             if field == "id":
                 continue
@@ -938,6 +920,25 @@ class OdooMigrator(models.Model):
         # migrator_partner.unlink()
         # migrator_partner.active = False
         self.company_id.old_id = migrator_company.old_id
+        source_models, source_uid, source_database, source_password = (self._get_source_odoo_connection())
+        model_name: str = "account.account"
+        partner_data = source_models.execute_kw(
+            source_database,
+            source_uid,
+            source_password,
+            "res.partner",
+            "search_read",
+            [[("id", "=", company.partner_id.old_id)]],
+            {"fields": ['property_account_receivable_id', 'property_account_payable_id']},
+        )
+        if partner_data:
+            partner_data = partner_data[0]
+            partner_data.pop("id")
+            for account in partner_data:
+                account_id = self.env[model_name].search([('old_id', '=', partner_data[account][0])])
+                if account_id:
+                    account_id.company_id = company.id
+                    company.partner_id.write({account: account_id.id})
         return self.write({"state": "company_done"})
 
     @api.depends("source_version")
@@ -1215,14 +1216,12 @@ class OdooMigrator(models.Model):
                                 "context": {"lang": "es_UY"},
                             },
                         )
-                        record_name = record[0]["name"]
-                        child_record = odoo_object.search(
-                            [("name", "ilike", record_name)], limit=1
-                        )
+                        record = record[0]
+                        old_id = record.pop('id')
+                        child_record = odoo_object.search([("old_id", "=", old_id)], limit=1)
                         if not child_record:
-                            child_record = odoo_object.with_context(lang=lang).create(
-                                record[0]
-                            )
+                            record['old_id'] = old_id
+                            child_record = odoo_object.with_context(lang=lang).create(record)
                         value_ids.append(child_record.id)
                     except Exception as error:
                         _logger.info(error)
@@ -1829,14 +1828,13 @@ class OdooMigrator(models.Model):
         _logger.info("\nMigrando Plan de cuenta")
         model_name: str = "account.account"
         chart_of_accounts_obj = self.env[model_name]
+        currency_obj = self.env['res.currency']
         have_local_charts_of_accounts = chart_of_accounts_obj.search([])
         if not bool(have_local_charts_of_accounts):
             _logger.info("¡Sin Planes de cuenta que actualizar!")
             return False
         chart_accounts_ids = have_local_charts_of_accounts.filtered(lambda x: not x.old_id).mapped('code')
         odoo_account_type_obj = self.env['odoo.migrator.account.type']
-        import ipdb;
-        ipdb.set_trace()
         for migrator in self:
             company = migrator.company_id
             is_company_old_id_set = company.old_id <= 0
@@ -1892,9 +1890,10 @@ class OdooMigrator(models.Model):
                 chart_of_accounts_data["account_type"] = account_type_id.account_type
                 chart_of_accounts_data["old_id"] = chart_of_accounts_data.pop("id")
                 chart_of_accounts_data["internal_group"] = chart_of_accounts_data.pop("internal_type")
-                import ipdb;
-                ipdb.set_trace()
-                currency_id = self.env['res.currency']
+                if chart_of_accounts_data.get("currency_id", False):
+                    currency_id = currency_obj.search([('old_id', '=', chart_of_accounts_data.get("currency_id")[0])])
+                    if currency_id:
+                        chart_of_accounts_data["currency_id"] = currency_id.id
                 account_id = chart_of_accounts_obj.create(chart_of_accounts_data)
                 _logger.info(f"Se creo la cuenta {account_id.name}")
                 migrator.create_success_log(values=chart_of_accounts_data)
