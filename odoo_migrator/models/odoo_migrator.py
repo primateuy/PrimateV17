@@ -2380,6 +2380,8 @@ class OdooMigrator(models.Model):
         account_move_obj = self.env[model_name].sudo()
         to_create = []
         for migrator in self:
+            import ipdb
+            ipdb.set_trace()
             account_move_datas = migrator._run_remote_command_for(
                 model_name=model_name if move_type == "entry" else model_name_old,
                 operation_params_list=operation_params_list,
@@ -2387,7 +2389,7 @@ class OdooMigrator(models.Model):
                     "fields": ACCOUNT_MOVE_FIELDS if move_type == "entry" else ACCOUNT_INVOICE_FIELDS,
                     "offset": migrator.pagination_offset,
                     "limit": migrator.pagination_limit,
-                    "order": "date asc" if move_type == "entry" else  "date_invoice asc" ,
+                    "order": "date asc" if move_type == "entry" else "date_invoice asc",
                 },
             )
 
