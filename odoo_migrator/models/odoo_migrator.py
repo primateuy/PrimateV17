@@ -1828,7 +1828,7 @@ class OdooMigrator(models.Model):
         model_name: str = "account.account"
         chart_of_accounts_obj = self.env[model_name]
         currency_obj = self.env['res.currency']
-        have_local_charts_of_accounts = chart_of_accounts_obj.search([()])
+        have_local_charts_of_accounts = chart_of_accounts_obj.search([])
         if not bool(have_local_charts_of_accounts):
             _logger.info("¡Sin Planes de cuenta que actualizar!")
             return False
