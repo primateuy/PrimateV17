@@ -24,6 +24,7 @@ class ResPartner(models.Model):
 
     old_id = fields.Integer(string="ID on old DB")
 
+
 class ResPartnerTitle(models.Model):
     _inherit = "res.partner.title"
 
@@ -106,6 +107,10 @@ class AccountMoveLine(models.Model):
     def _check_payable_receivable(self):
         if self._context.get('check_move_validity', True):
             super(AccountMoveLine, self)._check_payable_receivable()
+
+    def _check_constrains_account_id_journal_id(self):
+        if not self._context.get('from_migrator', False):
+            super(AccountMoveLine, self)._check_constrains_account_id_journal_id()
 
 
 class AccountPayment(models.Model):

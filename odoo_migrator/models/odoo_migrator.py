@@ -132,6 +132,7 @@ ANALYTIC_ACCOUNT_FIELDS: List[str] = [
     "name",
     "company_id",
     "partner_id",
+    "active",
 ]
 RES_USERS_FIELDS: List[str] = [
     "id",
@@ -217,6 +218,7 @@ ACCOUNT_INVOICE_MOVE_LINE_FIELDS: List[str] = [
     "account_id",
     "amount_currency",
     "balance",
+    "date",
     "company_id",
     "company_currency_id",
     "currency_id",
@@ -341,6 +343,7 @@ class MigratorLogLine(models.Model):
             # Conciliations
             ("customer_reconcile", "Conciliaciones de Clientes"),
             ("supplier_reconcile", "Conciliaciones de Proveedores"),
+            ("entry_reconcile", "Conciliaciones de Entries"),
             #Publications
             ("post_customer_invoices", "Publicar facturas de cliente"),
             ("post_customer_payments", "Publicar pagos de cliente"),
@@ -497,60 +500,52 @@ class OdooMigrator(models.Model):
             # Contacts
             ("account_mapping", "Mapeo de Cuentas"),
             ("chart_accounts", "Plan de Cuentas"),
-            ("analytic_accounts", "Plan de Cuentas analitico"),
-            ("users", "Usuarios"),
             ("countries", "Paises"),
             ("states", "Estados"),
+            ("users", "Usuarios"),
             ("contacts", "Contactos"),
-            #
-            # Taxes
-            ("taxes", "Impuestos"),
+            ("analytic_accounts", "Plan de Cuentas analitico"),
             #
             # Journals
             ("account_journals", "Diarios"),
             #
+            # Taxes
+            ("taxes", "Impuestos"),
+            #
             # Products
             ("product_categories", "Categorias de productos"),
             ("product_templates", "Plantillas de productos"),
-            # ("products", "Productos"),
             #
             # Customer invoices
             ("customer_invoices", "Facturas de Clientes (cabezales)"),
             ("customer_invoice_lines", "Facturas de Clientes (lineas)"),
             ("customer_moves_lines", "Facturas de Clientes (movimientos)"),
-            # ("customer_refunds", "Notas de Credito de Clientes (cabezales)"),
-            # ("customer_refund_lines", "Notas de Credito de Clientes (lineas)"),
             #
             # Supplier invoices
             ("supplier_invoices", "Facturas de Proveedor (cabezales)"),
             ("supplier_invoice_lines", "Facturas de Proveedor (lineas)"),
             ("supplier_moves_lines", "Facturas de Proveedor (movimientos)"),
-
-            # ("supplier_refunds", "Notas de Credito de Proveedor (cabezales)"),
-            # ("supplier_refund_lines", "Notas de Credito de Proveedor (lineas)"),
-            #
-            # Account entries
-            ("account_move", "Asientos contables (Cabezales)"),
-            ("account_move_lines", "Asientos contables (lineas)"),
-            #
-            # Entries
-            # ("entries", "Apuntes contables (cabezales)"),
-            # ("entry_lines", "Apuntes contables (lineas)"),
-            #
             # Payments
             ("customer_payments", "Pagos de Clientes"),
             ("customer_payment_moves", "Pagos de Clientes (movimientos)"),
             ("supplier_payments", "Pagos de Proveedores"),
             ("supplier_payment_moves", "Pagos de Proveedores (movimientos)"),
-            # Conciliations
-            ("customer_reconcile", "Conciliaciones de Clientes"),
-            ("supplier_reconcile", "Conciliaciones de Proveedores"),
-            #Publications
+            #
+            # Account entries
+            ("account_move", "Asientos contables (Cabezales)"),
+            ("account_move_lines", "Asientos contables (lineas)"),
+            #
+            # Post
             ("post_customer_invoices", "Publicar facturas de cliente"),
             ("post_customer_payments", "Publicar pagos de cliente"),
             ("post_supplier_invoices", "Publicar facturas de proveedor"),
             ("post_supplier_payments", "Publicar pagos de proveedor"),
-            ("post_entries", "Publicar apuntes contables")
+            ("post_entries", "Publicar apuntes contables"),
+            #
+            # Conciliations
+            ("customer_reconcile", "Conciliaciones de Clientes"),
+            ("supplier_reconcile", "Conciliaciones de Proveedores"),
+            ("entry_reconcile", "Conciliaciones de Entries")
         ],
         string="Modelo a Migrar",
         required=True,
@@ -777,6 +772,10 @@ class OdooMigrator(models.Model):
             action["domain"] = [("id", "in", self.contact_ids.ids)]
 
         elif model_name == 'supplier_reconcile':
+            action = self.env.ref("contacts.action_contacts").read()[0]
+            action["domain"] = [("id", "in", self.contact_ids.ids)]
+
+        elif model_name == 'entry_reconcile':
             action = self.env.ref("contacts.action_contacts").read()[0]
             action["domain"] = [("id", "in", self.contact_ids.ids)]
 
@@ -1304,9 +1303,9 @@ class OdooMigrator(models.Model):
             else:
                 value["old_id"] = value.pop("id")
             if not self._context.get('check_move_validity', True):
-                record = odoo_object.sudo().with_context(check_move_validity=False).create(value)
+                record = odoo_object.sudo().with_context(check_move_validity=False, from_migrator=True).create(value)
             else:
-                record = odoo_object.sudo().create(value)
+                record = odoo_object.sudo().with_context(check_move_validity=False, from_migrator=True).create(value)
             return True, record
         except Exception as error:
             return False, error
@@ -1730,7 +1729,6 @@ class OdooMigrator(models.Model):
                         rate_company_id=rate_company_id,
                         rate_currency_id=rate_currency_id,
                     )
-
                     if bool(rate_id):
                         currency_rate_id = currency_rate_obj.sudo().browse(rate_id)
                         _logger.info(f'la cotización {currency_rate_data["name"]} ya existe')
@@ -1830,7 +1828,7 @@ class OdooMigrator(models.Model):
         model_name: str = "account.account"
         chart_of_accounts_obj = self.env[model_name]
         currency_obj = self.env['res.currency']
-        have_local_charts_of_accounts = chart_of_accounts_obj.search([])
+        have_local_charts_of_accounts = chart_of_accounts_obj.search([()])
         if not bool(have_local_charts_of_accounts):
             _logger.info("¡Sin Planes de cuenta que actualizar!")
             return False
@@ -1923,7 +1921,7 @@ class OdooMigrator(models.Model):
 
             analytic_accounts_datas = migrator._run_remote_command_for(
                 model_name=model_name,
-                operation_params_list=[("company_id", "=", company.old_id)],
+                operation_params_list=['&', ("company_id", "=", company.old_id), '|', ("active", "=", True), ("active", "=", False)],
                 command_params_dict={
                     "fields": ANALYTIC_ACCOUNT_FIELDS,
                 },
@@ -1934,6 +1932,7 @@ class OdooMigrator(models.Model):
             for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
                 _logger.info(f"vamos {contador} / {total}")
                 analytic_account_old_id = analytic_accounts_data["id"]
+                analytic_account_active = analytic_accounts_data.pop("active")
                 search_conditions = [("old_id", "=", analytic_account_old_id)]
                 analytic_account_exists = analytic_accounts_obj.search(search_conditions, limit=1)
                 if analytic_account_exists:
@@ -1949,9 +1948,12 @@ class OdooMigrator(models.Model):
                 if not bool(analytic_account_id):
                     is_success, result = migrator._try_to_create_model(model_name=model_name,
                                                                        values=analytic_accounts_data)
+
                     if not is_success:
                         migrator.create_error_log(msg=str(result), values=analytic_accounts_data)
                         continue
+                    elif not analytic_account_active:
+                        result.active = False
                     migrator.analytic_account_ids += result
 
                 migrator.create_success_log(values=analytic_accounts_data)
@@ -2150,7 +2152,7 @@ class OdooMigrator(models.Model):
                 search_params = ["|", ("old_id", "=", category_old_id), ("name", "ilike", category_name)]
                 product_category_id = product_category_obj.search(search_params, limit=1,)
 
-                if bool(product_category_id):
+                if bool(product_category_id) and category_name != 'Fixed Assets':
                     _logger.info(f"la Categoria de producto {category_name} ya existe")
                     product_category_id.old_id = category_old_id
                     migrator.product_categories_ids += product_category_id
@@ -2265,7 +2267,6 @@ class OdooMigrator(models.Model):
             )
         return True
 
-
     def migrate_taxes(self) -> bool:
         """
         Método para migrar los impuestoso desde el Odoo de origen al Odoo de destino.
@@ -2360,14 +2361,14 @@ class OdooMigrator(models.Model):
         else:
             journal_type = "sale" if move_type == "out_invoice" else "purchase"
             old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
+            contact_ids = self.contact_ids.search([('old_id', '!=', False)]).mapped("old_id")
             operation_params_list = [
                 ("company_id", "=", self.company_id.old_id),
                 ("currency_id", "in", self.currency_ids.mapped("old_id")),
-                ("partner_id", "in", self.contact_ids.mapped("old_id")),
+                ("partner_id", "in", contact_ids),
                 ("journal_id", "in", old_journal_ids),
             ]
         _logger.info("\n\n¡¡¡SE ESTA FILTRANDO POR CONTACTOS y DIARIOS!!!\n\n")
-
         if bool(move_type) and move_type != "entry":
             inverse_move_type = "out_refund" if move_type == "out_invoice" else "in_refund"
             operation_params_list.append(("type", "in", (move_type, inverse_move_type)))
@@ -2380,8 +2381,6 @@ class OdooMigrator(models.Model):
         account_move_obj = self.env[model_name].sudo()
         to_create = []
         for migrator in self:
-            import ipdb
-            ipdb.set_trace()
             account_move_datas = migrator._run_remote_command_for(
                 model_name=model_name if move_type == "entry" else model_name_old,
                 operation_params_list=operation_params_list,
@@ -2533,6 +2532,8 @@ class OdooMigrator(models.Model):
                             migrator.create_success_log(values=move_line_data)
                             _logger.info(f"se creo la Linea de asiento {result.name}")
                     else:
+                        import ipdb
+                        ipdb.set_trace()
                         migrator.create_error_log(msg=str(result), values=move_line_data)
                     continue
                 else:
@@ -2559,7 +2560,66 @@ class OdooMigrator(models.Model):
         total = len(moves_draft)
         commit_count = 50
         side_count = 0
+        aaa_obj = self.env['account.analytic.account']
+        if self.migration_model == 'post_supplier_payments':
+            repeat_names = ['Ahmad taxi to collect money from Deira',
+                            'AirFrance Upgrade',
+                            'Amazon evian water ',
+                            'cleaner',
+                            'cheque fees',
+                            'fares meeting with client',
+                            'kp mart',
+                            'kp mart ',
+                            'kp mart invoice',
+                            'KP Mart ',
+                            'KP mart invoice',
+                            'LinkedIn Job posting',
+                            'money collection ',
+                            'NBDEU/2024/0003',
+                            'Passport Photo size ',
+                            'PASSPORT PHOTOS FOR A CLIENT',
+                            'Wifi airport',
+                            '02.09_MOHAMED DERBAL ll BATCH 1 - TRANSLATION',
+                            '02.09_URGENT Request for ENGLISH TRANSLATION MR. ABDELKRIM MAGHNIA - BATCH 2 ( 7 DOCUMENTS)',
+                            '19.09_MRS.HELANA MARIE SARKIS ll TRANLSATION -BATCH 1',
+                            '27.09_FOR URGENT TRANSLATION -MAHDI MASOUMI- BATCH 1',
+                            '10.10_HANIEH MIRBAHAI ll 5 DOCUMENTS FOR ENGLISH TRANSLATION',
+                            '18.10_MR. NASSER DIAB - BATCH 7 (5 DOCUMENTS)',
+                            '18.10_HUSSEIN YOSRI SHERIF HUSSEIN YOSRI GOHAR- FOR ENGLISH TRANSLATION',
+                            '28.10_Joe Abi Akl II Docs for English Translation',
+                            '03.11__TALAL MAHMOOD BELEED AMIR ll TRANSLATION ll BATCH 1',
+                            '23.11_TALAL MAHMOOD BELEED AMIR ll TRANSLATION ll BATCH 2']
+            for move in self.env['account.move'].search(['|', ('name', 'in', repeat_names), ('old_name', 'in', repeat_names), ('state', '=', 'draft')]):
+                unique_name = f"{move.name}-{move.id}"
+
+                if move.old_name not in repeat_names:
+                    if unique_name != move.name:
+                        move.name = move.old_name
+                    if unique_name != move.payment_id.name:
+                        move.payment_id.name = move.old_name
+                else:
+                    if unique_name != move.name:
+                        move.name = unique_name
+                    if unique_name != move.payment_id.name:
+                        move.payment_id.name = unique_name
+            self.env.cr.commit()
+            for move in self.env['account.payment'].search(['|', ('name', 'in', repeat_names), ('old_name', 'in', repeat_names), ('state', '=', 'draft')]):
+                unique_name = f"{move.old_name}-{move.id}"
+
+                if move.old_name not in repeat_names:
+                    if unique_name != move.name:
+                        move.name = move.old_name
+                    if unique_name != move.move_id.name:
+                        move.move_id.name = move.old_name
+                else:
+                    if unique_name != move.name:
+                        move.name = unique_name
+                    if unique_name != move.move_id.name:
+                        move.move_id.name = unique_name
+            self.env.cr.commit()
         for contador, move in enumerate(moves_draft, start=1):
+            name = False
+            force_name = False
             _logger.info(f"vamos {contador} / {total}")
             _logger.info(f"vamos {contador} / {total}")
             side_count += 1
@@ -2585,22 +2645,126 @@ class OdooMigrator(models.Model):
                 move.button_cancel()
             else:
                 if bool(payment_type):
-                    name = move.move_id.old_name
-                    move.move_id.name = name
+                    try:
+                        name = move.move_id.old_name
+                        if name:
+                            move.move_id.name = name
+                    except Exception as error:
+                        import ipdb
+                        ipdb.set_trace()
+                        move.move_id.name = name + '/' + str(contador)
+                        continue
+                    if move.move_id.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
+                        import ipdb
+                        ipdb.set_trace()
+                        print('vemos que hacemos')
                     if move.old_id in (31282, 31274):
                         move.message_post(body=f'Error al validar la factura')
                         move.migration_error = True
                         self.create_error_log(msg=str('Error al validar la factura'), values=move)
                         continue
+                elif move.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
+                    import ipdb
+                    ipdb.set_trace()
+                    print('vemos que hacemos')
                 try:
                     _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
                     move.with_context(dont_check_constrains_date_sequence=True).action_post()
+                    try:
+                        if force_name:
+                            move.move_id.name = force_name
+                            move.name = force_name
+                        elif name:
+                            move.move_id.name = name
+                        elif move.old_name and move.old_name not in repeat_names:
+                            move.name = move.old_name
+                    except Exception as error:
+                        continue
                 except Exception as error:
-                    move.message_post(body=f'Error al validar la factura {error}')
-                    move.migration_error = True
-                    self.create_error_log(msg=str(error), values=move)
-                    #
-                    continue
+                    if "invalid literal for int() with base 10: 'false'" == str(error):
+                        for line in move.line_ids.filtered(lambda x: x.analytic_distribution and x.analytic_distribution == {'false': 100.0}):
+                            line_datas = self._run_remote_command_for(
+                                model_name='account.move.line',
+                                operation_params_list=[("id", "=", line.old_id)],
+                                command_params_dict={
+                                    "fields": ['analytic_account_id'],
+                                    "offset": self.pagination_offset,
+                                    "limit": self.pagination_limit,
+                                })
+                            if line_datas and line_datas[0].get('analytic_account_id', False):
+                                analytic_id = aaa_obj.search([('old_id', '=', line_datas[0].get('analytic_account_id')[0])])
+                                if not analytic_id:
+                                    analytic_id = aaa_obj.search([('old_id', '=', line_datas[0].get('analytic_account_id')[0]), ('active', '=', False)])
+                                if analytic_id:
+                                    line.analytic_distribution = {analytic_id.id: 100}
+                        try:
+                            _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
+                            move.with_context(dont_check_constrains_date_sequence=True).action_post()
+                            if name:
+                                move.move_id.name = name
+                            elif move.old_name:
+                                move.name = move.old_name
+                        except Exception as error:
+                            move.message_post(body=f'Error al validar la factura {error}')
+                            move.migration_error = True
+                            self.create_error_log(msg=str(error), values=move)
+                            #
+                            continue
+                    elif "is not balanced" in str(error):
+                        for line in move.line_ids.filtered(lambda x: x.display_type == "payment_term"):
+                            line_datas = self._run_remote_command_for(
+                                model_name='account.move.line',
+                                operation_params_list=[("id", "=", line.old_id)],
+                                command_params_dict={
+                                    "fields": ['credit', 'debit'],
+                                    "offset": self.pagination_offset,
+                                    "limit": self.pagination_limit,
+                                })
+                            if line_datas:
+                                if line_datas[0].get('credit', 0):
+                                    line.credit = line_datas[0].get('credit')
+                                else:
+                                    line.debit = line_datas[0].get('debit')
+                        if move.state != 'posted':
+                            try:
+                                _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
+                                move.with_context(dont_check_constrains_date_sequence=True).action_post()
+                                if name:
+                                    move.move_id.name = name
+                                else:
+                                    move.name = move.old_name
+                            except Exception as error:
+                                move.message_post(body=f'Error al validar la factura {error}')
+                                move.migration_error = True
+                                self.create_error_log(msg=str(error), values=move)
+                                #
+                                continue
+                    elif 'duplicate key value violates unique constraint "account_move_unique_name"' in str(error):
+                        self.env.cr.rollback()
+                        if name:
+                            move.move_id.name = f'{name}/{contador}'
+                        else:
+                            move.name = f'{move.old_name}/{contador}'
+                        if move.state != 'posted':
+                            try:
+                                _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
+                                move.with_context(dont_check_constrains_date_sequence=True).action_post()
+                                if name:
+                                    move.move_id.name = name
+                                else:
+                                    move.name = move.old_name
+                            except Exception as error:
+                                move.message_post(body=f'Error al validar la factura {error}')
+                                move.migration_error = True
+                                self.create_error_log(msg=str(error), values=move)
+                                #
+                                continue
+                    else:
+                        move.message_post(body=f'Error al validar la factura {error}')
+                        move.migration_error = True
+                        self.create_error_log(msg=str(error), values=move)
+                        #
+                        continue
 
         return True
 
@@ -2652,7 +2816,6 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(move_line_datas)
-
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 _logger.info(f"vamos {contador} / {total}")
                 old_data = move_line_data
@@ -2682,6 +2845,7 @@ class OdooMigrator(models.Model):
                 if aml and same_currency:
                     if len(aml) == 1:
                         aml.old_id = move_line_data.get("id")
+                        aml.move_id.date = move_line_data.pop("date")
                         migrator.create_success_log(values=move_line_data)
                         _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                     else:
@@ -2691,6 +2855,7 @@ class OdooMigrator(models.Model):
                                 "balance") or x.balance == round(move_line_data.get("balance"), 2)) and (line_name in x.name[:64].replace('\n', '') or (x.name[:64].replace('\n', '') in line_name)))
                         if len(aml) == 1:
                             aml.old_id = move_line_data.get("id")
+                            aml.move_id.date = move_line_data.pop("date")
                             migrator.create_success_log(values=move_line_data)
                             _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                         else:
@@ -2713,6 +2878,7 @@ class OdooMigrator(models.Model):
                                     analytic_account_id) in x.analytic_distribution)
                                 if len(aml) == 1:
                                     aml.old_id = move_line_data.get("id")
+                                    aml.move_id.date = move_line_data.pop("date")
                                     migrator.create_success_log(values=move_line_data)
                                     _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                                 else:
@@ -2724,6 +2890,7 @@ class OdooMigrator(models.Model):
                                     if aml:
                                         aml = aml[0]
                                         aml.old_id = move_line_data.get("id")
+                                        aml.move_id.date = move_line_data.pop("date")
                                         migrator.create_success_log(values=move_line_data)
                                         _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                             else:
@@ -2737,6 +2904,7 @@ class OdooMigrator(models.Model):
                 elif aml and not same_currency:
                     if len(aml) == 1:
                         aml.old_id = move_line_data.get("id")
+                        aml.move_id.date = move_line_data.pop("date")
                         migrator.create_success_log(values=move_line_data)
                         _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                         _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
@@ -2748,6 +2916,7 @@ class OdooMigrator(models.Model):
                                 aml = invoice.line_ids.filtered(lambda x: (x.amount_currency == amount_currency or x.amount_currency == round(amount_currency, 2)) and not x.old_id)
                         if len(aml) == 1:
                             aml.old_id = move_line_data.get("id")
+                            aml.move_id.date = move_line_data.pop("date")
                             migrator.create_success_log(values=move_line_data)
                             _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                         else:
@@ -2772,6 +2941,7 @@ class OdooMigrator(models.Model):
                                     analytic_account_id) in x.analytic_distribution)
                                 if len(aml) == 1:
                                     aml.old_id = move_line_data.get("id")
+                                    aml.move_id.date = move_line_data.pop("date")
                                     migrator.create_success_log(values=move_line_data)
                                     _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                                 else:
@@ -2783,6 +2953,7 @@ class OdooMigrator(models.Model):
                                     if aml:
                                         aml = aml[0]
                                         aml.old_id = move_line_data.get("id")
+                                        aml.move_id.date = move_line_data.pop("date")
                                         migrator.create_success_log(values=move_line_data)
                                         _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                             else:
@@ -2935,6 +3106,7 @@ class OdooMigrator(models.Model):
                         "payment_type",
                         "payment_date",
                         "amount",
+                        "move_name",
                         "currency_id",
                         "state",
                         # "move_line_ids",
@@ -2952,6 +3124,7 @@ class OdooMigrator(models.Model):
             for contador, payment_data in enumerate(payment_datas, start=1):
                 _logger.info(f"vamos {contador} / {total}")
                 payment_old_id = payment_data["id"]
+                move_name = payment_data.pop("move_name")
                 payment_data["date"] = payment_data.pop("payment_date")
                 payment_data["old_state"] = payment_data.pop("state")
                 payment_name = payment_data["name"]
@@ -2978,6 +3151,12 @@ class OdooMigrator(models.Model):
                     continue
                 else:
                     result.old_name = payment_name
+                    if result.is_internal_transfer:
+                        result.move_id.old_id = 0
+                        if move_name:
+                            result.move_id.old_name = move_name
+                    elif result.old_state == 'draft':
+                        result.move_id.old_id = 0
                 migrator.create_success_log(values=payment_data)
                 _logger.info(f"se creo el Pago {result.name}")
                 migrator.account_payments_ids += result
@@ -3044,6 +3223,7 @@ class OdooMigrator(models.Model):
                 )
                 payment = payment_obj.search([("old_id", "=", payment_id)])
                 move = payment.move_id
+                move.old_id = move_line_data.get("move_id", False)[0]
                 move.old_name = move_line_data.get("move_id", False)[1]
                 company_currency = False
                 if move_line_data.get("currency_id", False):
@@ -3122,7 +3302,7 @@ class OdooMigrator(models.Model):
                 move.payment_id.name = move.payment_id.old_name
         return True
 
-    def migrate_customer_reconcile(self) -> bool:
+    def migrate_reconcile_moves(self, move_type: str = "") -> bool:
         """
         Método para migrar las Conciliaciones desde el Odoo de origen al Odoo de destino.
         """
@@ -3130,22 +3310,36 @@ class OdooMigrator(models.Model):
 
         model_name: str = "account.partial.reconcile"
         aml_obj = self.env["account.move.line"]
-        odoo_reconciliation_obj = self.env["odoo.migrator.reconciliation"].sudo()
+        payments_obj = self.env["account.payment"]
+        move_obj = self.env["account.move"]
         for migrator in self:
             move_ids = []
-            if migrator.account_payments_ids.filtered(lambda x: x.state == "posted"):
-                move_ids += migrator.account_payments_ids.move_id.line_ids.filtered(lambda line: line.old_id).mapped(
-                    "old_id")
-            if migrator.account_moves_ids.filtered(lambda x: x.state == "posted"):
-                move_ids += migrator.account_moves_ids.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
+            company = migrator.company_id.id
+            move_domain = [('state', '=', 'posted'), ('payment_state', '=', 'not_paid'), ('company_id', '=', company)]
+            payment_domain = [('state', '=', 'posted'), ('company_id', '=', company)]
+            if move_type == 'customer':
+                move_domain.append(('move_type', 'in', ['out_invoice', 'out_refund']))
+                move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
+                print(len(move_ids))
+                payment_domain.append(('partner_type', '=', 'customer'))
+                move_ids += payments_obj.search(payment_domain).move_id.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
+                print(len(move_ids))
+            elif move_type == 'supplier':
+                move_domain.append(('move_type', 'in', ['in_invoice', 'in_refund']))
+                move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
+                print(len(move_ids))
+                payment_domain.append(('partner_type', '=', 'supplier'))
+                move_ids += payments_obj.search(payment_domain).move_id.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
+                print(len(move_ids))
+            else:
+                journal_ids = self.env['account.journal'].search([('type', '=', 'general')]).ids
+                move_domain.append(('journal_id', 'in', journal_ids))
+                move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
             if not move_ids:
                 raise UserError("No se migraron asientos para conciliar")
             reconcile_datas = migrator._run_remote_command_for(
                 model_name=model_name,
-                operation_params_list=[
-                    ("debit_move_id", "in", move_ids),
-                    ("credit_move_id", "in", move_ids),
-                ],
+                operation_params_list=['|', ("debit_move_id", "in", move_ids), ("credit_move_id", "in", move_ids)],
                 command_params_dict={
                     "fields": [
                         "debit_move_id",
@@ -3206,6 +3400,7 @@ class OdooMigrator(models.Model):
                     (debit_move + credit_move).with_context(skip_account_move_synchronization=True).reconcile()
                 except Exception as error:
                     migrator.create_error_log(msg=str(error), values=reconcile)
+
 
         return True
 
@@ -3273,14 +3468,19 @@ class OdooMigrator(models.Model):
             "customer_payment_moves": partial(self.migrate_payments_account_moves_lines, payment_type="customer"),
             "supplier_payments": partial(self.migrate_account_payments, payment_type="supplier"),
             "supplier_payment_moves": partial(self.migrate_payments_account_moves_lines, payment_type="supplier"),
-            # "account_payments": self.migrate_account_payments,
-            "customer_reconcile": self.migrate_customer_reconcile,
-
+            #
+            # Post
             "post_customer_invoices": partial(self.post_moves, move_type="out_invoice"),
             "post_customer_payments": partial(self.post_moves, payment_type="customer"),
             "post_supplier_invoices": partial(self.post_moves, move_type="in_invoice"),
             "post_supplier_payments": partial(self.post_moves, payment_type="supplier"),
             "post_entries": partial(self.post_moves, move_type="entry"),
+            #
+            # Reconcile
+            "customer_reconcile": partial(self.migrate_reconcile_moves, move_type="customer"),
+            "supplier_reconcile": partial(self.migrate_reconcile_moves, move_type="supplier"),
+            "entry_reconcile": partial(self.migrate_reconcile_moves, move_type="entry"),
+
         }
         if migrator_type not in migrators:
             raise UserError("No se ha implementado la migración para este modelo")
