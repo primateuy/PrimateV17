@@ -540,6 +540,7 @@ class OdooMigrator(models.Model):
             ("post_customer_payments", "Publicar pagos de cliente"),
             ("post_supplier_invoices", "Publicar facturas de proveedor"),
             ("post_supplier_payments", "Publicar pagos de proveedor"),
+            ("post_internal_transfers", "Publicar transferencias internas"),
             ("post_entries", "Publicar apuntes contables"),
             #
             # Conciliations
