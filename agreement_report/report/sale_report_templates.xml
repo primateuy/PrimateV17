@@ -301,7 +301,7 @@
 
                             <t t-set="current_subtotal" t-value="0"/>
 
-                            <t t-foreach="lines_to_report" t-as="line">
+                            <t t-foreach="lines_to_report.filtered(lambda x: x.product_id.service_tracking != 'no')" t-as="line">
 
                                 <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"/>
 
