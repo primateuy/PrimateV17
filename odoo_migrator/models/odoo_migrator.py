@@ -177,6 +177,7 @@ ACCOUNT_INVOICE_FIELDS: List[str] = [
     "name",
     "number",
     "date_invoice",
+    "reference",
     "journal_id",
     "currency_id",
     "type",
@@ -191,6 +192,7 @@ ACCOUNT_MOVE_FIELDS: List[str] = [
     "id",
     "name",
     "number",
+    "ref",
     "date",
     "journal_id",
     "currency_id",
@@ -2379,6 +2381,8 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move"
         model_name_old: str = "account.invoice"
         account_move_obj = self.env[model_name].sudo()
+        already_migrated = account_move_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        operation_params_list.append(("id", "not in", already_migrated))
         to_create = []
         for migrator in self:
             account_move_datas = migrator._run_remote_command_for(
@@ -2396,13 +2400,24 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(account_move_datas)
+            commit_count = 500
+            side_count = 0
             _logger.info(f'Se encontraron {total} facturas {move_type}')
             for contador, account_move_data in enumerate(account_move_datas, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
                 move_old_id = account_move_data["id"]
                 move_name = account_move_data["name"]
                 account_move_id = account_move_obj.search([("old_id", "=", move_old_id)], limit=1, )
-
                 if bool(account_move_id):
                     _logger.info(f"la Factura {move_name} ya existe")
                     account_move_id.old_id = move_old_id
@@ -2413,6 +2428,9 @@ class OdooMigrator(models.Model):
                     account_move_data["invoice_date"] = account_move_data.pop("date_invoice")
                     account_move_data["invoice_user_id"] = account_move_data.pop("user_id")
                     account_move_data["name"] = account_move_data.pop("number")
+                    supplier_reference = account_move_data.pop("reference")
+                    if move_type == 'in_invoice':
+                        account_move_data["ref"] = supplier_reference
                 else:
                     account_move_data["move_type"] = "entry"
 
@@ -3102,6 +3120,8 @@ class OdooMigrator(models.Model):
             operation_params_list.append(("id", "not in", payments.mapped("old_id")))
         model_name: str = "account.payment"
         payment_obj = self.env[model_name]
+        already_migrated = payment_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        operation_params_list.append(("id", "not in", already_migrated))
         for migrator in self:
             payment_datas = migrator._run_remote_command_for(
                 model_name=model_name,
@@ -3111,12 +3131,14 @@ class OdooMigrator(models.Model):
                         "id",
                         "name",
                         "journal_id",
+                        "partner_id",
                         "destination_journal_id",
                         "partner_type",
                         "payment_type",
                         "payment_date",
                         "amount",
                         "move_name",
+                        "communication",
                         "currency_id",
                         "state",
                         # "move_line_ids",
@@ -3130,12 +3152,24 @@ class OdooMigrator(models.Model):
                 continue
             total = len(payment_datas)
             transfer_count = 0
-
+            commit_count = 500
+            side_count = 0
             for contador, payment_data in enumerate(payment_datas, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
                 payment_old_id = payment_data["id"]
                 move_name = payment_data.pop("move_name")
                 payment_data["date"] = payment_data.pop("payment_date")
+                payment_data["ref"] = payment_data.pop("communication")
                 payment_data["old_state"] = payment_data.pop("state")
                 payment_name = payment_data["name"]
                 old_move_id = (payment_data.pop("move_line_ids") if "move_line_ids" in payment_data else [])
@@ -3296,7 +3330,19 @@ class OdooMigrator(models.Model):
                 if value != "Error en una linea"
             }
             total_moves = len(filtered_moves)
+            commit_count = 500
+            side_count = 0
             for new_contador, move in enumerate(filtered_moves, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos recreando{new_contador} / {total_moves}")
                 if move.old_name == 'EXCR/2022/0026':
                     continue
