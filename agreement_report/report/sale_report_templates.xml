@@ -52,7 +52,7 @@
                         </div>
                         <br/>
                         <div style="width:100%">
-                            <div t-raw="doc.sale_order_template_id.x_studio_agreement_terms"/>
+                            <div t-raw="doc.sale_order_template_id.agreement_terms"/>
                         </div>
                                 </t>
                         <p style="page-break-after:always;">   </p>
