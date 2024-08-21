@@ -9,7 +9,6 @@ import xmlrpc.client
 import logging
 
 _logger = logging.getLogger("MIGRATION SERVICES LOGGER")
-
 odoo_versions: List[Tuple[str, str]] = [
     ("10.0", "10.0"),
     ("11.0", "11.0"),
@@ -20,7 +19,6 @@ odoo_versions: List[Tuple[str, str]] = [
     ("16.0", "16.0"),
     ("17.0", "17.0"),
 ]
-
 field_to_model: Dict[str, str] = {
     "parent_id": "res.partner",
     "partner_id": "res.partner",
@@ -49,8 +47,8 @@ field_to_model: Dict[str, str] = {
     "categ_id": "product.category",
     "property_account_income_id": "account.account",
     "property_account_expense_id": "account.account",
+    "analytic_tag_ids": "account.analytic.tag",
 }
-
 m2o_fields: List[str] = [
     "parent_id",
     "state_id",
@@ -62,9 +60,7 @@ m2o_fields: List[str] = [
     "property_account_receivable_id",
     "property_account_payable_id",
 ]
-
-m2m_fields: List[str] = ["child_ids", "category_id", "invoice_line_tax_ids"]
-
+m2m_fields: List[str] = ["child_ids", "category_id", "invoice_line_tax_ids", "analytic_tag_ids"]
 CONTACT_FIELDS: List[str] = [
     "name",
     "company_type",
@@ -91,7 +87,6 @@ CONTACT_FIELDS: List[str] = [
     "property_account_receivable_id",
     "property_account_payable_id",
 ]
-
 COMPANY_FIELDS: List[str] = [
     "name",
     "email",
@@ -116,7 +111,6 @@ COMPANY_FIELDS: List[str] = [
     "state_id",
     "mobile",
 ]
-
 CHART_OF_ACCOUNT_FIELDS: List[str] = [
     "code",
     "id",
@@ -126,7 +120,6 @@ CHART_OF_ACCOUNT_FIELDS: List[str] = [
     "internal_type",
     "user_type_id",
 ]
-
 ANALYTIC_ACCOUNT_FIELDS: List[str] = [
     "id",
     "name",
@@ -145,7 +138,6 @@ RES_USERS_FIELDS: List[str] = [
     "signature",
     "active",
 ]
-
 ACCOUNT_JOURNAL_FIELDS: List[str] = [
     "name",
     "type",
@@ -171,7 +163,6 @@ PRODUCT_TEMPLATE_FIELDS: List[str] = [
     # "company_id",
 ]
 PRODUCT_FIELDS: List[str] = []
-
 ACCOUNT_INVOICE_FIELDS: List[str] = [
     "id",
     "name",
@@ -187,7 +178,6 @@ ACCOUNT_INVOICE_FIELDS: List[str] = [
     "state",
     "move_id"
 ]
-
 ACCOUNT_MOVE_FIELDS: List[str] = [
     "id",
     "name",
@@ -215,6 +205,7 @@ ACCOUNT_MOVE_LINE_FIELDS: List[str] = [
     "invoice_id",
     "account_analytic_id",
     "move_id",
+    "analytic_tag_ids",
 ]
 ACCOUNT_INVOICE_MOVE_LINE_FIELDS: List[str] = [
     "account_id",
@@ -253,7 +244,6 @@ ACCOUNT_PAYMENT_MOVE_LINE_FIELDS: List[str] = [
 ]
 ACCOUNT_MOVE_TYPE_FIELDS: List[str] = []
 ACCOUNT_PAYMENT_FIELDS: List[str] = []
-
 move_type_map = {'entry': 'Asiento Contable',
                  'out_invoice': 'Factura de cliente',
                  'out_refund': 'Factura rectificativa de cliente',
@@ -296,6 +286,7 @@ class MigratorLogLine(models.Model):
             ("account_mapping", "Mapeo de Cuentas"),
             ("chart_accounts", "Plan de Cuentas"),
             ("analytic_accounts", "Plan de Cuentas analitico"),
+            ("analytic_tags", "Etiquetas analiticas"),
             ("users", "Usuarios"),
             ("countries", "Paises"),
             ("states", "Estados"),
@@ -508,6 +499,7 @@ class OdooMigrator(models.Model):
             ("users", "Usuarios"),
             ("contacts", "Contactos"),
             ("analytic_accounts", "Plan de Cuentas analitico"),
+            ("analytic_tags", "Etiquetas analiticas"),
             #
             # Journals
             ("account_journals", "Diarios"),
@@ -591,6 +583,7 @@ class OdooMigrator(models.Model):
     )
     country_ids = fields.Many2many(comodel_name="res.country", string="Países")
     analytic_account_ids = fields.Many2many(comodel_name="account.analytic.account", string="Cuentas Analiticas")
+    analytic_tag_ids = fields.Many2many(comodel_name="account.analytic.tag", string="Cuentas Analiticas")
     user_ids = fields.Many2many(comodel_name="res.users", string="Usuarios")
     account_move_types_ids = fields.Many2many(
         comodel_name="account.move",
@@ -1967,6 +1960,43 @@ class OdooMigrator(models.Model):
         _logger.info(f"se migraron {len(self.analytic_account_ids)} cuentas analiticas")
         return True
 
+    def migrate_analytic_tags(self) -> bool:
+        """
+        Método para migrar las etiquetas analiticas de odoo origen a destino.
+        """
+        _logger.info("\nMigrando las etiquetas analiticas")
+        model_name: str = "account.analytic.tag"
+        analytic_tag_obj = self.env[model_name].sudo()
+        for migrator in self:
+            analytic_tag_datas = migrator._run_remote_command_for(model_name=model_name, command_params_dict={"fields": ['name']})
+            if not bool(analytic_tag_datas):
+                continue
+            total = len(analytic_tag_datas)
+            for contador, analytic_tag_data in enumerate(analytic_tag_datas, start=1):
+                _logger.info(f"vamos {contador} / {total}")
+                analytic_tag_old_id = analytic_tag_data["id"]
+                search_conditions = [("old_id", "=", analytic_tag_old_id)]
+                analytic_tag_exists = analytic_tag_obj.search(search_conditions, limit=1)
+                if analytic_tag_exists:
+                    _logger.info(f'El plan de cuentas analitico {analytic_tag_data["name"]} ya existe')
+                    print(f'El plan de cuentas analitico {analytic_tag_data["name"]} ya existe')
+                    continue
+                analytic_accounts_id = analytic_tag_data["id"]
+                analytic_account_id = analytic_tag_obj.search([("old_id", "=", analytic_accounts_id)])
+                if not bool(analytic_account_id):
+                    is_success, result = migrator._try_to_create_model(model_name=model_name, values=analytic_tag_data)
+
+                    if not is_success:
+                        migrator.create_error_log(msg=str(result), values=analytic_tag_data)
+                        continue
+                    migrator.analytic_tag_ids += result
+
+                migrator.create_success_log(values=analytic_tag_data)
+                _logger.info(f"Se creo la cuenta analitica {analytic_account_id.name}")
+
+        _logger.info(f"se migraron {len(self.analytic_tag_ids)} cuentas analiticas")
+        return True
+
     def migrate_users(self) -> bool:
         """
         Método para migrar los usuarios de odoo origen a destino.
@@ -2501,12 +2531,9 @@ class OdooMigrator(models.Model):
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
                     self.env.cr.commit()
                     side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
@@ -3531,6 +3558,7 @@ class OdooMigrator(models.Model):
             "chart_accounts": self.migrate_chart_of_accounts,
             "account_mapping": self.migrate_account_type_mapping,
             "analytic_accounts": self.migrate_analytic_accounts,
+            "analytic_tags": self.migrate_analytic_tags,
             "users": self.migrate_users,
             "countries": self.migrate_countries,
             "states": self.migrate_states,
