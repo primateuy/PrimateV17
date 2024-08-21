@@ -108,6 +108,7 @@ class AccountMove(models.Model):
     old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")], copy=False)
     migration_error = fields.Boolean(string="Migration Error", copy=False)
     no_post_migrator = fields.Boolean(string="No post move in migration", copy=False)
+    is_manual_entry = fields.Boolean(string="Is Manual Entry", copy=False)
 
     def _must_check_constrains_date_sequence(self):
         ctx = self.env.context.copy()
@@ -122,6 +123,7 @@ class AccountMoveLine(models.Model):
     invoice_old_id = fields.Integer(string="Invoice Line Old ID", copy=False)
     old_id = fields.Integer(string="Old ID", copy=False)
     move_version = fields.Selection(selection=[("old_move", "Old Move"), ("new_move", "New Move")], default="old_move", copy=False)
+    is_manual_entry = fields.Boolean(string="Is Manual Entry", copy=False)
 
     @api.constrains('account_id', 'display_type')
     def _check_payable_receivable(self):
