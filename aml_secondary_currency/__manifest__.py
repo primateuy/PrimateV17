@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/13.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'account',
-    'version': '16.1.0',
+    'version': '17.1.0',
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'account'],
@@ -26,7 +26,6 @@
         'views/account_move_line_view.xml',
         'wizard/compute_secondary_amount_view.xml',
         'security/ir.model.access.csv',
-        'views/invoice_template_custom.xml',
         'views/account_move.xml'
     ],
     # only loaded in demonstration mode
