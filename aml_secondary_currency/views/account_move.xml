@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+        <record id="account_move_secondary_currency" model="ir.ui.view">
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="model">account.move</field>
+            <field name="name">account.move.secondary.currency.inherit</field>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <field name="secondary_currency_id" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

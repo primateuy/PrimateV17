@@ -351,6 +351,7 @@ class MigratorLogLine(models.Model):
             ("post_customer_payments", "Publicar pagos de cliente"),
             ("post_supplier_invoices", "Publicar facturas de proveedor"),
             ("post_supplier_payments", "Publicar pagos de proveedor"),
+            ("post_internal_transfers", "Publicar transferencias internas"),
             ("post_entries", "Publicar apuntes contables")
         ],
         string="Modelo a Migrar",
@@ -542,6 +543,7 @@ class OdooMigrator(models.Model):
             ("post_customer_payments", "Publicar pagos de cliente"),
             ("post_supplier_invoices", "Publicar facturas de proveedor"),
             ("post_supplier_payments", "Publicar pagos de proveedor"),
+            ("post_internal_transfers", "Publicar transferencias internas"),
             ("post_entries", "Publicar apuntes contables"),
             #
             # Conciliations
@@ -888,6 +890,7 @@ class OdooMigrator(models.Model):
         return self.write({"state": "company_ok"})
 
     def copy_company_data(self):
+        return self.write({"state": "company_done"})
         migrator_company = self.odoo_company_ids.filtered(lambda x: x.migrate_this_company)
         migrator_partner = migrator_company.partner_id
         if not migrator_company:
@@ -3461,9 +3464,7 @@ class OdooMigrator(models.Model):
         return True
 
     def reconcile_lines(self):
-
-        lines_to_reconcile = self.reconciliation_line_ids.filtered(
-            lambda x: x.debit_move_id and x.credit_move_id and not x.successful_reconciliation)
+        lines_to_reconcile = self.reconciliation_line_ids.filtered(lambda x: x.debit_move_id and x.credit_move_id and not x.successful_reconciliation)
         total = len(lines_to_reconcile)
         commit_count = 500
         side_count = 0
@@ -3485,6 +3486,30 @@ class OdooMigrator(models.Model):
                 self.env.cr.commit()
                 #pepe
                 self.create_error_log(msg=str(error), values=line)
+
+    def action_post_internal_transfers(self):
+        import ipdb;ipdb.set_trace()
+        domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft')]
+        only_one = ('old_id', '=', 32575)
+        domain.append(only_one)
+        transfer_obj = self.env['account.payment'].sudo()
+        transfers = transfer_obj.search(domain)
+        commit_count = 500
+        side_count = 0
+        for count, transfer in enumerate(transfers, start=1):
+            print(f'Vamos {count} / {len(transfers)}')
+            _logger.info(f'Vamos {count} / {len(transfers)}')
+            side_count += 1
+            if side_count > commit_count:
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                self.env.cr.commit()
+                side_count = 0
+            transfer.with_context(from_migrator=True, migrator=self).action_post()
+
+
+        return True
 
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
@@ -3531,6 +3556,7 @@ class OdooMigrator(models.Model):
             "post_supplier_invoices": partial(self.post_moves, move_type="in_invoice"),
             "post_supplier_payments": partial(self.post_moves, payment_type="supplier"),
             "post_entries": partial(self.post_moves, move_type="entry"),
+            "post_internal_transfers": partial(self.action_post_internal_transfers),
             #
             # Reconcile
             "customer_reconcile": partial(self.migrate_reconcile_moves, move_type="customer"),
