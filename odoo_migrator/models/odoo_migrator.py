@@ -177,6 +177,7 @@ ACCOUNT_INVOICE_FIELDS: List[str] = [
     "name",
     "number",
     "date_invoice",
+    "reference",
     "journal_id",
     "currency_id",
     "type",
@@ -191,6 +192,7 @@ ACCOUNT_MOVE_FIELDS: List[str] = [
     "id",
     "name",
     "number",
+    "ref",
     "date",
     "journal_id",
     "currency_id",
@@ -349,6 +351,7 @@ class MigratorLogLine(models.Model):
             ("post_customer_payments", "Publicar pagos de cliente"),
             ("post_supplier_invoices", "Publicar facturas de proveedor"),
             ("post_supplier_payments", "Publicar pagos de proveedor"),
+            ("post_internal_transfers", "Publicar transferencias internas"),
             ("post_entries", "Publicar apuntes contables")
         ],
         string="Modelo a Migrar",
@@ -540,6 +543,7 @@ class OdooMigrator(models.Model):
             ("post_customer_payments", "Publicar pagos de cliente"),
             ("post_supplier_invoices", "Publicar facturas de proveedor"),
             ("post_supplier_payments", "Publicar pagos de proveedor"),
+            ("post_internal_transfers", "Publicar transferencias internas"),
             ("post_entries", "Publicar apuntes contables"),
             #
             # Conciliations
@@ -886,6 +890,7 @@ class OdooMigrator(models.Model):
         return self.write({"state": "company_ok"})
 
     def copy_company_data(self):
+        return self.write({"state": "company_done"})
         migrator_company = self.odoo_company_ids.filtered(lambda x: x.migrate_this_company)
         migrator_partner = migrator_company.partner_id
         if not migrator_company:
@@ -2379,6 +2384,8 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move"
         model_name_old: str = "account.invoice"
         account_move_obj = self.env[model_name].sudo()
+        already_migrated = account_move_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        operation_params_list.append(("id", "not in", already_migrated))
         to_create = []
         for migrator in self:
             account_move_datas = migrator._run_remote_command_for(
@@ -2396,13 +2403,24 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(account_move_datas)
+            commit_count = 500
+            side_count = 0
             _logger.info(f'Se encontraron {total} facturas {move_type}')
             for contador, account_move_data in enumerate(account_move_datas, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
                 move_old_id = account_move_data["id"]
                 move_name = account_move_data["name"]
                 account_move_id = account_move_obj.search([("old_id", "=", move_old_id)], limit=1, )
-
                 if bool(account_move_id):
                     _logger.info(f"la Factura {move_name} ya existe")
                     account_move_id.old_id = move_old_id
@@ -2413,6 +2431,9 @@ class OdooMigrator(models.Model):
                     account_move_data["invoice_date"] = account_move_data.pop("date_invoice")
                     account_move_data["invoice_user_id"] = account_move_data.pop("user_id")
                     account_move_data["name"] = account_move_data.pop("number")
+                    supplier_reference = account_move_data.pop("reference")
+                    if move_type == 'in_invoice':
+                        account_move_data["ref"] = supplier_reference
                 else:
                     account_move_data["move_type"] = "entry"
 
@@ -3102,6 +3123,8 @@ class OdooMigrator(models.Model):
             operation_params_list.append(("id", "not in", payments.mapped("old_id")))
         model_name: str = "account.payment"
         payment_obj = self.env[model_name]
+        already_migrated = payment_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        operation_params_list.append(("id", "not in", already_migrated))
         for migrator in self:
             payment_datas = migrator._run_remote_command_for(
                 model_name=model_name,
@@ -3111,12 +3134,14 @@ class OdooMigrator(models.Model):
                         "id",
                         "name",
                         "journal_id",
+                        "partner_id",
                         "destination_journal_id",
                         "partner_type",
                         "payment_type",
                         "payment_date",
                         "amount",
                         "move_name",
+                        "communication",
                         "currency_id",
                         "state",
                         # "move_line_ids",
@@ -3130,12 +3155,24 @@ class OdooMigrator(models.Model):
                 continue
             total = len(payment_datas)
             transfer_count = 0
-
+            commit_count = 500
+            side_count = 0
             for contador, payment_data in enumerate(payment_datas, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
                 payment_old_id = payment_data["id"]
                 move_name = payment_data.pop("move_name")
                 payment_data["date"] = payment_data.pop("payment_date")
+                payment_data["ref"] = payment_data.pop("communication")
                 payment_data["old_state"] = payment_data.pop("state")
                 payment_name = payment_data["name"]
                 old_move_id = (payment_data.pop("move_line_ids") if "move_line_ids" in payment_data else [])
@@ -3296,7 +3333,19 @@ class OdooMigrator(models.Model):
                 if value != "Error en una linea"
             }
             total_moves = len(filtered_moves)
+            commit_count = 500
+            side_count = 0
             for new_contador, move in enumerate(filtered_moves, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos recreando{new_contador} / {total_moves}")
                 if move.old_name == 'EXCR/2022/0026':
                     continue
@@ -3415,9 +3464,7 @@ class OdooMigrator(models.Model):
         return True
 
     def reconcile_lines(self):
-
-        lines_to_reconcile = self.reconciliation_line_ids.filtered(
-            lambda x: x.debit_move_id and x.credit_move_id and not x.successful_reconciliation)
+        lines_to_reconcile = self.reconciliation_line_ids.filtered(lambda x: x.debit_move_id and x.credit_move_id and not x.successful_reconciliation)
         total = len(lines_to_reconcile)
         commit_count = 500
         side_count = 0
@@ -3439,6 +3486,30 @@ class OdooMigrator(models.Model):
                 self.env.cr.commit()
                 #pepe
                 self.create_error_log(msg=str(error), values=line)
+
+    def action_post_internal_transfers(self):
+        import ipdb;ipdb.set_trace()
+        domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft')]
+        only_one = ('old_id', '=', 32575)
+        domain.append(only_one)
+        transfer_obj = self.env['account.payment'].sudo()
+        transfers = transfer_obj.search(domain)
+        commit_count = 500
+        side_count = 0
+        for count, transfer in enumerate(transfers, start=1):
+            print(f'Vamos {count} / {len(transfers)}')
+            _logger.info(f'Vamos {count} / {len(transfers)}')
+            side_count += 1
+            if side_count > commit_count:
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                self.env.cr.commit()
+                side_count = 0
+            transfer.with_context(from_migrator=True, migrator=self).action_post()
+
+
+        return True
 
     def _get_migrator_for(self, migrator_type: str):
         migrators = {
@@ -3485,6 +3556,7 @@ class OdooMigrator(models.Model):
             "post_supplier_invoices": partial(self.post_moves, move_type="in_invoice"),
             "post_supplier_payments": partial(self.post_moves, payment_type="supplier"),
             "post_entries": partial(self.post_moves, move_type="entry"),
+            "post_internal_transfers": partial(self.action_post_internal_transfers),
             #
             # Reconcile
             "customer_reconcile": partial(self.migrate_reconcile_moves, move_type="customer"),
