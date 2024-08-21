@@ -142,7 +142,6 @@ class AccountPayment(models.Model):
 
 
     def action_post(self):
-        import ipdb;ipdb.set_trace()
         ctx = self.env.context.copy()
         comes_from_migrator = ctx.get('from_migrator', False)
 

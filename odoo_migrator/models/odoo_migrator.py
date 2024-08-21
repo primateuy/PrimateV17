@@ -3039,6 +3039,9 @@ class OdooMigrator(models.Model):
             ACCOUNT_MOVE_LINE_FIELDS.append("debit")
             ACCOUNT_MOVE_LINE_FIELDS.append("amount_currency")
             ACCOUNT_MOVE_LINE_FIELDS.append("balance")
+            ACCOUNT_MOVE_LINE_FIELDS.append("analytic_account_id")
+            ACCOUNT_MOVE_LINE_FIELDS.append("partner_id")
+            ACCOUNT_MOVE_LINE_FIELDS.append("ref")
         else:
             operation_params_list = [
                 ("invoice_id", "!=", False),
@@ -3055,6 +3058,7 @@ class OdooMigrator(models.Model):
                 operation_params_list.append(('move_id', "in", entries.mapped('old_id')))
         model_name: str = "account.move.line"
         aml_obj = self.env[model_name]
+        aaa_obj = self.env['account.analytic.account'].sudo()
         for migrator in self:
             aml_datas = migrator._run_remote_command_for(
                 model_name=model_name,
@@ -3092,6 +3096,18 @@ class OdooMigrator(models.Model):
                         aml_data["amount_currency"] = aml_data.pop("balance")
                     if not aml_data.get('currency_id', False):
                         aml_data["currency_id"] = self.env.company.currency_id.id
+
+                old_analytic_data = aml_data.pop('analytic_account_id', [])
+                if old_analytic_data:
+                    old_analytic_id = old_analytic_data[0]
+                    analytic_id = aaa_obj.search([('old_id', '=', old_analytic_id)])
+                    if not analytic_id:
+                        analytic_id = aaa_obj.search([('old_id', '=', old_analytic_id), ('active', '=', False)])
+                    if analytic_id:
+                        # line.analytic_distribution =
+                        aml_data['analytic_distribution'] = {analytic_id.id: 100}
+
+
                 is_success, result = migrator.with_context(dont_check_constrains_date_sequence=True).try_to_create_record(odoo_object=aml_obj, value=aml_data)
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=aml_data)
@@ -3488,7 +3504,6 @@ class OdooMigrator(models.Model):
                 self.create_error_log(msg=str(error), values=line)
 
     def action_post_internal_transfers(self):
-        import ipdb;ipdb.set_trace()
         domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft')]
         only_one = ('old_id', '=', 32575)
         domain.append(only_one)
