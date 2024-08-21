@@ -1,0 +1,53 @@
+<odoo>
+    <template id="report_invoice_document_with_secondary_rate" inherit_id="account.report_invoice_document">
+        <xpath expr="//p[@name='payment_communication']" position="after">
+            <table class="table table-sm mt-2" style="width: 50%; margin-left: auto; margin-right: auto;">
+                <thead>
+                    <tr>
+                        <th>Tax</th>
+                        <th>Base amount</th>
+                        <th>VAT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="o.tax_totals['groups_by_subtotal']['Untaxed Amount']" t-as="tax_info">
+                        <tr>
+                            <td>
+                                <t t-esc="o.currency_id.name"/>
+                                <t t-esc="tax_info['tax_group_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="o.currency_id.name"/>
+                                <t t-esc="round(tax_info['tax_group_base_amount'], 2)"/>
+                            </td>
+                            <td>
+                                <t t-esc="o.currency_id.name"/>
+                                <t t-esc="tax_info['tax_group_amount']"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <t t-esc="o.secondary_currency_id.name"/>
+                                <t t-esc="tax_info['tax_group_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="o.secondary_currency_id.name"/>
+                                <t t-esc="round(tax_info['tax_group_base_amount_secondary'], 2)"/>
+                            </td>
+                            <td>
+                                <t t-esc="o.secondary_currency_id.name"/>
+                                <t t-esc="round(tax_info['tax_group_amount_secondary'], 2)"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <br></br>
+            <p>
+                Rate (<t t-esc="o.currency_id.name"/> 1 - <t t-esc="o.tax_totals['rate_used']"/> <t t-esc="o.secondary_currency_id.name"/>)
+            <br></br>
+                Total - <t t-esc="o.tax_totals['amount_secondary_currency']"/> <t t-esc="o.secondary_currency_id.name"/>
+            </p>
+        </xpath>
+    </template>
+</odoo>
