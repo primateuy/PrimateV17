@@ -102,6 +102,7 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     old_id = fields.Integer(string="Old ID", copy=False)
+    old_move_id = fields.Integer(string="Old move ID", copy=False)
     old_name = fields.Char(string="Name", copy=False)
     old_full_reconcile_ids = fields.Char(string="Full reconcile IDs on old DB", copy=False)
     old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")], copy=False)
