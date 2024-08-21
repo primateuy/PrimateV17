@@ -20,12 +20,13 @@ class AccountMove(models.Model):
         for rec in self:
             rec.secondary_currency_id = rec.company_id.secondary_currency_id
 
-            for tax_info in rec.tax_totals['groups_by_subtotal']['Untaxed Amount']:
-                tax_info['tax_group_base_amount_secondary'] = rec.currency_id._convert(tax_info['tax_group_base_amount'], rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
-                tax_info['tax_group_amount_secondary'] = rec.currency_id._convert(tax_info['tax_group_amount'], rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
+            if rec.tax_totals and rec.tax_totals.get('groups_by_subtotal', False) and rec['groups_by_subtotal'].get('Untaxed Amount', False):
+                for tax_info in rec.tax_totals['groups_by_subtotal']['Untaxed Amount']:
+                    tax_info['tax_group_base_amount_secondary'] = rec.currency_id._convert(tax_info['tax_group_base_amount'], rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
+                    tax_info['tax_group_amount_secondary'] = rec.currency_id._convert(tax_info['tax_group_amount'], rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
 
-            rec.tax_totals['amount_secondary_currency'] = rec.currency_id._convert(rec.amount_total, rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
-            rec.tax_totals['rate_used'] = rec.currency_id._convert(1, rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
+                rec.tax_totals['amount_secondary_currency'] = rec.currency_id._convert(rec.amount_total, rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
+                rec.tax_totals['rate_used'] = rec.currency_id._convert(1, rec.company_id.secondary_currency_id, rec.company_id, rec.invoice_date or datetime.date.today())
 
     def post(self):
         res = super(AccountMove, self).post()
