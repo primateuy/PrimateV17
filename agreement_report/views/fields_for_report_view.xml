@@ -9,7 +9,7 @@
                     <attribute name="required">True</attribute>
                 </xpath>
                 <xpath expr="//field[@name='sale_order_template_id']" position="after">
-                    <field name="x_studio_family_members" required="True"/>
+                    <field name="family_members" required="True"/>
                 </xpath>
             </field>
         </record>
@@ -19,12 +19,9 @@
             <field name="model">sale.order.template</field>
             <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
             <field name="arch" type="xml">
-                  <xpath expr="//field[@name='note']" position="after">
-                      <field name="x_studio_html_field_9d7_1i5mpl7pv"/>
-                  </xpath>
                   <xpath expr="//notebook[@name='main_book']" position="inside">
-                      <page string="Agreement Terms" name="studio_page_182_1i5mpnt7b">
-                          <field name="x_studio_agreement_terms"/>
+                      <page string="Agreement Terms" name="agreement_terms_page">
+                          <field name="agreement_terms"/>
                       </page>
                   </xpath>
             </field>
