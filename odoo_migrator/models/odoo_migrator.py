@@ -2459,7 +2459,7 @@ class OdooMigrator(models.Model):
         purchase_exempt_tax = tax_obj.search([('type_tax_use', '=', 'purchase'), ('amount', '=', 0.00), ('active', '=', True)], limit=1)
         to_create = []
         for migrator in self:
-            already_migrated_ids = migrator.account_move_line_ids.mapped("old_id")
+            already_migrated_ids = migrator.account_move_line_ids.mapped("invoice_old_id")
             domain = [("invoice_id", "in", account_moves_ids.mapped("old_id")), ("id", "not in", already_migrated_ids)]
             move_line_datas = migrator._run_remote_command_for(
                 model_name=model_name_old,
@@ -2532,8 +2532,6 @@ class OdooMigrator(models.Model):
                             migrator.create_success_log(values=move_line_data)
                             _logger.info(f"se creo la Linea de asiento {result.name}")
                     else:
-                        import ipdb
-                        ipdb.set_trace()
                         migrator.create_error_log(msg=str(result), values=move_line_data)
                     continue
                 else:
@@ -2555,12 +2553,12 @@ class OdooMigrator(models.Model):
             moves = self.account_payments_ids.filtered(lambda move: move.partner_type == payment_type and not move.is_internal_transfer)
         if not bool(moves):
             raise UserError("No hay Asientos contables migrados")
-        moves_draft = moves.filtered(
-            lambda x: x.state == "draft" and x.old_state != "draft" and x.name != 'Draft Payment')
+        moves_draft = moves.filtered(lambda x: x.state == "draft" and x.old_state != "draft" and x.name != 'Draft Payment' and not x.migration_error)
         total = len(moves_draft)
         commit_count = 50
         side_count = 0
         aaa_obj = self.env['account.analytic.account']
+        repeat_names = []
         if self.migration_model == 'post_supplier_payments':
             repeat_names = ['Ahmad taxi to collect money from Deira',
                             'AirFrance Upgrade',
@@ -2650,13 +2648,13 @@ class OdooMigrator(models.Model):
                         if name:
                             move.move_id.name = name
                     except Exception as error:
-                        import ipdb
-                        ipdb.set_trace()
+                        #import ipdb
+                        #ipdb.set_trace()
                         move.move_id.name = name + '/' + str(contador)
                         continue
                     if move.move_id.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
-                        import ipdb
-                        ipdb.set_trace()
+                        #import ipdb
+                        #ipdb.set_trace()
                         print('vemos que hacemos')
                     if move.old_id in (31282, 31274):
                         move.message_post(body=f'Error al validar la factura')
@@ -2664,8 +2662,8 @@ class OdooMigrator(models.Model):
                         self.create_error_log(msg=str('Error al validar la factura'), values=move)
                         continue
                 elif move.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
-                    import ipdb
-                    ipdb.set_trace()
+                    #import ipdb
+                    #ipdb.set_trace()
                     print('vemos que hacemos')
                 try:
                     _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
@@ -2787,7 +2785,7 @@ class OdooMigrator(models.Model):
             moves_types.append(move_type)
             inverse_move_type = "out_refund" if move_type == "out_invoice" else "in_refund"
             moves_types.append(inverse_move_type)
-            account_moves_ids = account_moves_ids.filtered(lambda move: move.move_type in moves_types)
+            account_moves_ids = account_moves_ids.filtered(lambda move: move.move_type in moves_types and move.line_ids.filtered(lambda line: not line.old_id))
 
         model_name: str = "account.move.line"
         model_name_old: str = "account.move.line"
@@ -2816,7 +2814,19 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(move_line_datas)
+            commit_count = 500
+            side_count = 0
             for contador, move_line_data in enumerate(move_line_datas, start=1):
+                side_count += 1
+                if side_count > commit_count:
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(
+                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
                 old_data = move_line_data
                 if move_type == 'out_invoice':
