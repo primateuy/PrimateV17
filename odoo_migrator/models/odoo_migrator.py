@@ -2860,6 +2860,7 @@ class OdooMigrator(models.Model):
             total = len(move_line_datas)
             commit_count = 500
             side_count = 0
+            sida_counter = 0
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
@@ -3028,10 +3029,22 @@ class OdooMigrator(models.Model):
                         account_id = account_obj.search([('old_id', '=', old_account_id)], limit=1)
                         if not account_id:
                             raise UserError('¡¡¡¡Esto no deberia suceder!!!!')
-                        aml.account_id = account_id.id
+                        try:
+                            aml.account_id = account_id.id
+                        except Exception as e:
+                            if 'The account selected on your journal entry forces to provide a secondary currency. You should remove the secondary currency on the account.' == str(e):
+                                sida_counter += 1
+                                aml.currency_id = account_id.currency_id.id
+                                move_balance = move_line_data.get('balance', 0)
+                                move_amount_currency = aml.company_currency_id._convert(move_balance, aml.currency_id, aml.company_id, aml.invoice_date or aml.date)
+                                aml.amount_currency = move_amount_currency
+                                if move_balance != aml.balance:
+                                    aml.balance = move_balance
+                                aml.account_id = account_id.id
                         _logger.info('cambiamos la cuenta')
 
             _logger.info(f"se crearon {len(self.account_move_line_ids)} Lineas de asientos")
+            _logger.info(f"ZIDAAAAAAAS {sida_counter}")
         return True
 
     def migrate_account_move_types(self) -> bool:
@@ -3348,6 +3361,11 @@ class OdooMigrator(models.Model):
                     if company_currency
                     else move_line_data.get("amount_currency")
                 )
+                if account_line.currency_id and currency_line == payment.company_currency_id:
+                    currency_line = account_line.currency_id
+                    move_balance = move_line_data.get('balance', 0)
+                    move_amount_currency = payment.company_currency_id._convert(move_balance, currency_line, payment.company_id, payment.date)
+                    amount_currency = move_amount_currency
                 dic_move_line = {
                     "account_id": account_line.id,
                     "amount_currency": amount_currency,
@@ -3399,6 +3417,7 @@ class OdooMigrator(models.Model):
                     # move.payment_id.action_post()
                 except Exception as e:
                     result = f"{e} Este error se encontro al querer agregar las lineas del movimiento de pago {move.name}"
+                    move.migration_error = True
                     migrator.create_error_log(msg=str(result), values=filtered_moves[move])
                     continue
                 move.name = move.old_name
