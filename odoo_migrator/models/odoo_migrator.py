@@ -3488,18 +3488,18 @@ class OdooMigrator(models.Model):
                 self.create_error_log(msg=str(error), values=line)
 
     def action_post_internal_transfers(self):
-        import ipdb;ipdb.set_trace()
-        domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft')]
-        only_one = ('old_id', '=', 32575)
-        domain.append(only_one)
+        domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft'), ('old_state', '!=', 'draft')]
         transfer_obj = self.env['account.payment'].sudo()
         transfers = transfer_obj.search(domain)
-        commit_count = 500
+        commit_count = 25
         side_count = 0
         for count, transfer in enumerate(transfers, start=1):
+            side_count += 1
+            if transfer.old_id in (30817, 20949, 20720, 19852, 19767, 19534, 19533, 17980, 20739, 19535, 17897, 17899, 20175, 19971, 17941, 17267, 17177, 17183):
+                transfer.migration_error = True
+                continue
             print(f'Vamos {count} / {len(transfers)}')
             _logger.info(f'Vamos {count} / {len(transfers)}')
-            side_count += 1
             if side_count > commit_count:
                 print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
                 print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
@@ -3507,8 +3507,6 @@ class OdooMigrator(models.Model):
                 self.env.cr.commit()
                 side_count = 0
             transfer.with_context(from_migrator=True, migrator=self).action_post()
-
-
         return True
 
     def _get_migrator_for(self, migrator_type: str):
