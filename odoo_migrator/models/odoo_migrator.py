@@ -1363,24 +1363,19 @@ class OdooMigrator(models.Model):
         )
         return datas
 
-    def _clean_relational_fields_for(self, data: Dict, model_obj=None, contador=0) -> None:
+    def _clean_relational_fields_for(self, data: Dict, model_obj=None) -> None:
         if not bool(data) or model_obj is None:
             _logger.info("¡Parametros incorrectos, data y model_obj tienen que estar seteados!")
             return
         for field_name in list(data):
-            if field_name == 'product_id' and contador==147:
-                import ipdb;ipdb.set_trace()
-            # print(field_name)
             if not field_name in field_to_model:
-                #
-                # _logger.info(f"El field {field_name} no esta en la list {field_to_model}")
+                _logger.info(f"El field {field_name} no esta en la list {field_to_model}")
                 continue
 
             field_model: str = field_to_model.get(field_name, "")
             if not field_model:
                 continue
 
-            # field_obj = self.env[field_model]
             field_type: str = model_obj._fields[field_name].type
             if field_type in ("one2many", "many2many"):
                 del data[field_name]
@@ -2398,7 +2393,7 @@ class OdooMigrator(models.Model):
         else:
             journal_type = "sale" if move_type == "out_invoice" else "purchase"
             old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
-            contact_ids = self.contact_ids.search([('old_id', '!=', False)]).mapped("old_id")
+            contact_ids = self.contact_ids.search([('old_id', '!=', 0)]).mapped("old_id")
             operation_params_list = [
                 ("company_id", "=", self.company_id.old_id),
                 ("currency_id", "in", self.currency_ids.mapped("old_id")),
@@ -2416,7 +2411,7 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move"
         model_name_old: str = "account.invoice"
         account_move_obj = self.env[model_name].sudo()
-        already_migrated = account_move_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        already_migrated = account_move_obj.search([('old_id', '!=', 0), ('company_id', '=', self.company_id.id)]).mapped('old_id')
         if move_type == "entry":
             already_migrated_moves = self.account_moves_ids.mapped("old_move_id")
             already_migrated = already_migrated + already_migrated_moves
@@ -3110,8 +3105,6 @@ class OdooMigrator(models.Model):
             commit_count = 250
             side_count = 0
             for contador, aml_data in enumerate(aml_datas, start=1):
-                if contador == 147:
-                    import ipdb;ipdb.set_trace()
                 side_count += 1
                 if side_count >= commit_count:
                     self.env.cr.commit()
@@ -3131,7 +3124,7 @@ class OdooMigrator(models.Model):
                     aml_data["move_id"] = aml_data.pop("invoice_id")
                 else:
                     aml_data.pop("invoice_id")
-                migrator._clean_relational_fields_for(data=aml_data, model_obj=aml_obj, contador=contador)
+                migrator._clean_relational_fields_for(data=aml_data, model_obj=aml_obj)
                 if move_type == "entry":
                     aml_data['is_manual_entry'] = True
                     if not aml_data.get('amount_currency', 0):
@@ -3183,7 +3176,7 @@ class OdooMigrator(models.Model):
             operation_params_list.append(("id", "not in", payments.mapped("old_id")))
         model_name: str = "account.payment"
         payment_obj = self.env[model_name]
-        already_migrated = payment_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        already_migrated = payment_obj.search([('old_id', '!=', 0), ('company_id', '=', self.company_id.id)]).mapped('old_id')
         operation_params_list.append(("id", "not in", already_migrated))
         for migrator in self:
             payment_datas = migrator._run_remote_command_for(
