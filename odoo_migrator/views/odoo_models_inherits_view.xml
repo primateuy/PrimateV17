@@ -361,6 +361,28 @@
             </field>
         </record>
 
+        <record id="account_analytic_tag_inherit_tree_view" model="ir.ui.view">
+            <field name="name">account.analytic.tag.tree.inherit.view</field>
+            <field name="model">account.analytic.tag</field>
+            <field name="inherit_id" ref="account_analytic_tag.account_analytic_tag_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="account_analytic_tag_inherit_form_view" model="ir.ui.view">
+            <field name="name">account.analytic.tag.tree.inherit.view</field>
+            <field name="model">account.analytic.tag</field>
+            <field name="inherit_id" ref="account_analytic_tag.account_analytic_tag_form_view"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="old_id" groups="odoo_migrator.group_see_old_data"/>
+                </field>
+            </field>
+        </record>
+
 
     </data>
 </odoo>

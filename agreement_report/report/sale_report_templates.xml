@@ -43,16 +43,16 @@
                         </div>
                         <br/>
                         <div style="text-align:left;">
-                            <t t-if="doc.x_studio_family_members &gt; 1 ">
-                                Family Type / Number of Family Members <span t-field="doc.x_studio_family_members"/>
+                            <t t-if="doc.family_members &gt; 1 ">
+                                Family Type / Number of Family Members <span t-field="doc.family_members"/>
                             </t>
-                            <t t-if="doc.x_studio_family_members == 0 or doc.x_studio_family_members == 1 ">
+                            <t t-if="doc.family_members == 0 or doc.family_members == 1 ">
                                 SingleType
                             </t>
                         </div>
                         <br/>
                         <div style="width:100%">
-                            <div t-raw="doc.sale_order_template_id.x_studio_agreement_terms"/>
+                            <div t-raw="doc.sale_order_template_id.agreement_terms"/>
                         </div>
                                 </t>
                         <p style="page-break-after:always;">   </p>
@@ -360,8 +360,8 @@
                             <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ms-auto">
                                 <table class="table table-sm table-borderless">
                                     <!-- Tax totals -->
-                                    <t t-set="tax_totals" t-value="doc.tax_totals"/>
-                                    <t t-call="sale.document_tax_totals"/>
+<!--                                    <t t-set="tax_totals" t-value="doc.tax_totals"/>-->
+<!--                                    <t t-call="sale.document_tax_totals"/>-->
                                 </table>
                             </div>
                         </div>
