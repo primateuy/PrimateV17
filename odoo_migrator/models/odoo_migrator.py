@@ -1927,7 +1927,6 @@ class OdooMigrator(models.Model):
             total = len(analytic_accounts_datas)
             commit_count = 700
             side_count = 0
-            import ipdb;ipdb.set_trace()
             for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
@@ -3447,7 +3446,7 @@ class OdooMigrator(models.Model):
             move_ids = []
             company = migrator.company_id.id
             move_domain = [('state', '=', 'posted'), ('payment_state', '=', 'not_paid'), ('company_id', '=', company)]
-            payment_domain = [('state', '=', 'posted'), ('company_id', '=', company)]
+            payment_domain = [('state', '=', 'posted'), ('is_reconciled', '=', False), ('company_id', '=', company)]
             if move_type == 'customer':
                 move_domain.append(('move_type', 'in', ['out_invoice', 'out_refund']))
                 move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
@@ -3463,8 +3462,7 @@ class OdooMigrator(models.Model):
                 move_ids += payments_obj.search(payment_domain).move_id.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
                 print(len(move_ids))
             else:
-                journal_ids = self.env['account.journal'].search([('type', '=', 'general')]).ids
-                move_domain.append(('journal_id', 'in', journal_ids))
+                move_domain.append(('is_manual_entry', '=', True))
                 move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
             if not move_ids:
                 raise UserError("No se migraron asientos para conciliar")
@@ -3567,7 +3565,7 @@ class OdooMigrator(models.Model):
         side_count = 0
         for count, transfer in enumerate(transfers, start=1):
             side_count += 1
-            if transfer.old_id in (30817, 20949, 20720, 19852, 19767, 19534, 19533, 17980, 20739, 19535, 17897, 17899, 20175, 19971, 17941, 17267, 17177, 17183):
+            if transfer.old_id in (30817, 20949, 20720, 19852, 19767, 19534, 19533, 17980, 20739, 19535, 17897, 17899, 20175, 19971, 17941, 17267, 17177, 17183, 16999):
                 transfer.migration_error = True
                 continue
             print(f'Vamos {count} / {len(transfers)}')
