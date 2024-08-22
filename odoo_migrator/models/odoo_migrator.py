@@ -2596,7 +2596,7 @@ class OdooMigrator(models.Model):
         global moves
         if bool(move_type):
             if move_type == 'entry':
-                moves = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry')
+                moves = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry' and x.is_manual_entry)
             else:
                 moves = self.account_moves_ids.filtered(lambda move: move.move_type in (move_type, 'out_refund') if move_type == 'out_invoice' else move.move_type in (move_type, 'in_refund'))
         if bool(payment_type):
@@ -2605,7 +2605,7 @@ class OdooMigrator(models.Model):
             raise UserError("No hay Asientos contables migrados")
         moves_draft = moves.filtered(lambda x: x.state == "draft" and x.old_state != "draft" and x.name != 'Draft Payment' and not x.migration_error)
         total = len(moves_draft)
-        commit_count = 50
+        commit_count = 10
         side_count = 0
         aaa_obj = self.env['account.analytic.account']
         repeat_names = []
