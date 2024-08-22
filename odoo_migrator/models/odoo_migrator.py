@@ -9,6 +9,7 @@ import xmlrpc.client
 import logging
 
 _logger = logging.getLogger("MIGRATION SERVICES LOGGER")
+
 odoo_versions: List[Tuple[str, str]] = [
     ("10.0", "10.0"),
     ("11.0", "11.0"),
@@ -19,6 +20,7 @@ odoo_versions: List[Tuple[str, str]] = [
     ("16.0", "16.0"),
     ("17.0", "17.0"),
 ]
+
 field_to_model: Dict[str, str] = {
     "parent_id": "res.partner",
     "partner_id": "res.partner",
@@ -59,6 +61,8 @@ m2o_fields: List[str] = [
     "default_account_id",
     "property_account_receivable_id",
     "property_account_payable_id",
+    "analytic_account_id",
+    "product_id",
 ]
 m2m_fields: List[str] = ["child_ids", "category_id", "invoice_line_tax_ids", "analytic_tag_ids"]
 CONTACT_FIELDS: List[str] = [
@@ -147,7 +151,7 @@ ACCOUNT_JOURNAL_FIELDS: List[str] = [
     "currency_id",
     "show_on_dashboard",
 ]
-PRODUCT_TEMPLATE_FIELDS: List[str] = [
+PRODUCT_PRODUCT_FIELDS: List[str] = [
     "id",
     "active",
     "name",
@@ -302,8 +306,7 @@ class MigratorLogLine(models.Model):
             #
             # Products
             ("product_categories", "Categorias de productos"),
-            ("product_templates", "Plantillas de productos"),
-            # ("products", "Productos"),
+            ("product_product", "Productos"),
             #
             # Customer invoices
             ("customer_invoices", "Facturas de Clientes (cabezales)"),
@@ -509,7 +512,7 @@ class OdooMigrator(models.Model):
             #
             # Products
             ("product_categories", "Categorias de productos"),
-            ("product_templates", "Plantillas de productos"),
+            ("product_product", "Productos"),
             #
             # Customer invoices
             ("customer_invoices", "Facturas de Clientes (cabezales)"),
@@ -568,9 +571,8 @@ class OdooMigrator(models.Model):
         comodel_name="product.category", string="Categorias de producto"
     )
     product_templates_ids = fields.Many2many(
-        comodel_name="product.template", string="Plantillas de producto"
+        comodel_name="product.template", string="productos"
     )
-    # products_ids = fields.Many2many(comodel_name="product.product", string="Productos")
     products_ids = fields.Many2many(comodel_name="product.product", string="Productos")
     account_moves_ids = fields.Many2many(comodel_name="account.move", string="Facturas")
     migration_error_account_moves_ids = fields.Many2many(comodel_name="account.move",
@@ -630,7 +632,7 @@ class OdooMigrator(models.Model):
     customer_moves_lines_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     customer_invoice_lines_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     customer_invoices_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
-    product_templates_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
+    product_product_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     customer_payment_moves_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     supplier_reconcile_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
     customer_reconcile_count = fields.Integer(string="Número de ", compute='_get_models_data_count')
@@ -671,7 +673,7 @@ class OdooMigrator(models.Model):
             rec.customer_moves_lines_count = len(rec.account_move_line_ids)
             rec.customer_invoice_lines_count = len(rec.account_move_line_ids)
             rec.customer_invoices_count = len(rec.account_move_line_ids)
-            rec.product_templates_count = len(rec.product_templates_ids)
+            rec.product_product_count = len(rec.products_ids)
             rec.customer_payment_moves_count = len(rec.account_payments_ids)
             rec.supplier_reconcile_count = len(rec.account_move_line_ids)
             rec.customer_reconcile_count = len(rec.account_move_line_ids)
@@ -726,10 +728,10 @@ class OdooMigrator(models.Model):
             action = self.env.ref("product.product_category_action_form").read()[0]
             action["domain"] = [("id", "in", self.product_categories_ids.ids)]
 
-        elif model_name == 'product_templates':
+        elif model_name == 'product_product':
             action = self.env.ref("account.product_product_action_sellable").read()[0]
             action['context'] = {}
-            action["domain"] = [("id", "in", self.product_templates_ids.ids)]
+            action["domain"] = [("id", "in", self.products_ids.ids)]
 
         elif model_name == 'customer_invoices':
             action = self.env.ref("account.action_move_line_form").read()[0]
@@ -1365,13 +1367,10 @@ class OdooMigrator(models.Model):
 
     def _clean_relational_fields_for(self, data: Dict, model_obj=None) -> None:
         if not bool(data) or model_obj is None:
-            _logger.info(
-                "¡Parametros incorrectos, data y model_obj tienen que estar seteados!"
-            )
+            _logger.info("¡Parametros incorrectos, data y model_obj tienen que estar seteados!")
             return
-        for field_name in data:
+        for field_name in list(data):
             if not field_name in field_to_model:
-                #
                 # _logger.info(f"El field {field_name} no esta en la list {field_to_model}")
                 continue
 
@@ -1379,7 +1378,6 @@ class OdooMigrator(models.Model):
             if not field_model:
                 continue
 
-            # field_obj = self.env[field_model]
             field_type: str = model_obj._fields[field_name].type
             if field_type in ("one2many", "many2many"):
                 del data[field_name]
@@ -1426,7 +1424,7 @@ class OdooMigrator(models.Model):
         migrated_contacts = contact_obj.search([("old_id", "!=", False)])
         if migrated_contacts:
             migrated_ids = migrated_contacts.mapped("old_id")
-        commit_count = 500
+        commit_count = 400
         side_count = 0
         to_create = []
         for migrator in self:
@@ -1457,7 +1455,7 @@ class OdooMigrator(models.Model):
                     _logger.info('***\n******\n******\n***commit***\n******\n******\n***')
                     print('***\n******\n******\n***commit***\n******\n******\n***')
                     continue
-                _logger.info(f"vamos {contador} / {total}")
+                _logger.info(f"vamos {contador} / {total} - side count: {side_count}")
                 old_contact_id = contact_data["id"]
                 search_conditions = ['&', ("old_id", "=", old_contact_id), '|', ("active", "=", True), ("active", "=", False)]
                 contact_id = contact_obj.search(search_conditions, limit=1)
@@ -1927,8 +1925,17 @@ class OdooMigrator(models.Model):
             if not bool(analytic_accounts_datas):
                 continue
             total = len(analytic_accounts_datas)
+            commit_count = 700
+            side_count = 0
             for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
-                _logger.info(f"vamos {contador} / {total}")
+                side_count += 1
+                if side_count > commit_count:
+                    side_count = 0
+                    self.env.cr.commit()
+                    _logger.info('***\n******\n******\n***commit***\n******\n******\n***')
+                    print('***\n******\n******\n***commit***\n******\n******\n***')
+
+                _logger.info(f"vamos {contador} / {total} side {side_count}")
                 analytic_account_old_id = analytic_accounts_data["id"]
                 analytic_account_active = analytic_accounts_data.pop("active")
                 search_conditions = [("old_id", "=", analytic_account_old_id)]
@@ -1944,8 +1951,7 @@ class OdooMigrator(models.Model):
                 analytic_accounts_data["plan_id"] = self._migrate_analytic_account_plan()
                 # analytic_accounts_data["company_id"] = migrator.company_id.old_id
                 if not bool(analytic_account_id):
-                    is_success, result = migrator._try_to_create_model(model_name=model_name,
-                                                                       values=analytic_accounts_data)
+                    is_success, result = migrator._try_to_create_model(model_name=model_name,values=analytic_accounts_data)
 
                     if not is_success:
                         migrator.create_error_log(msg=str(result), values=analytic_accounts_data)
@@ -2229,39 +2235,38 @@ class OdooMigrator(models.Model):
 
     def migrate_product_template(self) -> bool:
         """
-        Método para migrar las Plantillas de producto desde el Odoo de origen al Odoo de destino.
+        Método para migrar las productos desde el Odoo de origen al Odoo de destino.
         """
-        _logger.info("\nMigrando las Plantillas de Producto")
+        _logger.info("\nMigrando Productos")
         self = self.sudo()
-        model_name: str = "product.template"
+        model_name: str = "product.product"
         categ_model_name: str = "product.category"
         categ_field_name: str = "categ_id"
 
         if not bool(self.product_categories_ids):
             raise UserError("No hay Categorias de productos migradas")
-
-        product_template_obj = self.env[model_name]
+        product_product_obj = self.env[model_name]
         for migrator in self:
             for categ_id in migrator.product_categories_ids:
-                _logger.info(f"migrando Plantillas para la Categoria {categ_id.display_name}")
+                _logger.info(f"migrando Productos para la Categoria {categ_id.display_name}")
                 domain = ['&', ('categ_id', '=', categ_id.old_id), '|', ('active', '=', True), ('active', '=', False)]
                 operation_params_list = domain
-                product_template_datas = migrator._run_remote_command_for(
+                product_product_datas = migrator._run_remote_command_for(
                     model_name=model_name,
                     operation_params_list=operation_params_list,
                     command_params_dict={
-                        "fields": PRODUCT_TEMPLATE_FIELDS,
+                        "fields": PRODUCT_PRODUCT_FIELDS,
                         "offset": migrator.pagination_offset,
                         "limit": migrator.pagination_limit,
                     },
                 )
-                if not bool(product_template_datas):
+                if not bool(product_product_datas):
                     continue
 
-                total = len(product_template_datas)
+                total = len(product_product_datas)
                 commit_count = 5
                 side_count = 0
-                for contador, product_template_data in enumerate(product_template_datas, start=1):
+                for contador, product_product_data in enumerate(product_product_datas, start=1):
                     _logger.info(f"vamos {contador} / {total}")
                     side_count += 1
                     if side_count >= commit_count:
@@ -2269,36 +2274,35 @@ class OdooMigrator(models.Model):
                         print("committing...")
                         self.env.cr.commit()
                         side_count = 0
-                    template_old_id = product_template_data["id"]
-                    template_name = product_template_data["name"]
+                    product_old_id = product_product_data["id"]
+                    template_name = product_product_data["name"]
                     _logger.info(template_name)
-                    template_domain = ['&', ('old_id', '=', template_old_id), '|', ('active', '=', True), ('active', '=', False)]
-                    product_template_id = product_template_obj.search(template_domain,limit=1)
+                    product_domain = ['&', ('old_id', '=', product_old_id), '|', ('active', '=', True), ('active', '=', False)]
+                    product_product_id = product_product_obj.search(product_domain,limit=1)
 
-                    if bool(product_template_id):
+                    if bool(product_product_id):
                         _logger.info(f"la Plantilla de producto {template_name} ya existe")
-                        product_template_id.old_id = template_old_id
-                        product_template_id.categ_id = categ_id.id
-                        product_template_id.company_id = self.company_id.id
-                        migrator.product_templates_ids += product_template_id
+                        product_product_id.old_id = product_old_id
+                        product_product_id.categ_id = categ_id.id
+                        product_product_id.company_id = self.company_id.id
+                        migrator.products_ids += product_product_id
                         continue
 
-                    migrator._remove_m2o_o2m_and_m2m_data_from(data=product_template_data, model_obj=product_template_obj)
+                    migrator._remove_m2o_o2m_and_m2m_data_from(data=product_product_data, model_obj=product_product_obj)
 
-                    is_success, result = migrator.try_to_create_record(odoo_object=product_template_obj, value=product_template_data)
+                    is_success, result = migrator.try_to_create_record(odoo_object=product_product_obj, value=product_product_data)
 
                     if not is_success:
-                        migrator.create_error_log(msg=str(result), values=product_template_data)
+                        migrator.create_error_log(msg=str(result), values=product_product_data)
                         continue
-
-                    # result.company_id = migrator.company_id.id
-                    result.product_variant_id.old_id = result.old_id
-                    migrator.product_templates_ids += result
-                    migrator.create_success_log(values=product_template_data)
+                    result.product_tmpl_id.old_id = result.old_id
+                    result.categ_id = categ_id.id
+                    migrator.products_ids += result
+                    migrator.create_success_log(values=product_product_data)
                     _logger.info(f"se creo el producto ->> {result.name}")
 
             _logger.info(
-                f"se crearon {len(self.product_templates_ids)} Plantillas de producto"
+                f"se crearon {len(self.products_ids)} productos"
             )
         return True
 
@@ -2316,7 +2320,7 @@ class OdooMigrator(models.Model):
                 model_name=model_name,
                 operation_params_list=[("active", "=", True), ('company_id', '=', self.company_id.old_id)],
                 command_params_dict={
-                    # "fields": PRODUCT_TEMPLATE_FIELDS,
+                    # "fields": PRODUCT_PRODUCT_FIELDS,
                     # "offset": migrator.pagination_offset,
                     # "limit": migrator.pagination_limit,
                 },
@@ -2386,17 +2390,18 @@ class OdooMigrator(models.Model):
         self = self.with_context(check_move_validity=False)
         _logger.info(f"\nMigrando las Facturas {move_type}")
         if move_type == 'entry':
-            journal_type = "general"
-            old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
+            # journal_type = "general"
+            old_journal_ids = self.journal_ids.filtered(lambda x: x.company_id == self.company_id).mapped("old_id")
             operation_params_list = [
                 ("company_id", "=", self.company_id.old_id),
                 ("currency_id", "in", self.currency_ids.mapped("old_id")),
                 ("journal_id", "in", old_journal_ids),
+
             ]
         else:
             journal_type = "sale" if move_type == "out_invoice" else "purchase"
             old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
-            contact_ids = self.contact_ids.search([('old_id', '!=', False)]).mapped("old_id")
+            contact_ids = self.contact_ids.search([('old_id', '!=', 0)]).mapped("old_id")
             operation_params_list = [
                 ("company_id", "=", self.company_id.old_id),
                 ("currency_id", "in", self.currency_ids.mapped("old_id")),
@@ -2414,7 +2419,10 @@ class OdooMigrator(models.Model):
         model_name: str = "account.move"
         model_name_old: str = "account.invoice"
         account_move_obj = self.env[model_name].sudo()
-        already_migrated = account_move_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        already_migrated = account_move_obj.search([('old_id', '!=', 0), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        if move_type == "entry":
+            already_migrated_moves = self.account_moves_ids.mapped("old_move_id")
+            already_migrated = already_migrated + already_migrated_moves
         operation_params_list.append(("id", "not in", already_migrated))
         to_create = []
         for migrator in self:
@@ -2439,12 +2447,9 @@ class OdooMigrator(models.Model):
             for contador, account_move_data in enumerate(account_move_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
                     self.env.cr.commit()
                     side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
@@ -2466,17 +2471,22 @@ class OdooMigrator(models.Model):
                         account_move_data["ref"] = supplier_reference
                 else:
                     account_move_data["move_type"] = "entry"
+                    account_move_data["is_manual_entry"] = True
 
                 account_move_data["old_state"] = account_move_data.pop("state")
-                old_move_id_data = account_move_data.get('move_id', False)
-                if old_move_id_data and False:
-                    old_move_id = old_move_id_data[0]
-                    if move_type != "entry":
-                        account_move_data["old_full_reconcile_ids"] = (migrator.get_old_full_reconcile_id_for(old_move_ids=[old_move_id], from_payment=False))
+                old_move_id_data = account_move_data.get('move_id', [''])
+                account_move_data['old_move_id'] = old_move_id_data[0] if old_move_id_data else 0
+                # if old_move_id_data and False:
+                #     old_move_id = old_move_id_data[0]
+                #     if move_type != "entry":
+                #         account_move_data["old_full_reconcile_ids"] = (migrator.get_old_full_reconcile_id_for(old_move_ids=[old_move_id], from_payment=False))
                 if 'move_id' in account_move_data:
                     account_move_data.pop("move_id")
+
                 migrator._clean_relational_fields_for(data=account_move_data, model_obj=account_move_obj)
+
                 is_success, result = migrator.try_to_create_record(odoo_object=account_move_obj, value=account_move_data)
+
                 if not is_success:
                     migrator.create_error_log(msg=str(result), values=account_move_data)
                     continue
@@ -2484,7 +2494,7 @@ class OdooMigrator(models.Model):
                 _logger.info(f"se creo la Factura {result.name}")
                 migrator.account_moves_ids += result
             _logger.info(f"se crearon {len(self.account_moves_ids.filtered(lambda x: x.move_type == move_type))} {move_type_map.get(move_type)}")
-        return True
+            return True
 
     def migrate_account_moves_lines(self, move_type: str = "") -> bool:
         """
@@ -2594,7 +2604,7 @@ class OdooMigrator(models.Model):
         global moves
         if bool(move_type):
             if move_type == 'entry':
-                moves = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry')
+                moves = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry' and x.is_manual_entry)
             else:
                 moves = self.account_moves_ids.filtered(lambda move: move.move_type in (move_type, 'out_refund') if move_type == 'out_invoice' else move.move_type in (move_type, 'in_refund'))
         if bool(payment_type):
@@ -2603,7 +2613,7 @@ class OdooMigrator(models.Model):
             raise UserError("No hay Asientos contables migrados")
         moves_draft = moves.filtered(lambda x: x.state == "draft" and x.old_state != "draft" and x.name != 'Draft Payment' and not x.migration_error)
         total = len(moves_draft)
-        commit_count = 50
+        commit_count = 10
         side_count = 0
         aaa_obj = self.env['account.analytic.account']
         repeat_names = []
@@ -2696,13 +2706,9 @@ class OdooMigrator(models.Model):
                         if name:
                             move.move_id.name = name
                     except Exception as error:
-                        #import ipdb
-                        #ipdb.set_trace()
                         move.move_id.name = name + '/' + str(contador)
                         continue
                     if move.move_id.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
-                        #import ipdb
-                        #ipdb.set_trace()
                         print('vemos que hacemos')
                     if move.old_id in (31282, 31274):
                         move.message_post(body=f'Error al validar la factura')
@@ -2710,8 +2716,6 @@ class OdooMigrator(models.Model):
                         self.create_error_log(msg=str('Error al validar la factura'), values=move)
                         continue
                 elif move.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
-                    #import ipdb
-                    #ipdb.set_trace()
                     print('vemos que hacemos')
                 try:
                     _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
@@ -2864,15 +2868,13 @@ class OdooMigrator(models.Model):
             total = len(move_line_datas)
             commit_count = 500
             side_count = 0
+            sida_counter = 0
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
-                    _logger.info(
-                        f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
+                    _logger.info(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
                     self.env.cr.commit()
                     side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
@@ -2965,7 +2967,6 @@ class OdooMigrator(models.Model):
                         aml.move_id.date = move_line_data.pop("date")
                         migrator.create_success_log(values=move_line_data)
                         _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
-                        _logger.info(f"Se asigno el old_id a la Linea de asiento {aml.name}")
                     else:
                         aml = invoice.line_ids.filtered(lambda x: (abs(x.amount_currency) == abs(amount_currency) or abs(x.amount_currency) == round(abs(amount_currency), 2)) and x.name[:64] == line_name)
                         if not aml:
@@ -3036,10 +3037,22 @@ class OdooMigrator(models.Model):
                         account_id = account_obj.search([('old_id', '=', old_account_id)], limit=1)
                         if not account_id:
                             raise UserError('¡¡¡¡Esto no deberia suceder!!!!')
-                        aml.account_id = account_id.id
+                        try:
+                            aml.account_id = account_id.id
+                        except Exception as e:
+                            if 'The account selected on your journal entry forces to provide a secondary currency. You should remove the secondary currency on the account.' == str(e):
+                                sida_counter += 1
+                                aml.currency_id = account_id.currency_id.id
+                                move_balance = move_line_data.get('balance', 0)
+                                move_amount_currency = aml.company_currency_id._convert(move_balance, aml.currency_id, aml.company_id, aml.invoice_date or aml.date)
+                                aml.amount_currency = move_amount_currency
+                                if move_balance != aml.balance:
+                                    aml.balance = move_balance
+                                aml.account_id = account_id.id
                         _logger.info('cambiamos la cuenta')
 
             _logger.info(f"se crearon {len(self.account_move_line_ids)} Lineas de asientos")
+            _logger.info(f"ZIDAAAAAAAS {sida_counter}")
         return True
 
     def migrate_account_move_types(self) -> bool:
@@ -3052,7 +3065,9 @@ class OdooMigrator(models.Model):
         """
         self = self.with_context(check_move_validity=False)
         journal_type = "general"
-        old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
+        # old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
+        old_journal_ids = self.journal_ids.mapped("old_id")
+
         _logger.info("\nMigrando los Asientos contables")
         if move_type == "entry":
             operation_params_list = [
@@ -3081,8 +3096,7 @@ class OdooMigrator(models.Model):
         if move_type == "entry":
             entries = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry' and not x.line_ids or len(x.line_ids) == 1)
             if entries:
-                operation_params_list = []
-                operation_params_list.append(('move_id', "in", entries.mapped('old_id')))
+                operation_params_list = [('move_id', "in", entries.mapped('old_id'))]
         model_name: str = "account.move.line"
         aml_obj = self.env[model_name]
         aaa_obj = self.env['account.analytic.account'].sudo()
@@ -3101,7 +3115,13 @@ class OdooMigrator(models.Model):
                 continue
 
             total = len(aml_datas)
+            commit_count = 250
+            side_count = 0
             for contador, aml_data in enumerate(aml_datas, start=1):
+                side_count += 1
+                if side_count >= commit_count:
+                    self.env.cr.commit()
+                    side_count = 0
                 _logger.info(f"vamos {contador} / {total}")
                 account_entries_old_id = aml_data["id"]
                 account_entries_name = aml_data["name"]
@@ -3119,6 +3139,7 @@ class OdooMigrator(models.Model):
                     aml_data.pop("invoice_id")
                 migrator._clean_relational_fields_for(data=aml_data, model_obj=aml_obj)
                 if move_type == "entry":
+                    aml_data['is_manual_entry'] = True
                     if not aml_data.get('amount_currency', 0):
                         aml_data["amount_currency"] = aml_data.pop("balance")
                     if not aml_data.get('currency_id', False):
@@ -3134,12 +3155,13 @@ class OdooMigrator(models.Model):
                         # line.analytic_distribution =
                         aml_data['analytic_distribution'] = {analytic_id.id: 100}
 
-
-                is_success, result = migrator.with_context(dont_check_constrains_date_sequence=True).try_to_create_record(odoo_object=aml_obj, value=aml_data)
-                if not is_success:
-                    migrator.create_error_log(msg=str(result), values=aml_data)
-                    continue
-
+                try:
+                    is_success, result = migrator.with_context(dont_check_constrains_date_sequence=True).try_to_create_record(odoo_object=aml_obj, value=aml_data)
+                    if not is_success:
+                        migrator.create_error_log(msg=str(result), values=aml_data)
+                        continue
+                except Exception as e:
+                    _logger.error(f"Error al crear la línea de asiento contable {aml_data['name']}: {str(e)}")
                 migrator.create_success_log(values=aml_data)
                 _logger.info(f"se creó la linea de asiento contable {result.name}")
                 migrator.account_move_line_ids += result
@@ -3166,7 +3188,7 @@ class OdooMigrator(models.Model):
             operation_params_list.append(("id", "not in", payments.mapped("old_id")))
         model_name: str = "account.payment"
         payment_obj = self.env[model_name]
-        already_migrated = payment_obj.search([('old_id', '!=', False), ('company_id', '=', self.company_id.id)]).mapped('old_id')
+        already_migrated = payment_obj.search([('old_id', '!=', 0), ('company_id', '=', self.company_id.id)]).mapped('old_id')
         operation_params_list.append(("id", "not in", already_migrated))
         for migrator in self:
             payment_datas = migrator._run_remote_command_for(
@@ -3347,6 +3369,11 @@ class OdooMigrator(models.Model):
                     if company_currency
                     else move_line_data.get("amount_currency")
                 )
+                if account_line.currency_id and currency_line == payment.company_currency_id:
+                    currency_line = account_line.currency_id
+                    move_balance = move_line_data.get('balance', 0)
+                    move_amount_currency = payment.company_currency_id._convert(move_balance, currency_line, payment.company_id, payment.date)
+                    amount_currency = move_amount_currency
                 dic_move_line = {
                     "account_id": account_line.id,
                     "amount_currency": amount_currency,
@@ -3398,6 +3425,7 @@ class OdooMigrator(models.Model):
                     # move.payment_id.action_post()
                 except Exception as e:
                     result = f"{e} Este error se encontro al querer agregar las lineas del movimiento de pago {move.name}"
+                    move.migration_error = True
                     migrator.create_error_log(msg=str(result), values=filtered_moves[move])
                     continue
                 move.name = move.old_name
@@ -3418,7 +3446,7 @@ class OdooMigrator(models.Model):
             move_ids = []
             company = migrator.company_id.id
             move_domain = [('state', '=', 'posted'), ('payment_state', '=', 'not_paid'), ('company_id', '=', company)]
-            payment_domain = [('state', '=', 'posted'), ('company_id', '=', company)]
+            payment_domain = [('state', '=', 'posted'), ('is_reconciled', '=', False), ('company_id', '=', company)]
             if move_type == 'customer':
                 move_domain.append(('move_type', 'in', ['out_invoice', 'out_refund']))
                 move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
@@ -3434,8 +3462,7 @@ class OdooMigrator(models.Model):
                 move_ids += payments_obj.search(payment_domain).move_id.line_ids.filtered(lambda line: line.old_id).mapped("old_id")
                 print(len(move_ids))
             else:
-                journal_ids = self.env['account.journal'].search([('type', '=', 'general')]).ids
-                move_domain.append(('journal_id', 'in', journal_ids))
+                move_domain.append(('is_manual_entry', '=', True))
                 move_ids += move_obj.search(move_domain).line_ids.filtered(lambda line: line.old_id).mapped("old_id")
             if not move_ids:
                 raise UserError("No se migraron asientos para conciliar")
@@ -3531,17 +3558,18 @@ class OdooMigrator(models.Model):
                 self.create_error_log(msg=str(error), values=line)
 
     def action_post_internal_transfers(self):
-        domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft')]
-        only_one = ('old_id', '=', 32575)
-        domain.append(only_one)
+        domain = [('is_internal_transfer', '=', True), ('company_id', '=', self.company_id.id), ('state', '=', 'draft'), ('old_state', '!=', 'draft')]
         transfer_obj = self.env['account.payment'].sudo()
         transfers = transfer_obj.search(domain)
-        commit_count = 500
+        commit_count = 25
         side_count = 0
         for count, transfer in enumerate(transfers, start=1):
+            side_count += 1
+            if transfer.old_id in (30817, 20949, 20720, 19852, 19767, 19534, 19533, 17980, 20739, 19535, 17897, 17899, 20175, 19971, 17941, 17267, 17177, 17183, 16999):
+                transfer.migration_error = True
+                continue
             print(f'Vamos {count} / {len(transfers)}')
             _logger.info(f'Vamos {count} / {len(transfers)}')
-            side_count += 1
             if side_count > commit_count:
                 print(f'***\n******\n******\n******\n******\n******\n************\n******\n******\n******\n******\n******\n***')
                 print(f'***\n******\n******\n******\n******\n******\n***COMMIT***\n******\n******\n******\n******\n******\n***')
@@ -3549,8 +3577,6 @@ class OdooMigrator(models.Model):
                 self.env.cr.commit()
                 side_count = 0
             transfer.with_context(from_migrator=True, migrator=self).action_post()
-
-
         return True
 
     def _get_migrator_for(self, migrator_type: str):
@@ -3568,7 +3594,7 @@ class OdooMigrator(models.Model):
             "taxes": self.migrate_taxes,
             "account_journals": self.migrate_journals,
             "product_categories": self.migrate_product_categories,
-            "product_templates": self.migrate_product_template,
+            "product_product": self.migrate_product_template,
             # "products": self.migrate_products,
             #
             # Invoices
@@ -3620,3 +3646,4 @@ class OdooMigrator(models.Model):
         for rec in self:
             migrate_func = rec._get_migrator_for(rec.migration_model)
             migrate_func()
+
