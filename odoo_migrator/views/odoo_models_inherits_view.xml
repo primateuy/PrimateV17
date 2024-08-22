@@ -228,6 +228,7 @@
                     <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                         <group>
                             <field name="old_id"/>
+                            <field name="old_move_id"/>
                             <field name="old_name"/>
                             <field name="old_full_reconcile_ids"/>
                             <field name="old_state"/>
@@ -286,6 +287,7 @@
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
                             <group>
                                 <field name="old_id"/>
+                                <field name="old_move_id"/>
                                 <field name="old_name"/>
                                 <field name="old_full_reconcile_ids"/>
                             </group>

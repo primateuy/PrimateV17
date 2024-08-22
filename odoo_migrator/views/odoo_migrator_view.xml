@@ -140,10 +140,10 @@
                                     <field name="product_categories_ids" />
                                 </group>
                             </page>
-                            <page name="page_product_templates" string="Plantillas de producto"
-                                  invisible="migration_model != 'product_templates'">
+                            <page name="page_product_product" string="Productos"
+                                  invisible="migration_model != 'product_product'">
                                 <group>
-                                    <field name="product_templates_ids" />
+                                    <field name="products_ids" />
                                 </group>
                             </page>
                             <page name="page_products" string="Productos"
@@ -358,8 +358,8 @@
                                             icon="fa-cube"
                                             name="action_view_model"
                                             context="{'model_name': 'product_templates'}"
-                                            invisible="product_templates_count == 0">
-                                        <field name="product_templates_count" string="Plantillas de productos" widget="statinfo" />
+                                            invisible="product_product_count == 0">
+                                        <field name="product_product_count" string="Plantillas de productos" widget="statinfo" />
                                     </button>
                                     <button class="oe_stat_button"
                                             type="object"
