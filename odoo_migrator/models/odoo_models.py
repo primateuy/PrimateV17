@@ -167,8 +167,7 @@ class AccountPayment(models.Model):
                 value = {}
                 transfer_line = self.move_id.line_ids.filtered(lambda line: line.credit if move_line.get('balance') < 0 else line.debit)
                 if not transfer_line:
-                    import ipdb
-                    ipdb.set_trace()
+                    import ipdb;ipdb.set_trace()
                     print('Problemaaas')
                 move_id = move_line.get('move_id')[0]
                 value['old_id'] = move_line.get('id')
@@ -231,8 +230,7 @@ class AccountPayment(models.Model):
                     value = {}
                     transfer_line = paired_payment.move_id.line_ids.filtered(lambda line: line.credit if move_line.get('balance') < 0 else line.debit)
                     if not transfer_line:
-                        import ipdb
-                        ipdb.set_trace()
+                        import ipdb;ipdb.set_trace()
                         print('Problemaaas')
                     move_id = move_line.get('move_id')[0]
                     value['old_id'] = move_line.get('id')

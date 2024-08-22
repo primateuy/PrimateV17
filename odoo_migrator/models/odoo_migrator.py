@@ -1371,7 +1371,7 @@ class OdooMigrator(models.Model):
             return
         for field_name in list(data):
             if not field_name in field_to_model:
-                _logger.info(f"El field {field_name} no esta en la list {field_to_model}")
+                # _logger.info(f"El field {field_name} no esta en la list {field_to_model}")
                 continue
 
             field_model: str = field_to_model.get(field_name, "")
@@ -1424,7 +1424,7 @@ class OdooMigrator(models.Model):
         migrated_contacts = contact_obj.search([("old_id", "!=", False)])
         if migrated_contacts:
             migrated_ids = migrated_contacts.mapped("old_id")
-        commit_count = 500
+        commit_count = 400
         side_count = 0
         to_create = []
         for migrator in self:
@@ -1455,7 +1455,7 @@ class OdooMigrator(models.Model):
                     _logger.info('***\n******\n******\n***commit***\n******\n******\n***')
                     print('***\n******\n******\n***commit***\n******\n******\n***')
                     continue
-                _logger.info(f"vamos {contador} / {total}")
+                _logger.info(f"vamos {contador} / {total} - side count: {side_count}")
                 old_contact_id = contact_data["id"]
                 search_conditions = ['&', ("old_id", "=", old_contact_id), '|', ("active", "=", True), ("active", "=", False)]
                 contact_id = contact_obj.search(search_conditions, limit=1)
@@ -1925,8 +1925,18 @@ class OdooMigrator(models.Model):
             if not bool(analytic_accounts_datas):
                 continue
             total = len(analytic_accounts_datas)
+            commit_count = 700
+            side_count = 0
+            import ipdb;ipdb.set_trace()
             for contador, analytic_accounts_data in enumerate(analytic_accounts_datas, start=1):
-                _logger.info(f"vamos {contador} / {total}")
+                side_count += 1
+                if side_count > commit_count:
+                    side_count = 0
+                    self.env.cr.commit()
+                    _logger.info('***\n******\n******\n***commit***\n******\n******\n***')
+                    print('***\n******\n******\n***commit***\n******\n******\n***')
+
+                _logger.info(f"vamos {contador} / {total} side {side_count}")
                 analytic_account_old_id = analytic_accounts_data["id"]
                 analytic_account_active = analytic_accounts_data.pop("active")
                 search_conditions = [("old_id", "=", analytic_account_old_id)]
@@ -1942,8 +1952,7 @@ class OdooMigrator(models.Model):
                 analytic_accounts_data["plan_id"] = self._migrate_analytic_account_plan()
                 # analytic_accounts_data["company_id"] = migrator.company_id.old_id
                 if not bool(analytic_account_id):
-                    is_success, result = migrator._try_to_create_model(model_name=model_name,
-                                                                       values=analytic_accounts_data)
+                    is_success, result = migrator._try_to_create_model(model_name=model_name,values=analytic_accounts_data)
 
                     if not is_success:
                         migrator.create_error_log(msg=str(result), values=analytic_accounts_data)
@@ -2596,7 +2605,7 @@ class OdooMigrator(models.Model):
         global moves
         if bool(move_type):
             if move_type == 'entry':
-                moves = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry')
+                moves = self.account_moves_ids.filtered(lambda x: x.state == 'draft' and x.move_type == 'entry' and x.is_manual_entry)
             else:
                 moves = self.account_moves_ids.filtered(lambda move: move.move_type in (move_type, 'out_refund') if move_type == 'out_invoice' else move.move_type in (move_type, 'in_refund'))
         if bool(payment_type):
@@ -2605,7 +2614,7 @@ class OdooMigrator(models.Model):
             raise UserError("No hay Asientos contables migrados")
         moves_draft = moves.filtered(lambda x: x.state == "draft" and x.old_state != "draft" and x.name != 'Draft Payment' and not x.migration_error)
         total = len(moves_draft)
-        commit_count = 50
+        commit_count = 10
         side_count = 0
         aaa_obj = self.env['account.analytic.account']
         repeat_names = []
