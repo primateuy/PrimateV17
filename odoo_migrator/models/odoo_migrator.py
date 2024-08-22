@@ -2235,7 +2235,6 @@ class OdooMigrator(models.Model):
 
         if not bool(self.product_categories_ids):
             raise UserError("No hay Categorias de productos migradas")
-        import ipdb;ipdb.set_trace()
         product_product_obj = self.env[model_name]
         for migrator in self:
             for categ_id in migrator.product_categories_ids:
@@ -2378,7 +2377,6 @@ class OdooMigrator(models.Model):
         """
         Método para migrar las Facturas desde el Odoo de origen al Odoo de destino.
         """
-        import ipdb;ipdb.set_trace()
         self = self.with_context(check_move_validity=False)
         _logger.info(f"\nMigrando las Facturas {move_type}")
         if move_type == 'entry':
@@ -2530,7 +2528,6 @@ class OdooMigrator(models.Model):
             total = len(move_line_datas)
             commit_count = 500
             side_count = 0
-            import ipdb;ipdb.set_trace()
             for contador, move_line_data in enumerate(move_line_datas, start=1):
                 side_count += 1
                 if side_count > commit_count:
@@ -2699,13 +2696,9 @@ class OdooMigrator(models.Model):
                         if name:
                             move.move_id.name = name
                     except Exception as error:
-                        #import ipdb
-                        #ipdb.set_trace()
                         move.move_id.name = name + '/' + str(contador)
                         continue
                     if move.move_id.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
-                        #import ipdb
-                        #ipdb.set_trace()
                         print('vemos que hacemos')
                     if move.old_id in (31282, 31274):
                         move.message_post(body=f'Error al validar la factura')
@@ -2713,8 +2706,6 @@ class OdooMigrator(models.Model):
                         self.create_error_log(msg=str('Error al validar la factura'), values=move)
                         continue
                 elif move.line_ids.filtered(lambda x: x.account_id.currency_id and x.currency_id and x.currency_id not in [x.account_id.currency_id, x.company_currency_id]):
-                    #import ipdb
-                    #ipdb.set_trace()
                     print('vemos que hacemos')
                 try:
                     _logger.info(f'Vamos a validar la factura / pago {move.name} de id {move.id}')
@@ -3049,7 +3040,6 @@ class OdooMigrator(models.Model):
         Método para migrar los Asientos contables desde el Odoo de origen al Odoo de destino.
         Nota: Esto migra lo que en origen son account.move.lines para poder conciliar.
         """
-        import ipdb;ipdb.set_trace()
         self = self.with_context(check_move_validity=False)
         journal_type = "general"
         # old_journal_ids = self.journal_ids.filtered(lambda x: x.type == journal_type).mapped("old_id")
@@ -3149,7 +3139,6 @@ class OdooMigrator(models.Model):
                         continue
                 except Exception as e:
                     _logger.error(f"Error al crear la línea de asiento contable {aml_data['name']}: {str(e)}")
-                    import ipdb;ipdb.set_trace()
                 migrator.create_success_log(values=aml_data)
                 _logger.info(f"se creó la linea de asiento contable {result.name}")
                 migrator.account_move_line_ids += result
