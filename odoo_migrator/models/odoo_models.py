@@ -286,6 +286,18 @@ class AccountPayment(models.Model):
             else:
                 return super(AccountPayment, self)._create_paired_internal_transfer_payment()
 
+    def force_currency_post(self):
+        for aml in self.move_id.line_ids.filtered(lambda line: line.account_id.currency_id and line.currency_id != line.company_currency_id and line.account_id.currency_id != line.currency_id):
+            move_balance = aml.balance
+            move_amount_currency = aml.company_currency_id._convert(move_balance, aml.account_id.currency_id, aml.company_id, aml.invoice_date or aml.date)
+            aml.with_context(skip_account_move_synchronization=True).write({"currency_id": aml.account_id.currency_id.id,
+                                                                            "amount_currency": move_amount_currency,
+                                                                            "balance": move_balance})
+            if move_balance != aml.balance:
+                aml.balance = move_balance
+        self.action_post()
+
+
 class AccountFullReconcile(models.Model):
     _inherit = "account.full.reconcile"
 

@@ -282,6 +282,9 @@
             <field name="model">account.payment</field>
             <field name="inherit_id" ref="account.view_account_payment_form"/>
             <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_post']" position="after">
+                    <button name="force_currency_post" string="Confirmar Forzando Moneda" type="object" class="btn btn-secondary" invisible="state != 'draft'" groups="odoo_migrator.group_see_old_data"/>
+                </xpath>
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">
