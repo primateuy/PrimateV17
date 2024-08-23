@@ -1,0 +1,1523 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_report
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0+e-20220103\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-12 20:11+0000\n"
+"PO-Revision-Date: 2023-06-12 17:26-0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: es_UY\n"
+"X-Generator: Poedit 2.3\n"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "-3247.73"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "03/08/2020"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "111101 Caja Pesos"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "111102 Caja USD"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "111103 Caja Pesos Argentino"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "141,459.09"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "170,286.03"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "211101"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "316.00"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "3247.73"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "3838.38"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "44055"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "72,440.00"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "80 - Transito Internacional Salida"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid ""
+"<br/>\n"
+"                                <b>Tipo de Excel esperado:</b>\n"
+"                                <br/>"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid ""
+"<br/>\n"
+"                            Tipo de Informe \"Crudo\"<br/>\n"
+"                            Tomando las fechas de inicio y fin genera un excel con todas las lineas de costos dentro del rango de fechas<br/>\n"
+"                            Si seleccionamos mostrar productos archivados y sin archivar, los productos archivados estaran con fuente roja<br/>"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid ""
+"<br/>\n"
+"                            Tipo de Informe \"Modulo\" y Tipo de Informe \"Resumen\"<br/>\n"
+"                            Tomando las fechas de inicio y fin genera un excel con los proveedores en orden de facturacion<br/>\n"
+"                            Pudiendo filtrar por Regimen y Proveedor<br/>"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.draft_account_move_view
+msgid "<span class=\"o_form_label\">All selected journal entries will be drafted.</span>"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "<span class=\"o_stat_text\">Asientos</span>"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "A-26662"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "AJS SRL"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__access_warning
+msgid "Access warning"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_account_account
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__account_ids
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__account_id
+msgid "Account"
+msgstr "Cuenta"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Acosta y Lara Consultora SRL"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__status_type__asset
+msgid "Activo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_account__adjust_usd
+#: model:ir.model.fields.selection,name:account_report.selection__exchange_difference__difference_type__adjust
+msgid "Ajuste USD"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_account__adjust_total
+#: model:ir.model.fields.selection,name:account_report.selection__exchange_difference__difference_type__adjust_total
+msgid "Ajuste al Total"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Alendero SA"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__income_fleet_report__report_type__all
+#: model:ir.model.fields.selection,name:account_report.selection__pending_invoices__currency_type__all
+msgid "All"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__archive
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__archive
+#: model:ir.model.fields,field_description:account_report.field_driver_report__archive
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__archive
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__archive
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__archive
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__archive
+#: model:ir.model.fields,field_description:account_report.field_status_report__archive
+msgid "Archive"
+msgstr "Archivo"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__archive
+msgid "Archivo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__move_ids
+#: model_terms:ir.ui.view,arch_db:account_report.exchange_difference_form_view
+msgid "Asientos"
+msgstr ""
+
+#. module: account_report
+#: code:addons/account_report/models/taxed_exchange_diff.py:0
+#, python-format
+msgid "Asientos "
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.exchange_difference_form_view
+msgid "Asientos Conciliados"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.customer_sale_report_form_view
+msgid "Basic fields"
+msgstr "Campos básicos"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "COR 59.20"
+msgstr ""
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_draft_account_move
+#: model_terms:ir.ui.view,arch_db:account_report.draft_account_move_view
+msgid "Cambiar a Borrador"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__campaign_id
+msgid "Campaign"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.draft_account_move_view model_terms:ir.ui.view,arch_db:account_report.driver_report_form_view
+msgid "Cancel"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Carpeta"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_driver_report__categ_id
+msgid "Categoria"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_driver_report__driver_id
+msgid "Chofer"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Cliente Fac"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__partner_invoice_id
+msgid "Cliente a facturar"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__initial_type__close_year
+msgid "Close Year"
+msgstr "Cerrar año"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__reconciled
+msgid "Considerada en Dif de Cambio"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__customer_sale_report__info_type__contabilidad
+msgid "Contabilidad"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_account_account__adjust_total
+msgid "Corresponde correr reporte ajuste al total en esta cuenta"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_account_account__adjust_usd
+msgid "Corresponde correr reporte ajuste usd en esta cuenta"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_account_account__exchange_difference
+msgid "Corresponde correr reporte diferencia de cambio en esta cuenta"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_cost_report
+msgid "Cost Report"
+msgstr "Reporte costo"
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_cost_report model:ir.ui.menu,name:account_report.cost_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Costs Report"
+msgstr "Reporte de costos"
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_initial_balance
+msgid "Create Initial Balance"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_cost_report
+msgid "Create a Costs Report"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_customer_sale_report
+msgid "Create a Customer Sale Report"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_driver_report
+msgid "Create a Driver Report"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_income_fleet_report
+msgid "Create a Income Fleet Report"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_service_partner_ledger
+msgid "Create a Partner Ledger"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_pending_invoices
+msgid "Create a Pending Invoice Report"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.actions.act_window,help:account_report.action_status_report
+msgid "Create a Status Report"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__create_uid
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__create_uid
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__create_uid
+#: model:ir.model.fields,field_description:account_report.field_driver_report__create_uid
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__create_uid
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__create_uid
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__create_uid
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__create_uid
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__create_uid
+#: model:ir.model.fields,field_description:account_report.field_status_report__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__create_date
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__create_date
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__create_date
+#: model:ir.model.fields,field_description:account_report.field_driver_report__create_date
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__create_date
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__create_date
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__create_date
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__create_date
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__create_date
+#: model:ir.model.fields,field_description:account_report.field_status_report__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__cost_report__information_type__raw
+msgid "Crudo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_account_account__split_per_partner
+msgid "Cuando corre la diferencia de cambio separa por empresa"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_account_account__initial_balance_create_invoices
+msgid "Cuando se generarn los saldos iniciales se crean facturas para poder afectar"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__account_id
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Cuenta"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information__single_account
+msgid "Cuenta Especifca"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__account_ids
+msgid "Cuentas"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__currency
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__access_url
+msgid "Customer Portal URL"
+msgstr ""
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_customer_sale_report model:ir.ui.menu,name:account_report.customer_sale_report
+msgid "Customer Sale"
+msgstr "Venta al cliente"
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_customer_sale_report
+msgid "Customer Sale Report"
+msgstr "Reporte de venta de clientes"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__partner_invoice_id
+msgid "Customer to invoice"
+msgstr "Cliente a facturar"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__dic_account
+msgid "Datos para crear asiento"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__desc
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__desc
+msgid "Descripción:"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_driver_report__inicio
+msgid "Desde"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__destiny_id
+msgid "Destiny"
+msgstr "Destino"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information_view__details
+msgid "Detallado"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__report_type
+msgid "Detalle"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_account__exchange_difference
+#: model_terms:ir.ui.view,arch_db:account_report.exchange_difference_tree_view
+msgid "Diferencia de Cambio"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__taxed_difference
+msgid "Diferencia de Cambio Gravada"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__exchange_difference__difference_type__taxed
+msgid "Diferencia de cambio Gravada"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__exchange_difference__difference_type__no_taxed
+msgid "Diferencia de cambio No Gravada"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__display_name
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__display_name
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__display_name
+#: model:ir.model.fields,field_description:account_report.field_driver_report__display_name
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__display_name
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__display_name
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__display_name
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__display_name
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__display_name
+#: model:ir.model.fields,field_description:account_report.field_status_report__display_name
+msgid "Display Name"
+msgstr "Nombre a mostrar"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_draft_account_move
+msgid "Draft Account Move"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.draft_account_move_view
+msgid "Draft Journal Entries"
+msgstr ""
+
+#. module: account_report
+#: model:ir.ui.menu,name:account_report.menu_driver_report model_terms:ir.ui.view,arch_db:account_report.driver_report_form_view
+msgid "Driver Report"
+msgstr "Reporte Choferes"
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_driver_report
+msgid "Driver report"
+msgstr "Reporte Choferes"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Ej:"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Elticor SA"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information_view__employee
+msgid "Empleado"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Empresa"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__stop
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__stop
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__stop
+msgid "End date"
+msgstr "Fecha fin"
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_draft_account_move__force_post
+msgid "Entries in the future are set to be auto-posted by default. Check this checkbox to post them now."
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Escapes Norte Ltda"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.driver_report_form_view
+msgid "Excel"
+msgstr ""
+
+#. module: account_report
+#: model:ir.ui.menu,name:account_report.exchange_difference_separator
+#: model_terms:ir.ui.view,arch_db:account_report.account_account_exchange_diff_view_form
+msgid "Exchange Difference"
+msgstr "Diferencia de cambio"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Facturado (Sin Impuesto)"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Fecha"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__stop
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__stop
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__stop
+#: model:ir.model.fields,field_description:account_report.field_status_report__stop
+msgid "Fecha Fin"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__start
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__start
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__start
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__initial_date
+#: model:ir.model.fields,field_description:account_report.field_status_report__start
+msgid "Fecha Inicio"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__file_name
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__file_name
+#: model:ir.model.fields,field_description:account_report.field_driver_report__file_name
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__file_name
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__file_name
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__file_name
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__file_name
+#: model:ir.model.fields,field_description:account_report.field_status_report__file_name
+msgid "File Name"
+msgstr "Nombre del Archivo"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.customer_sale_report_form_view
+msgid "Filter fields"
+msgstr "Campos para filtrar"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__force_post
+msgid "Force"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__outcome_type__income
+msgid "Ganancia"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.exchange_difference_form_view
+msgid "Generar Asiento"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.exchange_difference_form_view
+msgid "Generar Asiento de Conciliacion"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.customer_sale_report_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.income_fleet_report_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Generar Informe"
+msgstr ""
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_exchange_difference model:ir.ui.menu,name:account_report.exchange_difference
+#: model_terms:ir.actions.act_window,help:account_report.action_exchange_difference
+#: model_terms:ir.ui.view,arch_db:account_report.exchange_difference_form_view
+msgid "Generate Exchange Difference"
+msgstr "Generar diferencia de cambio"
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_exchange_difference
+msgid "Generate Exchange Differences"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_initial_balance model:ir.ui.menu,name:account_report.initial_balance_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Generate Initial Balance"
+msgstr "Generar Saldo Inicial"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__group_id
+msgid "Group"
+msgstr "Grupo"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__group_id
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information__group
+msgid "Grupo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_driver_report__fin
+msgid "Hasta"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_account__initial_balance_create_invoices
+msgid "IB Create Invoice"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__id
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__id
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__id
+#: model:ir.model.fields,field_description:account_report.field_driver_report__id
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__id
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__id
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__id
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__id
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__id
+#: model:ir.model.fields,field_description:account_report.field_status_report__id
+msgid "ID"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_needaction
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_unread
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_has_error
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__state__imported
+msgid "Importado"
+msgstr ""
+
+#. module: account_report
+#: model:ir.ui.menu,name:account_report.income_fleet_report
+msgid "Income Fleet Report"
+msgstr "Reporte Ingresos de Flota"
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_income_fleet_report model:ir.model,name:account_report.model_income_fleet_report
+#: model_terms:ir.ui.view,arch_db:account_report.income_fleet_report_form_view
+msgid "Income Per Fleet Report"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__information
+msgid "Información"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.customer_sale_report_form_view
+msgid "Informe Ventas Cliente"
+msgstr ""
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_initial_balance
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__name
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__initial_type__initial_balance
+#: model:ir.ui.menu,name:account_report.initial_balance_separator
+#: model_terms:ir.ui.view,arch_db:account_report.account_account_exchange_diff_view_form
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_tree_view
+msgid "Initial Balance"
+msgstr "Saldo inicial"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__initial_type
+msgid "Initial Type"
+msgstr "Tipo de asiento inicial"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__customer_sale_report__operation_type__international
+msgid "Internacional"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__income_fleet_report__operation_type__international_service
+msgid "International"
+msgstr "Internacional"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__driver_report__operation_type__international_service
+msgid "International Service"
+msgstr "Servicio Internacional"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_account_move_line
+msgid "Journal Item"
+msgstr "Apunte Contable"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Larking SA"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report____last_update
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report____last_update
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move____last_update
+#: model:ir.model.fields,field_description:account_report.field_driver_report____last_update
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference____last_update
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report____last_update
+#: model:ir.model.fields,field_description:account_report.field_initial_balance____last_update
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices____last_update
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger____last_update
+#: model:ir.model.fields,field_description:account_report.field_status_report____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__write_uid
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__write_uid
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__write_uid
+#: model:ir.model.fields,field_description:account_report.field_driver_report__write_uid
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__write_uid
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__write_uid
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__write_uid
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__write_uid
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__write_uid
+#: model:ir.model.fields,field_description:account_report.field_status_report__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__write_date
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__write_date
+#: model:ir.model.fields,field_description:account_report.field_draft_account_move__write_date
+#: model:ir.model.fields,field_description:account_report.field_driver_report__write_date
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__write_date
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__write_date
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__write_date
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__write_date
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__write_date
+#: model:ir.model.fields,field_description:account_report.field_status_report__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_partner_ledger_form_view
+msgid "Libro Mayor Empresa"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__fleet_id
+#: model:ir.model.fields.selection,name:account_report.selection__income_fleet_report__separation__license_plate
+msgid "License Plate"
+msgstr "Matricula"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_main_attachment_id
+msgid "Main Attachment"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__make_informe_all
+msgid "Make Informe All"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__make_report_all
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__make_report_all
+msgid "Make Report All"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__medium_id
+msgid "Medium"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: account_report
+#: code:addons/account_report/wizard/account_draft_account_move.py:0
+#, python-format
+msgid "Missing 'active_model' in context."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__cost_report__information_type__module
+msgid "Modulo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__currency_type
+#: model:ir.model.fields,field_description:account_report.field_status_report__currency_type
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Moneda"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Monto Proveedor"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__count_move_ids
+msgid "Move count"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__account_move_ids
+msgid "Movimientos"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__exchange_move_reconciled
+msgid "Movimientos concilia Dif Gravada"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Muniz Pintos Nery Javier"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__customer_sale_report__operation_type__national
+msgid "Nacional"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__name
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__name
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__name
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__name
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__name
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__name
+#: model:ir.model.fields,field_description:account_report.field_status_report__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__income_fleet_report__operation_type__national_service
+msgid "National"
+msgstr "Nacional"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__driver_report__operation_type__national_service
+msgid "National Service"
+msgstr "Servicio Nacional"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__no_partner
+msgid "No Empresa"
+msgstr ""
+
+#. module: account_report
+#: code:addons/account_report/models/taxed_exchange_diff.py:0
+#, python-format
+msgid "No se puede eliminar ya que tiene asientos conciliados generados."
+msgstr ""
+
+#. module: account_report
+#: code:addons/account_report/models/taxed_exchange_diff.py:0
+#, python-format
+msgid "No se puede eliminar ya que tiene asientos generados."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_driver_report__name
+msgid "Nombre"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__message_unread_counter
+msgid "Number of unread messages"
+msgstr ""
+
+#. module: account_report
+#: model:ir.ui.menu,name:account_report.nuvlir_account_report
+msgid "Nuvlir Reports"
+msgstr "Reportes Nuvlir"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Nº Fac Cliente"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Nº Fac Proveedor"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__operation_type
+msgid "Operation Type"
+msgstr "Tipo de operación"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_driver_report__operation_type
+msgid "Operativa"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__income_fleet_report__separation__operative
+msgid "Operative"
+msgstr "Operativo"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__origin_id
+msgid "Origin"
+msgstr "Origen"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_pending_invoices__partner_id
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__partner_id
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information_view__partner
+msgid "Partner"
+msgstr "Empresa"
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_service_partner_ledger model:ir.ui.menu,name:account_report.nuvlir_partner_ledger
+msgid "Partner Ledger"
+msgstr "Libro mayor"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__status_type__liability
+msgid "Pasivo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__status_type__equity
+msgid "Patrimonio"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_pending_invoices model:ir.ui.menu,name:account_report.pending_invoices
+#: model_terms:ir.ui.view,arch_db:account_report.pending_invoices_form_view
+msgid "Pending Invoices"
+msgstr "Facturas pendientes"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.pending_invoices_form_view
+msgid "Pending Invoices Report"
+msgstr "Reporte facturas pendientes"
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__outcome_type__expense
+msgid "Perdida"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__selection_si__partner
+msgid "Por Contactos"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__selection_si__account
+msgid "Por Cuentas"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__access_url
+msgid "Portal Access URL"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Producto"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Proveedor"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__cost_report__information_type__provision
+msgid "Provision"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__quotation
+msgid "Quotation"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information__range
+msgid "Rango de Cuentas"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Regimen"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.customer_sale_report_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.income_fleet_report_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.pending_invoices_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+#: model_terms:ir.ui.view,arch_db:account_report.service_partner_ledger_form_view
+msgid "Report"
+msgstr "Reporte"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__report_type
+msgid "Report Type"
+msgstr "Tipo de reporte"
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.driver_report_form_view model_terms:ir.ui.view,arch_db:account_report.status_report_form_view
+msgid "Reporte"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__difference_type__outcome
+msgid "Reporte Estado de Resultado"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__difference_type__status
+msgid "Reporte Estado de Situacion"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_partner_ledger_form_view
+msgid "Reporte Libro Mayor Empresa"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_driver_report
+msgid "Reporte de Choferes"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.status_report_form_view
+msgid "Reporte de Estado"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__cost_report__report_type__summary
+#: model:ir.model.fields.selection,name:account_report.selection__customer_sale_report__report_type__summary
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information_view__resume
+msgid "Resumen"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__resume
+msgid "Resumido"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "Rodino SA"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__initial_balance
+#: model:ir.model.fields,field_description:account_report.field_status_report__initial_balance
+msgid "Saldo Inicial"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Saldo USD"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Saldo UYU"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__access_token
+msgid "Security Token"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__selection_si
+msgid "Selection Si"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_account__split_per_partner
+msgid "Separar por Empresa"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__separation
+msgid "Separation"
+msgstr "Separador"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__service_product_id
+msgid "Servicio"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__not_adjust_day
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__not_adjust_day
+#: model:ir.model.fields,field_description:account_report.field_status_report__not_adjust_day
+msgid "Sin Ajuste Inicial"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__partner_with_rut
+msgid "Solo Nacionales"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__source_id
+msgid "Source"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_income_fleet_report__start
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__start
+msgid "Start date"
+msgstr "Fecha inicio"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__state
+msgid "State"
+msgstr "Estado"
+
+#. module: account_report
+#: model:ir.actions.act_window,name:account_report.action_status_report model:ir.model,name:account_report.model_status_report
+#: model:ir.ui.menu,name:account_report.status_report
+msgid "Status Report"
+msgstr "Reporte de estado"
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_status_report__outcome_type
+#: model:ir.model.fields,field_description:account_report.field_status_report__status_type
+msgid "Sub-tipo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__income_fleet_report__report_type__summary
+msgid "Summary"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__partner_supplier_id
+msgid "Supplier"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_bank_statement_line__taxed_difference
+#: model:ir.model.fields,field_description:account_report.field_account_move__taxed_difference
+#: model:ir.model.fields,field_description:account_report.field_account_payment__taxed_difference
+msgid "Taxed Difference"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_account_move_line__tax_exchange_diff
+#: model:ir.model.fields,help:account_report.field_account_bank_statement_line__taxed_difference
+#: model:ir.model.fields,help:account_report.field_account_move__taxed_difference
+#: model:ir.model.fields,help:account_report.field_account_payment__taxed_difference
+msgid "Taxed difference controller"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_exchange_difference__has_moves
+msgid "Technical field used for usability purposes"
+msgstr ""
+
+#. module: account_report
+#: code:addons/account_report/wizard/account_draft_account_move.py:0
+#, python-format
+msgid "There are no journal items in the posted state to draft."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__campaign_id
+msgid "This is a name that helps you keep track of your different campaign efforts, e.g. Fall_Drive, Christmas_Special"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__medium_id
+msgid "This is the method of delivery, e.g. Postcard, Email, or Banner Ad"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__source_id
+msgid "This is the source of the link, e.g. Search Engine, another domain, or name of email list"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__difference_type
+#: model:ir.model.fields,field_description:account_report.field_status_report__difference_type
+msgid "Tipo de Diferencia"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__information_type
+msgid "Tipo de Informacion"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__report_type
+msgid "Tipo de Informe"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__info_type
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__operation_type
+msgid "Tipo de Servicio"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__currency_type__all
+msgid "Todas"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__service_partner_ledger__information__all
+msgid "Todas las Cuentas"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__cost_report__report_type__all
+#: model:ir.model.fields.selection,name:account_report.selection__customer_sale_report__report_type__all
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__outcome_type__all
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__status_type__all
+msgid "Todo"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__customer_sale_report__info_type__top_20
+msgid "Top 20"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.initial_balance_form_view
+msgid "Total"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_cost_report__travel_type_id
+#: model:ir.model.fields,field_description:account_report.field_customer_sale_report__travel_type_id
+msgid "Travel Type"
+msgstr "Tipo de viaje"
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__currency__usd
+#: model:ir.model.fields.selection,name:account_report.selection__pending_invoices__currency_type__usd
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__currency_type__usd
+msgid "USD"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields.selection,name:account_report.selection__initial_balance__currency__uyu
+#: model:ir.model.fields.selection,name:account_report.selection__pending_invoices__currency_type__uyu
+#: model:ir.model.fields.selection,name:account_report.selection__status_report__currency_type__uyu
+#: model_terms:ir.ui.view,arch_db:account_report.service_cost_report_form_view
+msgid "UYU"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_unread
+msgid "Unread Messages"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_service_partner_ledger__information_view
+msgid "Vista de la Informacion"
+msgstr "Vista de la Información"
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_initial_balance__website_message_ids
+msgid "Website Messages"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,help:account_report.field_initial_balance__website_message_ids
+msgid "Website communication history"
+msgstr ""
+
+#. module: account_report
+#: model_terms:ir.ui.view,arch_db:account_report.driver_report_form_view
+msgid "or"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_pending_invoices
+msgid "pending.invoices"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model,name:account_report.model_service_partner_ledger
+msgid "service.partner.ledger"
+msgstr ""
+
+#. module: account_report
+#: model:ir.model.fields,field_description:account_report.field_exchange_difference__has_moves
+msgid "¿Tiene Asiento?"
+msgstr ""

@@ -1,0 +1,215 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* internal_transfer_fix
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20231116\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-23 17:33+0000\n"
+"PO-Revision-Date: 2024-08-23 14:38-0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_UY\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"X-Generator: Poedit 3.0.1\n"
+
+#. module: internal_transfer_fix
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_form
+msgid "(on company currency)"
+msgstr "(en moneda de la empresa)"
+
+#. module: internal_transfer_fix
+#. odoo-python
+#: code:addons/internal_transfer_fix/models/account_payment.py:0
+#, python-format
+msgid "A second payment has been created: "
+msgstr "Se ha creado un segundo pago: "
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__always_internal_transfer
+msgid "Always Internal Transfer"
+msgstr "Siempre Transferencia interna"
+
+#. module: internal_transfer_fix
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_tree
+msgid "Amount"
+msgstr "Importe"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,help:internal_transfer_fix.field_account_bank_statement_line__check_rate
+#: model:ir.model.fields,help:internal_transfer_fix.field_account_bank_statement_line__rate_exchange
+#: model:ir.model.fields,help:internal_transfer_fix.field_account_move__check_rate
+#: model:ir.model.fields,help:internal_transfer_fix.field_account_move__rate_exchange
+#: model:ir.model.fields,help:internal_transfer_fix.field_account_move_line__check_rate
+#: model:ir.model.fields,help:internal_transfer_fix.field_account_move_line__rate_exchange
+msgid "Amount of units of the base currency with respect to the foreign currency"
+msgstr "Cantidad de unidades de la moneda base con respecto a la moneda extranjera"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__amount_company_currency
+msgid "Amount on Company Currency"
+msgstr "Importe en moneda de la empresa"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__aux_l10n_latam_check_bank_id
+msgid "Aux Check Bank"
+msgstr "Banco de cheques auxiliar "
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__aux_l10n_latam_check_payment_date
+msgid "Aux Check Cash-In Date"
+msgstr "Fecha de cobro del cheque auxiliar"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__aux_l10n_latam_check_issuer_vat
+msgid "Aux Check Issuer VAT"
+msgstr "Aux Check Issuer IVA"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__aux_l10n_latam_check_number
+msgid "Aux Check Number"
+msgstr "Número de cheque auxiliar"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__aux_payment_type
+msgid "Aux Payment Type"
+msgstr "Tipo de pago auxiliar"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_bank_statement_line__check_rate
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move__check_rate
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move_line__check_rate
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__check_rate
+msgid "Check Rate"
+msgstr "Tipo de Cambio"
+
+#. module: internal_transfer_fix
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_tree
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__counter_part_internal_transfer
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_form
+msgid "Counter Part Internal Transfer"
+msgstr "Contrapartida Transferencia interna"
+
+#. module: internal_transfer_fix
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_tree
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__exchange_rate
+msgid "Exchange Rate"
+msgstr "Tipo de Cambio"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__force_amount_company_currency
+msgid "Forced Amount on Company Currency"
+msgstr "Importe en moneda de la empresa"
+
+#. module: internal_transfer_fix
+#. odoo-python
+#: code:addons/internal_transfer_fix/models/account_payment.py:0
+#, python-format
+msgid "Journal Entries"
+msgstr "Asientos contables"
+
+#. module: internal_transfer_fix
+#. odoo-python
+#: code:addons/internal_transfer_fix/models/account_payment.py:0
+#: model:ir.model,name:internal_transfer_fix.model_account_move
+#, python-format
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: internal_transfer_fix
+#: model:ir.model,name:internal_transfer_fix.model_account_move_line
+msgid "Journal Item"
+msgstr "Apunte contable"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__lines_count
+msgid "Lines Count"
+msgstr "Líneas"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move_line__local_currency_price
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__local_currency_price
+msgid "Local Currency Price"
+msgstr "Precio en moneda local"
+
+#. module: internal_transfer_fix
+#. odoo-python
+#: code:addons/internal_transfer_fix/models/account_payment.py:0
+#, python-format
+msgid "No se encontró cuenta de transferencia interna en la compañía."
+msgstr "No se encontró cuenta de transferencia interna en la compañía."
+
+#. module: internal_transfer_fix
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_tree
+msgid "Payment Currency"
+msgstr "Moneda de pago"
+
+#. module: internal_transfer_fix
+#: model:ir.model,name:internal_transfer_fix.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_bank_statement_line__rate_exchange
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move__rate_exchange
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move_line__rate_exchange
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__rate_exchange
+msgid "Rate Exchange"
+msgstr "Tipo de Cambio"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields.selection,name:internal_transfer_fix.selection__account_payment__aux_payment_type__inbound
+msgid "Receive"
+msgstr "Recibir"
+
+#. module: internal_transfer_fix
+#: model_terms:ir.actions.act_window,help:internal_transfer_fix.action_account_fix_internal_transfer
+msgid "Registrar Transferencia Interna"
+msgstr "Registrar Transferencia Interna"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields.selection,name:internal_transfer_fix.selection__account_payment__aux_payment_type__outbound
+msgid "Send"
+msgstr "Enviar"
+
+#. module: internal_transfer_fix
+#. odoo-python
+#: code:addons/internal_transfer_fix/models/account_payment.py:0
+#, python-format
+msgid "This payment has been created from: "
+msgstr "Este pago se ha creado a partir de: "
+
+#. module: internal_transfer_fix
+#: model_terms:ir.ui.view,arch_db:internal_transfer_fix.view_account_internal_transfer_tree
+msgid "Total"
+msgstr "Total"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_bank_statement_line__transfer_move
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move__transfer_move
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_payment__transfer_move
+msgid "Transfer Move"
+msgstr "Asiento de transferencia"
+
+#. module: internal_transfer_fix
+#: model:ir.actions.act_window,name:internal_transfer_fix.action_account_fix_internal_transfer
+#: model:ir.ui.menu,name:internal_transfer_fix.menu_action_account_internal_transfer
+msgid "Transferencias Internas"
+msgstr "Transferencias Internas"
+
+#. module: internal_transfer_fix
+#: model:ir.model.fields,field_description:internal_transfer_fix.field_account_move_line__trm_manual_is_calc
+msgid "Trm Manual Is Calc"
+msgstr "Trm Manual Is Calc"
