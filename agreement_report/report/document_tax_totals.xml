@@ -1,0 +1,35 @@
+<odoo>
+    <data>
+        <template id="document_tax_totals_only_project">
+            <t t-foreach="tax_totals_only_project['subtotals']" t-as="subtotal">
+                <tr class="border-black o_subtotal">
+                    <td><strong t-out="subtotal['name']">Untaxed Amount</strong></td>
+
+                    <td class="text-end">
+                        <span
+                            t-att-class="oe_subtotal_footer_separator"
+                            t-out="subtotal['formatted_amount']"
+                        >27.00</span>
+                    </td>
+                </tr>
+
+                <t t-set="subtotal_to_show" t-value="subtotal['name']"/>
+                <t t-call="agreement_report.tax_groups_totals_only_project"/>
+            </t>
+
+            <tr t-if="'formatted_rounding_amount' in tax_totals_only_project and tax_totals_only_project['rounding_amount'] != 0">
+                <td>Rounding</td>
+                <td class="text-end">
+                    <span t-out="tax_totals_only_project['formatted_rounding_amount']">0</span>
+                </td>
+            </tr>
+
+            <tr class="border-black o_total">
+                <td><strong>Total</strong></td>
+                <td  class="text-end">
+                    <span t-out="tax_totals_only_project['formatted_amount_total']">31.05</span>
+                </td>
+            </tr>
+        </template>
+    </data>
+</odoo>

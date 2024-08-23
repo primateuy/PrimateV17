@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_status_report,account_report.status_report,account_report.model_status_report,,1,1,1,1
+access_service_partner_ledger,account_report.service_partner_ledger,account_report.model_service_partner_ledger,,1,1,1,1
+access_exchange_difference,account_report.exchange_difference,account_report.model_exchange_difference,,1,1,1,1
+
+

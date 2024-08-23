@@ -2,14 +2,14 @@
 {
     'name': "Agreement report",
 
-    'summary': "Custom report",
+    'summary': "Agreement Custom report",
 
     'description': """
-Custom report
+Agreement Custom report
     """,
 
-    'author': "My Company",
-    'website': "https://www.yourcompany.com",
+    'author': "Proyectasoft",
+    'website': "https://proyectasoft.odoo.com/",
 
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
@@ -25,6 +25,8 @@ Custom report
         'views/fields_for_report_view.xml',
         'report/sale_report_templates.xml',
         'report/ir_actions_report_templates.xml',
+        'report/document_tax_totals.xml',
+        'report/report_invoice.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
