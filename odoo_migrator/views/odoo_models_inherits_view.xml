@@ -285,6 +285,9 @@
                 <xpath expr="//button[@name='action_post']" position="after">
                     <button name="force_currency_post" string="Confirmar Forzando Moneda" type="object" class="btn btn-secondary" invisible="state != 'draft'" groups="odoo_migrator.group_see_old_data"/>
                 </xpath>
+                <xpath expr="//button[@name='action_draft']" position="after">
+                    <button name="force_currency_draft" string="Restablecer a Borrador Forzado" type="object" class="btn btn-secondary" invisible="not show_reset_to_draft_button" groups="account.group_account_invoice" />
+                </xpath>
                 <xpath expr="//group[last()]" position="after">
                     <notebook>
                         <page string="Old migration data" id="old_migration_data" groups="odoo_migrator.group_see_old_data">

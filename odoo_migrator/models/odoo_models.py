@@ -297,6 +297,10 @@ class AccountPayment(models.Model):
                 aml.balance = move_balance
         self.action_post()
 
+    def force_currency_draft(self):
+        ''' posted -> draft '''
+        self.move_id.with_context(skip_account_move_synchronization=True).button_draft()
+
 
 class AccountFullReconcile(models.Model):
     _inherit = "account.full.reconcile"
