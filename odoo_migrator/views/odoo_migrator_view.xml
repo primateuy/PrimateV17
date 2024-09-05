@@ -24,6 +24,12 @@
                                 type="object"
                                 class="btn-primary"
                         />
+                        <button name="update_account_account"
+                                string="Actualizar Plan de Cuentas"
+                                invisible="migration_model != 'chart_accounts'"
+                                type="object"
+                                class="btn-secondary"
+                        />
                         <button string="Cancelar" class="btn-secondary" special="cancel" />
                         <button string="Borrador" class="btn-secondary" type="object" name="action_draft"/>
                         <field name="state" widget="statusbar" />
@@ -373,14 +379,6 @@
                                             type="object"
                                             icon="fa-file-zip-o"
                                             name="action_view_model"
-                                            context="{'model_name': 'customer_invoice_lines'}"
-                                            invisible="customer_invoice_lines_count == 0">
-                                        <field name="customer_invoice_lines_count" string="Facturas de Clientes (lineas)" widget="statinfo" />
-                                    </button>
-                                    <button class="oe_stat_button"
-                                            type="object"
-                                            icon="fa-file-zip-o"
-                                            name="action_view_model"
                                             context="{'model_name': 'customer_moves_lines'}"
                                             invisible="customer_moves_lines_count == 0">
                                         <field name="customer_moves_lines_count" string="Facturas de Clientes (movimientos)" widget="statinfo" />
@@ -392,14 +390,6 @@
                                             context="{'model_name': 'supplier_invoices'}"
                                             invisible="supplier_invoices_count == 0">
                                         <field name="supplier_invoices_count" string="Facturas de Proveedor (cabezales)" widget="statinfo" />
-                                    </button>
-                                    <button class="oe_stat_button"
-                                            type="object"
-                                            icon="fa-file-zip-o"
-                                            name="action_view_model"
-                                            context="{'model_name': 'supplier_invoice_lines'}"
-                                            invisible="supplier_invoice_lines_count == 0">
-                                        <field name="supplier_invoice_lines_count" string="Facturas de Proveedor (lineas)" widget="statinfo" />
                                     </button>
                                     <button class="oe_stat_button"
                                             type="object"
