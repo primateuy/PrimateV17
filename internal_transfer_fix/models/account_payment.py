@@ -281,8 +281,8 @@ class AccountPayment(models.Model):
                     if group_extension_installed and payment.payment_group_id and payment.aux_amount:
                         amount = payment.aux_amount
                 # Si es transferencia interna recalculo precio local por si hay cotizacion especifica
-                if not payment.payment_group_id:
-                    amount = payment.amount_company_currency
+                #if not payment.payment_group_id:
+                    #amount = payment.amount_company_currency
             else:
                 amount = payment.amount
             payment_destination_currency_id = payment.destination_journal_id.currency_id or payment.destination_journal_id.company_id.currency_id
