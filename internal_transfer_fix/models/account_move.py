@@ -12,6 +12,13 @@ class AccountInvoiceCustomCoditeq(models.Model):
     check_rate = fields.Boolean(help='Amount of units of the base currency with respect to the foreign currency')
     rate_exchange = fields.Float(help='Amount of units of the base currency with respect to the foreign currency')
     transfer_move = fields.Boolean()
+    other_currency = fields.Boolean(compute='_compute_other_currency')
+
+    @api.depends('company_currency_id', 'currency_id')
+    def _compute_other_currency(self):
+        other_currency = self.filtered(lambda x: x.company_currency_id != x.currency_id)
+        other_currency.other_currency = True
+        (self - other_currency).other_currency = False
 
     @api.depends('date', 'auto_post', 'transfer_move')
     def _compute_hide_post_button(self):
