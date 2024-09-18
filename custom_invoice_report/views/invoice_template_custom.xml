@@ -1,7 +1,10 @@
 <odoo>
     <template id="report_invoice_document_with_secondary_rate" inherit_id="account.report_invoice_document">
+        <xpath expr="//p[@name='payment_communication']" position="replace">
+            <p name="payment_communication"/>
+        </xpath>
         <xpath expr="//p[@name='payment_communication']" position="after">
-            <table class="table table-sm mt-2" style="width: 50%; margin-left: auto; margin-right: auto;">
+            <table class="table table-sm mt-2" style="width: 50%; margin-left: 5px; margin-right: 5px;">
                 <thead>
                     <tr>
                         <th>Tax</th>
@@ -43,7 +46,7 @@
                 </tbody>
             </table>
             <br></br>
-            <p>
+            <p style="padding-bottom: 50px !important;">
                 Rate (<t t-esc="o.currency_id.name"/> 1 - <t t-esc="o.tax_totals['rate_used']"/> <t t-esc="o.secondary_currency_id.name"/>)
             <br></br>
                 Total - <t t-esc="o.tax_totals['amount_secondary_currency']"/> <t t-esc="o.secondary_currency_id.name"/>
