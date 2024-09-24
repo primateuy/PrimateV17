@@ -1133,6 +1133,8 @@ class OdooMigrator(models.Model):
                     odoo_object_required_fields.remove('property_account_payable_id')
         else:
             odoo_object_required_fields = [x.name for x in self.env["ir.model"].search([("model", "=", odoo_object._name)]).field_id.filtered_domain([("required", "=", True)])]
+            if odoo_object._name == 'account.tax.group':
+                odoo_object_required_fields.remove('company_id')
         record_data = source_models.execute_kw(
             source_database,
             source_uid,
@@ -1515,7 +1517,6 @@ class OdooMigrator(models.Model):
                 #     to_create.append(contact_data)
                 is_success, result = migrator.try_to_create_record(odoo_object=contact_obj, value=contact_data)
                 if not is_success:
-                    self.env.cr.rollback()
                     migrator.create_error_log(msg=str(result), values=contact_data)
                     continue
                 migrator.contact_ids += result
@@ -2170,9 +2171,13 @@ class OdooMigrator(models.Model):
                 print(f"vamos {contador} / {total}")
                 journal_old_id = journal_data["id"]
                 journal_code = journal_data["code"]
-                journal_id = journals_obj.search(['&',("old_id", "=", journal_old_id), '|', ("active", "=", True),("active", "=", False)])
+                journal_id = journals_obj.search(['&', ("old_id", "=", journal_old_id), '|', ("active", "=", True), ("active", "=", False)])
                 if not journal_id:
-                    journal_id = journals_obj.search(['&',("code", "=", journal_code), '|', ("active", "=", True),("active", "=", False)], limit=1)
+                    journal_id = journals_obj.search(['&', ("code", "=", journal_code), '|', ("active", "=", True), ("active", "=", False)], limit=1)
+                    if journal_id and journal_code == 'PMUL':
+                        journal_code = 'PMUL1'
+                        journal_data["code"] = journal_code
+                        journal_id = journals_obj.search(['&', ("code", "=", journal_code), '|', ("active", "=", True), ("active", "=", False)], limit=1)
                     if journal_id:
                         raise UserError(f"Ya existe un diario con el código {journal_code}")
                 journal_data['default_account_id'] = journal_data.pop('default_debit_account_id')
@@ -2357,7 +2362,6 @@ class OdooMigrator(models.Model):
         _logger.info("\nMigrando los impuestos")
 
         model_name: str = "account.tax"
-
         tax_obj = self.env[model_name]
         for migrator in self:
             tax_datas = migrator._run_remote_command_for(
@@ -2374,6 +2378,7 @@ class OdooMigrator(models.Model):
 
             total = len(tax_datas)
             for contador, tax_data in enumerate(tax_datas, start=1):
+
                 tax_data = self.remove_unused_fields(record_data=tax_data, odoo_model=model_name)
                 _logger.info(f"vamos {contador} / {total}")
                 tax_old_id = tax_data["id"]
