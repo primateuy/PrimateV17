@@ -275,14 +275,22 @@ class AccountPayment(models.Model):
                     if payment.check_rate:
                         amount = payment.amount * payment.rate_exchange
                     else:
-                        amount = payment.currency_id._convert(payment.amount, payment.company_currency_id,payment.company_id, payment.date)
+                        company_amount = payment.currency_id._convert(payment.amount, payment.company_currency_id, payment.company_id, payment.date)
+                        amount = payment.company_currency_id._convert(company_amount, payment.destination_journal_id.currency_id, payment.company_id, payment.date)
                 else:
                     amount = payment.company_currency_id._convert(payment.amount,payment.destination_journal_id.currency_id,payment.company_id, payment.date)
                     if group_extension_installed and payment.payment_group_id and payment.aux_amount:
                         amount = payment.aux_amount
                 # Si es transferencia interna recalculo precio local por si hay cotizacion especifica
-                #if not payment.payment_group_id:
-                    #amount = payment.amount_company_currency
+                if not group_extension_installed or not payment.payment_group_id:
+                    if payment.currency_id != payment.company_currency_id and payment.destination_journal_id.currency_id != payment.company_currency_id:
+                        company_amount = payment.currency_id._convert(payment.amount, payment.company_currency_id,
+                                                                      payment.company_id, payment.date)
+                        amount = payment.company_currency_id._convert(company_amount,
+                                                                      payment.destination_journal_id.currency_id,
+                                                                      payment.company_id, payment.date)
+                    else:
+                        amount = payment.amount_company_currency
             else:
                 amount = payment.amount
             payment_destination_currency_id = payment.destination_journal_id.currency_id or payment.destination_journal_id.company_id.currency_id
