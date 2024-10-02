@@ -218,6 +218,8 @@ class AccountPayment(models.Model):
                             else:
                                 payment_account = payment_method_account or journal_id.company_id.account_journal_payment_debit_account_id
                             value['account_id'] = payment_account.id
+                        elif not self.env['ir.module.module'].search([('name', '=', 'account_payment_group_extension'), ('state', '=', 'installed')]):
+                            value['account_id'] = rec.outstanding_account_id.id
                         else:
                             value['account_id'] = rec.journal_id.default_account_id.id
                         value['check_rate'] = rec.check_rate
