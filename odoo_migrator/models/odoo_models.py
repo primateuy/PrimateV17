@@ -107,6 +107,7 @@ class AccountMove(models.Model):
     old_full_reconcile_ids = fields.Char(string="Full reconcile IDs on old DB", copy=False)
     old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")], copy=False)
     migration_error = fields.Boolean(string="Migration Error", copy=False)
+    lines_migrated = fields.Boolean(string="Lineas migradas", copy=False)
     no_post_migrator = fields.Boolean(string="No post move in migration", copy=False)
     is_manual_entry = fields.Boolean(string="Is Manual Entry", copy=False)
 
