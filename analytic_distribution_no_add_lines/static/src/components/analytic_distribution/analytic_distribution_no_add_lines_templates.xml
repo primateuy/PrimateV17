@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-inherit="analytic.AnalyticDistributionPopup"
+       t-inherit-mode="extension">
+        <xpath expr="//td[@class='o_field_x2many_list_row_add']" position="replace">
+            <td t-att-colspan="allPlans.length + 2 + valueColumnEnabled">
+<!--                <div>-->
+                <!--                    <span t-att-value="props.allow_save"/>-->
+                <!--                    <p t-if="props.allow_save">edita</p>-->
+
+                <!--                    <p t-else="">No EDITA</p>-->
+
+                <!--                    <t t-set="allow_save_value" t-value="props.allow_save"/>-->
+                <!--                    <span t-esc="allow_save_value"/>-->
+
+                <td t-foreach="allPlans" t-as="plan" t-key="plan.id">
+                                <p> <t t-out="plan.description"/></p>
+                    <p> <t t-out="plan.name"/></p>
+                    <span>1</span>
+                    </td>
+                <!--                </div>-->
+            </td>
+        </xpath>
+    </t>
+
+</templates>
+

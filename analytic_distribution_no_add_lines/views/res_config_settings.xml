@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="analytic_distribution_no_add_lines_res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath
+                    expr="//block[@id='analytic']"
+                    position="inside">
+                <setting id="block_analytic_distribution_add_lines"
+                         title="Bloquear agregado de líneas en la distribución analítica"
+                         help="Gestione si se bloquea la adición de líneas en la distribución analítica en función del permiso 'Agregar líneas en campo distribución analítica'"
+                >
+                    <field name="is_analytic_distribution_add_lines_blocked"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

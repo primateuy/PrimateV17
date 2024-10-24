@@ -32,7 +32,8 @@ class AccountMoveLine(models.Model):
     analytic_account_unique_id = fields.Many2one("account.analytic.account", string="Cuenta analítica única")
 
     def _action_set_analytic_account_unique_id(self):
-        self.set_analytic_account_unique_id(False)
+        for line in self:
+            line.set_analytic_account_unique_id(False)
 
     def set_analytic_account_unique_id(self, posting):
 

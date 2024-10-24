@@ -1,6 +1,6 @@
 {
     'name' : 'Mapeo de cuenta analítica única.',
-    'version': '17.0.0.0',
+    'version': '17.1.0.0',
     'author': 'PrimateUY',
     'website': 'https://primate.com.uy/',
     'category': 'Accounting/Accounting',

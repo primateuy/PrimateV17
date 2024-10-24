@@ -1,0 +1,6 @@
+<odoo>
+    <record id="analytic_distribution_no_add_lines_group" model="res.groups">
+        <field name="name">Agregar líneas en campo distribución analítica.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>
