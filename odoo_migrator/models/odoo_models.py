@@ -42,6 +42,7 @@ class ResPartner(models.Model):
     _inherit = "res.partner"
 
     old_id = fields.Integer(string="Old ID", copy=False)
+    old_archived = fields.Boolean()
 
 
 class ResPartnerTitle(models.Model):
@@ -105,8 +106,9 @@ class AccountMove(models.Model):
     old_move_id = fields.Integer(string="Old move ID", copy=False)
     old_name = fields.Char(string="Name", copy=False)
     old_full_reconcile_ids = fields.Char(string="Full reconcile IDs on old DB", copy=False)
-    old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")], copy=False)
+    old_state = fields.Selection(selection=[("draft", "Draft"), ("open", "Posted"), ("cancelled", "Cancelled"), ("cancel", "Cancelled"), ("paid", "Pago"), ("posted", "Publicado"), ("reconciled", "Reconcilado")], copy=False)
     migration_error = fields.Boolean(string="Migration Error", copy=False)
+    migrated_with_errors = fields.Boolean(string="Migrated with Errors", copy=False)
     lines_migrated = fields.Boolean(string="Lineas migradas", copy=False)
     no_post_migrator = fields.Boolean(string="No post move in migration", copy=False)
     is_manual_entry = fields.Boolean(string="Is Manual Entry", copy=False)
@@ -125,6 +127,7 @@ class AccountMoveLine(models.Model):
     old_id = fields.Integer(string="Old ID", copy=False)
     move_version = fields.Selection(selection=[("old_move", "Old Move"), ("new_move", "New Move")], default="old_move", copy=False)
     is_manual_entry = fields.Boolean(string="Is Manual Entry", copy=False)
+    lines_conciliated = fields.Boolean(string="Lines Conciliated", copy=False)
 
     @api.constrains('account_id', 'display_type')
     def _check_payable_receivable(self):
@@ -208,7 +211,10 @@ class AccountPayment(models.Model):
                     'paired_internal_transfer_payment_id': payment.id,
                     'date': payment.date,
                 })
-                paired_payment.name = payment.old_name + '/PAIRED'
+                if not payment.old_name:
+                    paired_payment.name = payment.name + '/PAIRED'
+                else:
+                    paired_payment.name = payment.old_name + '/PAIRED'
                 # SOLUCION MIGRADOR
                 model_name = "account.move.line"
                 migrator = ctx.get('migrator')
