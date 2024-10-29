@@ -5,9 +5,22 @@
     "version": "1.0",
     "category": "Tools",
     "summary": "Módulo para migrar datos de Odoo entre versiones de Odoo",
-    "author": "Felipe Ferreira",
-    "website": "https://proyectasoft.odoo.com",
-    "depends": ["base","analytic","contacts", "account", "analytic", "sale", "purchase", "partner_contact_birthdate", "partner_contact_gender", "partner_contact_nationality", "account_accountant", "account_analytic_tag"],
+    "author": "Primate",
+    "website": "https://www.primate.uy",
+    "depends": [
+        "base",
+        "analytic",
+        "contacts",
+        "account",
+        "analytic",
+        "sale",
+        "purchase",
+        "partner_contact_birthdate",
+        "partner_contact_gender",
+        "partner_contact_nationality",
+        #"account_accountant",# no podemos tener dependencias de odoo enterprise
+        "account_analytic_tag"
+                ],
     "data": [
         "security/odoo_migrator_groups.xml",
         "security/ir.model.access.csv",
