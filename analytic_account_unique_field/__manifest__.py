@@ -24,5 +24,6 @@ Mapea la cuanta analítica con el apunte contable, en caso de que se una sola en
         'web.qunit_suite_tests': [
         ],
     },
-    'installable': True
+    'installable': True,
+    'license': 'LGPL-3',
 }
