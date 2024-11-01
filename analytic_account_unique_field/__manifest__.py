@@ -25,5 +25,6 @@ Mapea la cuanta analítica con el apunte contable, en caso de que se una sola en
         ],
     },
     'installable': True,
+    
     'license': 'LGPL-3',
 }
