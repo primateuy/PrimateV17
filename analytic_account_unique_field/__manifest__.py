@@ -7,7 +7,7 @@
     'depends' : ['base', 'analytic', 'account', 'account_analytic_parent'],
     'description': """
 Mapeo de cuenta analítica si es única en la distribución analítca.
-===============================================
+==================================================================
 
 Mapea la cuanta analítica con el apunte contable, en caso de que se una sola en la distribución analítica.
     """,
