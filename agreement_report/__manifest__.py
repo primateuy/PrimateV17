@@ -32,5 +32,7 @@ Agreement Custom report
     'demo': [
         'demo/demo.xml',
     ],
+
+    'license': 'LGPL-3',
 }
 
