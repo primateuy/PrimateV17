@@ -1,8 +1,8 @@
-from .Enums import TarjetaId, EmisorId
+from .Enums import TarjetaId, EmisorId, Operacion, MonedaISO
 
 class Transaccion():
 
-    def __init__(self, empCod, empHASH, termCod):
+    def __init__(self, empCod=None, empHASH=None, termCod=None):
         self.empCod = empCod
         self.empHASH = empHASH
         self.termCod = termCod
@@ -13,16 +13,16 @@ class Transaccion():
         self.emisorId = EmisorId.TODOS.value
         self.tarjetaTipo = ''
         self.tarjetaAlimentacion = None
-        self.facturaConsumidorFinal = None
+        self.facturaConsumidorFinal = True
         self.facturaMonto = 0
         self.facturaMontoGravado = 0
         self.facturaMontoIVA = 0
         self.facturaNro = 0
-        self.monedaISO = ''
+        self.monedaISO = MonedaISO.PESOS.value
         self.monto = 0
         self.montoCashBack = 0
         self.montoPropina = 0
-        self.operacion = ''
+        self.operacion = Operacion.VENTA.value
         self.tarjetaId = TarjetaId.TODAS.value
         self.tokenNro = ''
         self.ticketOriginal = None
@@ -66,7 +66,7 @@ class Transaccion():
         Establece la transaccion como una operacion de venta
         :return: La misma instancia de Transaccion
         '''
-        self.operacion = 'VTA'
+        self.operacion = Operacion.VENTA.value
         return self
 
     def paraDevolucion(self, ticketOrigial):
@@ -75,7 +75,15 @@ class Transaccion():
         :return: La misma instancia de Transaccion
         '''
         self.ticketOriginal = int(ticketOrigial)
-        self.operacion = 'DEV'
+        self.operacion = Operacion.DEVOLUCION.value
+        return self
+
+    def setDevolucion(self):
+        '''
+        Establece la transaccion como una operacion de devolucion
+        :return: La misma instancia de Transaccion
+        '''
+        self.operacion = Operacion.DEVOLUCION.value
         return self
 
     def crearPesos(self):

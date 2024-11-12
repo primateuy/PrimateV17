@@ -1,6 +1,6 @@
 {
     'name' : 'Mapeo de cuenta analítica única.',
-    'version': '17.1.0.0',
+    'version': '17.1.0',
     'author': 'PrimateUY',
     'website': 'https://primate.com.uy/',
     'category': 'Accounting/Accounting',
@@ -14,7 +14,9 @@ Mapea la cuanta analítica con el apunte contable, en caso de que se una sola en
     'data': [
         "views/account_move_views.xml",
         "views/account_analytic_account_view.xml",
-        "wizard/wizard.xml"
+        "wizard/wizard_account_move.xml",
+        "wizard/wizard_account_move_line.xml",
+        "data/unique_analytic_account_cron.xml"
     ],
     'demo': [
     ],

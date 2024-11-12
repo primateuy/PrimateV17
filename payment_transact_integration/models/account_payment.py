@@ -4,8 +4,8 @@ from ..transact_ws.TransAct import TransAct
 class AccountPaymentRegister(models.TransientModel):
     _inherit = "account.payment.register"
 
-    transact_payment_id = fields.Many2one(
-        comodel_name='payment.transact.integration', readonly=False)
+    transact_transaction_id = fields.Many2one(
+        comodel_name='transact.transaction', readonly=False)
 
     # display_name = fields.Char(string='Descripción', compute='_compute_display_name')
 
@@ -14,9 +14,11 @@ class AccountPaymentRegister(models.TransientModel):
     #         # Personaliza cómo se formará el display_name
     #         record.display_name = f'{record.reference} - {record.amount}'
 
-    @api.depends("transact_payment_id")
+    @api.depends("transact_transaction_id")
     def _compute_amount(self):
-        self.amount = 111
+        if self.transact_transaction_id:
+            self.amount = self.transact_transaction_id.monto/100
+            self.currency_id = self.transact_transaction_id.currency_id
 
     def action_create_payments(self):
         res = super(AccountPaymentRegister, self).action_create_payments()
@@ -60,34 +62,46 @@ class AccountPaymentRegister(models.TransientModel):
         data = self._get_data_from_move(move)
 
 
-        transaccion = transact.crearVentaPesos() \
+        transaccion_instance = transact.crearVentaPesos() \
             .establecerMonto(data['monto'], 0, 0) \
             .establecerFactura(data['facturaNro'], data['facturaMonto'], data['facturaMontoGravado'], data['facturaMontoIVA'])
+        transaccion_instance.move_id = move.id
+        # transaccion_instance.crearEmulacion()
 
-        respuesta = transact.procesarTransaccion(transaccion)
 
+        vals = self.env['transact.transaction'].from_transaccion_instance(transaccion_instance)
+
+        nuevo_registro = self.env['transact.transaction'].create(vals)
+
+
+        respuesta = transact.procesarTransaccion(transaccion_instance)
+        nuevo_registro.write({'token_nro': transaccion_instance.tokenNro,
+                              'ticket_original': transaccion_instance.ticketOriginal})
 
 
         # display_name = str(transaccion.monto) + str(transaccion.monedaISO)
 
-        new_transact = self.env['payment.transact.integration'].create({
-            'ticket': respuesta.Ticket,
-            'move_id': move.id,
-        })
+        # new_transact = self.env['payment.transact.integration'].create({
+        #     'ticket': respuesta.Ticket,
+        #     'move_id': move.id,
+        # })
 
         vals = {
-            'transact_ticket': respuesta.Ticket,
-            'transact_id': new_transact.id
+            'transact_ticket': int(transaccion_instance.ticketOriginal),
+            'transact_id': nuevo_registro.id
         }
         move.write(vals)
+
 
         return
 
     def _procesar_devolucion(self, move):
         transact = self._temp_get_transact()
-        if self.transact_payment_id:
+        if self.transact_transaction_id:
 
-            transaccion = transact.paraDevolucion(self.transact_payment_id.ticket)
+            transaccion = self.transact_transaction_id.to_transaccion_instance()
+
+            transaccion.setDevolucion()
             respuesta = transact.procesarTransaccion(transaccion)
 
             return respuesta

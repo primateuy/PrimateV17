@@ -34,6 +34,11 @@ class TransAct:
         :return: La respuesta de la consulta sobre la transaccion
         '''
 
+        transaccion.empHASH = self.empHASH
+        transaccion.termCod = self.termCod
+        transaccion.empCod = self.empCod
+
+
         res = RespuestaConsulta()
         resp_post = self._postearTransaccion(transaccion)
 
@@ -61,6 +66,8 @@ class TransAct:
 
                 if datetime.now() > time_f:
                     raise Exception('Timeout de transaccion')
+
+            transaccion.ticketOriginal = int(resp_cons.Ticket)
 
         return res
 

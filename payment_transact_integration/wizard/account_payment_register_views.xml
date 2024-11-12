@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='group3']" position="after">
                     <group name="group4">
-                        <field name="transact_payment_id"/>
+                        <field name="transact_transaction_id"/>
                     </group>
                 </xpath>
             </field>

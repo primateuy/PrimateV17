@@ -7,6 +7,13 @@ class Resp_CodigoRespuesta(Enum):
     ERROR_CONFIGURACION = 3
     ERROR_HAY_FACTURA_PENDIENTE = 9
 
+class Operacion(Enum):
+    VENTA = "VTA"
+    DEVOLUCION = "DEV"
+
+class MonedaISO(Enum):
+    PESOS = "0858"
+    DOLARES = "0840"
 
 class Resp_EstadoAvance(Enum):
     ESTADOAVANCE_SINDEFINIR = 0

@@ -1,3 +1,5 @@
+import logging
+
 from odoo import fields, models, api
 
 
@@ -25,6 +27,17 @@ class AccountMove(models.Model):
         for move in self.line_ids:
             move.set_analytic_account_unique_id(False)
 
+    def _cron_analytic_unique_field_assignement(self):
+        logging.info("Iniciando tarea planificada de asignación de cuenta analítica única...")
+        lines = self.env['account.move.line'].get_lines_without_analytic_account()
+        for line in lines:
+            line.set_analytic_account_unique_id(False)
+            if line.analytic_account_unique_id:
+                logging.info(f"Seteando cuenta analítica punica para: {line.display_name}")
+
+
+        return True
+
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
@@ -46,3 +59,9 @@ class AccountMoveLine(models.Model):
                     self.analytic_account_unique_id = int(account_ids[0])
             elif self.analytic_account_unique_id:
                 self.analytic_account_unique_id = None
+
+    def get_lines_without_analytic_account(self):
+        # Busco registros donde el campo analytic_account_unique_id es nulo
+        lines = self.search([('analytic_account_unique_id', '=', False)])
+        return lines
+
